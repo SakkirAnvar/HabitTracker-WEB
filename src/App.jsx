@@ -7,6 +7,8 @@ import { checkAuth } from "./redux/userSlice";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardLayout from "./layout/DashboardLayout";
+import Habits from "./pages/Habits";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -30,8 +32,15 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
 
-        <Route element={<ProtectedRoute />}>
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/habits" element={<Habits />} />
         </Route>
       </Routes>
     </BrowserRouter>
