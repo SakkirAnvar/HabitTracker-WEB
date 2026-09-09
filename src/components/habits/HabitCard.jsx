@@ -1,29 +1,26 @@
-import { useState } from "react";
+import HabitProgress from "./HabitProgress";
 
-const HabitCard = ({ habit, onToggle, onDelete, onEdit }) => {
-  const [loading, setLoading] = useState(false);
-
-  const handleToggle = async () => {
-    try {
-      setLoading(true);
-      await onToggle(habit._id);
-    } catch (error) {
-      console.error("Failed to toggle habit:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const HabitCard = ({
+  habit,
+  existingLog,
+  onDelete,
+  onEdit,
+  onProgressSuccess,
+}) => {
   const getCategoryBadge = () => {
     switch (habit.category) {
       case "Spiritual":
         return "badge-secondary";
+
       case "Skills":
         return "badge-info";
+
       case "Physical":
         return "badge-success";
+
       case "Personal":
         return "badge-warning";
+
       default:
         return "badge-ghost";
     }
@@ -35,13 +32,7 @@ const HabitCard = ({ habit, onToggle, onDelete, onEdit }) => {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2
-              className={`card-title text-base ${
-                !habit.isActive ? "text-base-content/40" : ""
-              }`}
-            >
-              {habit.habitName}
-            </h2>
+            <h2 className="card-title text-base">{habit.habitName}</h2>
 
             {habit.description && (
               <p className="mt-1 text-sm text-base-content/60">
@@ -74,45 +65,34 @@ const HabitCard = ({ habit, onToggle, onDelete, onEdit }) => {
           </div>
         )}
 
+        {/* Today's Progress */}
+        <HabitProgress
+          key={`${habit._id}-${existingLog?._id || "empty"}`}
+          habit={habit}
+          existingLog={existingLog}
+          onSuccess={onProgressSuccess}
+        />
         {/* Actions */}
-        <div className="card-actions mt-4 justify-between">
-          {/* Complete */}
-          <button
-            onClick={handleToggle}
-            disabled={loading || !habit.active}
-            className={`btn btn-sm ${
-              habit.isCompleted ? "btn-success" : "btn-primary"
-            }`}
-          >
-            {loading ? (
-              <span className="loading loading-spinner loading-xs"></span>
-            ) : habit.isCompleted ? (
-              "✓ Completed"
-            ) : (
-              "Complete"
-            )}
-          </button>
+        <div className="mt-4 flex justify-end gap-2 border-t border-base-200 pt-4">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(habit)}
+              className="btn btn-ghost btn-sm"
+            >
+              Edit
+            </button>
+          )}
 
-          {/* Edit + Delete */}
-          <div className="flex gap-2">
-            {onEdit && (
-              <button
-                onClick={() => onEdit(habit)}
-                className="btn btn-ghost btn-sm"
-              >
-                Edit
-              </button>
-            )}
-
-            {onDelete && (
-              <button
-                onClick={() => onDelete(habit._id)}
-                className="btn btn-ghost btn-sm text-error"
-              >
-                Delete
-              </button>
-            )}
-          </div>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(habit._id)}
+              className="btn btn-ghost btn-sm text-error"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
     </div>

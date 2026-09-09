@@ -6,7 +6,7 @@ const getInitialForm = (habit) => ({
   habitName: habit?.habitName || "",
   description: habit?.description || "",
   category: habit?.category || "Personal",
-  habitType: habit?.habitType || "boolean",
+  type: habit?.type || "boolean",
   frequency: habit?.frequency || "daily",
   target: habit?.target ?? "",
   unit: habit?.unit || "",
@@ -48,7 +48,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
       return {
         ...prev,
         scheduledDays: alreadySelected
-          ? prev.scheduledDays.filter((selectedDay) => selectedDay !== day)
+          ? prev.scheduledDays.filter(
+              (selectedDay) => selectedDay !== day
+            )
           : [...prev.scheduledDays, day],
       };
     });
@@ -64,7 +66,10 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
       return;
     }
 
-    if (form.frequency === "custom" && form.scheduledDays.length === 0) {
+    if (
+      form.frequency === "custom" &&
+      form.scheduledDays.length === 0
+    ) {
       setError("Select at least one scheduled day.");
       return;
     }
@@ -89,8 +94,13 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
         unit: form.unit.trim(),
       }),
 
-      scheduledDays: form.frequency === "custom" ? form.scheduledDays : [],
+      scheduledDays:
+        form.frequency === "custom"
+          ? form.scheduledDays
+          : [],
     };
+
+    console.log("Submitting habit:", payload);
 
     try {
       setLoading(true);
@@ -100,18 +110,20 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
           editHabit({
             id: habit._id,
             data: payload,
-          }),
+          })
         ).unwrap();
       } else {
         await dispatch(addHabit(payload)).unwrap();
       }
 
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
     } catch (err) {
+      console.error("Habit save error:", err);
+
       setError(
-        typeof err === "string" ? err : err?.message || "Something went wrong.",
+        typeof err === "string"
+          ? err
+          : err?.message || "Something went wrong."
       );
     } finally {
       setLoading(false);
@@ -152,10 +164,12 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
+          {/* Habit Name */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Habit Name</span>
+              <span className="label-text font-medium">
+                Habit Name
+              </span>
             </label>
 
             <input
@@ -172,7 +186,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
           {/* Description */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Description</span>
+              <span className="label-text font-medium">
+                Description
+              </span>
             </label>
 
             <textarea
@@ -188,7 +204,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
           {/* Category */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Category</span>
+              <span className="label-text font-medium">
+                Category
+              </span>
             </label>
 
             <select
@@ -207,7 +225,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
           {/* Habit Type */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Habit Type</span>
+              <span className="label-text font-medium">
+                Habit Type
+              </span>
             </label>
 
             <select
@@ -216,22 +236,32 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
               onChange={handleChange}
               className="select select-bordered w-full"
             >
-              <option value="boolean">Boolean — Done / Not Done</option>
+              <option value="boolean">
+                Boolean — Done / Not Done
+              </option>
 
-              <option value="numeric">Numeric — e.g. 8 glasses</option>
+              <option value="numeric">
+                Numeric — e.g. 8 glasses
+              </option>
 
-              <option value="duration">Duration — e.g. 30 minutes</option>
+              <option value="duration">
+                Duration — e.g. 30 minutes
+              </option>
 
-              <option value="rating">Rating — e.g. 1–5</option>
+              <option value="rating">
+                Rating — e.g. 1–5
+              </option>
             </select>
           </div>
 
-          {/* Target and Unit */}
+          {/* Target + Unit */}
           {form.type !== "boolean" && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-medium">Target</span>
+                  <span className="label-text font-medium">
+                    Target
+                  </span>
                 </label>
 
                 <input
@@ -248,7 +278,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
 
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-medium">Unit</span>
+                  <span className="label-text font-medium">
+                    Unit
+                  </span>
                 </label>
 
                 <input
@@ -266,7 +298,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
           {/* Frequency */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Frequency</span>
+              <span className="label-text font-medium">
+                Frequency
+              </span>
             </label>
 
             <select
@@ -285,12 +319,15 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
           {form.frequency === "custom" && (
             <div>
               <label className="label">
-                <span className="label-text font-medium">Scheduled Days</span>
+                <span className="label-text font-medium">
+                  Scheduled Days
+                </span>
               </label>
 
               <div className="flex flex-wrap gap-2">
                 {weekDays.map((day) => {
-                  const selected = form.scheduledDays.includes(day.value);
+                  const selected =
+                    form.scheduledDays.includes(day.value);
 
                   return (
                     <button
@@ -298,7 +335,9 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
                       type="button"
                       onClick={() => handleDayChange(day.value)}
                       className={`btn btn-sm ${
-                        selected ? "btn-primary" : "btn-outline"
+                        selected
+                          ? "btn-primary"
+                          : "btn-outline"
                       }`}
                     >
                       {day.label}
@@ -329,7 +368,7 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
             >
               {loading ? (
                 <>
-                  <span className="loading loading-spinner loading-sm"></span>
+                  <span className="loading loading-spinner loading-sm" />
                   Saving...
                 </>
               ) : isEditing ? (

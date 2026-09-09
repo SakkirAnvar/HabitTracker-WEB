@@ -1,45 +1,61 @@
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchHabits,
-  toggleHabitStatus,
-  removeHabit,
-} from "../redux/habitSlice";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchHabits, removeHabit } from "../redux/habitSlice";
+import { fetchHabitLogsByDate } from "../redux/habitLogSlice";
 import HabitList from "../components/habits/HabitList";
 import HabitForm from "../components/habits/HabitForm";
 
 const Habits = () => {
   const dispatch = useDispatch();
 
- const { habits, status, error } = useSelector(
-  (state) => state.habit
-);
+  const {
+    habits,
+    status,
+    error: habitError,
+  } = useSelector((state) => state.habit);
+  
 
+  const {
+    logs,
+    status: logStatus,
+    error: logError,
+  } = useSelector((state) => state.habitLog);
 
   const [editingHabit, setEditingHabit] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [toggleButton, setToggleButton] = useState(true)
+
+  // Today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     dispatch(fetchHabits());
-  }, [dispatch]);
-
-  const handleToggle = async (id) => {
-    await dispatch(toggleHabitStatus(id)).unwrap();
-  };
+    dispatch(fetchHabitLogsByDate(today));
+  }, [dispatch, today]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this habit?"
+      "Are you sure you want to delete this habit?",
     );
 
     if (!confirmed) return;
 
-    await dispatch(removeHabit(id)).unwrap();
+    try {
+      await dispatch(removeHabit(id)).unwrap();
+    } catch (error) {
+      console.error("Failed to delete habit:", error);
+    }
   };
 
   const handleEdit = (habit) => {
     setEditingHabit(habit);
     setShowForm(true);
+  };
+
+  const handleAddHabit = () => {
+    setEditingHabit(null);
+    setToggleButton(!toggleButton)
+    setShowForm(toggleButton);
   };
 
   const handleFormSuccess = () => {
@@ -52,14 +68,17 @@ const Habits = () => {
     setShowForm(false);
   };
 
+  const handleProgressSuccess = () => {
+    // Refresh today's logs after saving progress
+    dispatch(fetchHabitLogsByDate(today));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold md:text-3xl">
-            My Habits
-          </h1>
+          <h1 className="text-2xl font-bold md:text-3xl">My Habits</h1>
 
           <p className="mt-1 text-base-content/60">
             Build consistency, one day at a time.
@@ -67,24 +86,15 @@ const Habits = () => {
         </div>
 
         <button
+          type="button"
+          onClick={handleAddHabit}
           className="btn btn-primary"
-          onClick={() => {
-            setEditingHabit(null);
-            setShowForm(true);
-          }}
         >
           + Add Habit
         </button>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="alert alert-error">
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Form */}
+      {/* Habit Form */}
       {showForm && (
         <HabitForm
           key={editingHabit?._id || "new"}
@@ -94,20 +104,34 @@ const Habits = () => {
         />
       )}
 
-      {/* Loading */}
-      {status === "loading" && (
-        <div className="flex justify-center py-10">
-          <span className="loading loading-spinner loading-lg"></span>
+      {/* Errors */}
+      {habitError && (
+        <div className="alert alert-error">
+          <span>{habitError}</span>
         </div>
       )}
 
-      {/* Habit List */}
-      {status !== "loading" && (
+      {/* {logError && logStatus === "failed" && (
+        <div className="alert alert-error">
+          <span>{logError}</span>
+        </div>
+      )} */}
+
+      {/* Loading */}
+      {(status === "loading" || logStatus === "loading") && (
+        <div className="flex justify-center py-10">
+          <span className="loading loading-spinner loading-lg" />
+        </div>
+      )}
+
+      {/* Habits */}
+      {!showForm && status !== "loading" && (
         <HabitList
           habits={habits}
-          onToggle={handleToggle}
+          logs={logs}
           onDelete={handleDelete}
           onEdit={handleEdit}
+          onProgressSuccess={handleProgressSuccess}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 import HabitCard from "./HabitCard";
 
-const HabitList = ({ habits, onToggle, onDelete, onEdit }) => {
+const HabitList = ({ habits, logs, onDelete, onEdit, onProgressSuccess }) => {
   if (!habits || habits.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center">
@@ -17,15 +17,22 @@ const HabitList = ({ habits, onToggle, onDelete, onEdit }) => {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      {habits.map((habit) => (
-        <HabitCard
-          key={habit._id}
-          habit={habit}
-          onToggle={onToggle}
-          onDelete={onDelete}
-          onEdit={onEdit}
-        />
-      ))}
+      {habits.map((habit) => {
+        const habitLog = logs?.find(
+          (log) => log.habitId === habit._id || log.habitId?._id === habit._id,
+        );
+
+        return (
+          <HabitCard
+            key={habit._id}
+            habit={habit}
+            existingLog={habitLog}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onProgressSuccess={onProgressSuccess}
+          />
+        );
+      })}
     </div>
   );
 };
