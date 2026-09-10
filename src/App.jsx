@@ -11,6 +11,7 @@ import DashboardLayout from "./layout/DashboardLayout";
 import Habits from "./pages/Habits";
 import Goals from "./pages/Goals";
 import Journal from "./pages/Journal";
+import Analytics from "./pages/Analytics";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/habits" element={<Habits />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/analytics" element={<Analytics />} />
         </Route>
       </Routes>
     </BrowserRouter>
