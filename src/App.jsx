@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layout/DashboardLayout";
 import Habits from "./pages/Habits";
 import Goals from "./pages/Goals";
+import Journal from "./pages/Journal";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -43,6 +44,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/habits" element={<Habits />} />
           <Route path="/goals" element={<Goals />} />
+          <Route path="/journal" element={<Journal />} />
         </Route>
       </Routes>
     </BrowserRouter>

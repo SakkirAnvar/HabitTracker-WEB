@@ -3,6 +3,7 @@ import userReducer from "./userSlice";
 import habitReducer from "./habitSlice";
 import habitLogReducer from "./habitLogSlice";
 import goalReducer from "./goalSlice";
+import reviewReducer from "./reviewSlice";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     habit: habitReducer,
     habitLog: habitLogReducer,
     goal: goalReducer,
+    review: reviewReducer,
   },
 });
 
