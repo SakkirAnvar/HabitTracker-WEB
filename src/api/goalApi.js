@@ -5,12 +5,12 @@ export const createGoal = async (data) => {
   return response.data;
 };
 
-export const getAllGoal = async () => {
+export const getGoals = async () => {
   const response = await api.get("/goals");
   return response.data;
 };
 
-export const getSingleGoal = async (id) => {
+export const getGoal = async (id) => {
   const response = await api.get(`/goals/${id}`);
   return response.data;
 };
