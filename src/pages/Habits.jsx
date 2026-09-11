@@ -11,19 +11,16 @@ const Habits = () => {
   const {
     habits,
     status,
-    error: habitError,
   } = useSelector((state) => state.habit);
-  
 
   const {
     logs,
     status: logStatus,
-    error: logError,
   } = useSelector((state) => state.habitLog);
 
   const [editingHabit, setEditingHabit] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [toggleButton, setToggleButton] = useState(true)
+  const [toggleButton, setToggleButton] = useState(true);
 
   // Today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split("T")[0];
@@ -54,7 +51,7 @@ const Habits = () => {
 
   const handleAddHabit = () => {
     setEditingHabit(null);
-    setToggleButton(!toggleButton)
+    setToggleButton(!toggleButton);
     setShowForm(toggleButton);
   };
 
@@ -103,19 +100,6 @@ const Habits = () => {
           onCancel={handleCancel}
         />
       )}
-
-      {/* Errors */}
-      {habitError && (
-        <div className="alert alert-error">
-          <span>{habitError}</span>
-        </div>
-      )}
-
-      {/* {logError && logStatus === "failed" && (
-        <div className="alert alert-error">
-          <span>{logError}</span>
-        </div>
-      )} */}
 
       {/* Loading */}
       {(status === "loading" || logStatus === "loading") && (

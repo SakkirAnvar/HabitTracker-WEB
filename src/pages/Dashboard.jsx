@@ -72,14 +72,14 @@ const Dashboard = () => {
             <div
               className="radial-progress text-primary"
               style={{
-                "--value": analytics?.completionPercentage || 0,
+                "--value": analytics?.overall || 0,
                 "--size": "10rem",
                 "--thickness": "10px",
               }}
               role="progressbar"
             >
               <span className="text-2xl font-bold">
-                {analytics?.completionPercentage || 0}%
+                {analytics?.overall|| 0}%
               </span>
             </div>
 
@@ -95,7 +95,7 @@ const Dashboard = () => {
         <div className="stat rounded-box bg-base-100 shadow-sm">
           <div className="stat-title">Expected</div>
           <div className="stat-value text-primary">
-            {analytics?.expectedHabits || 0}
+            {analytics?.expected || 0}
           </div>
           <div className="stat-desc">Today's habits</div>
         </div>
@@ -103,7 +103,7 @@ const Dashboard = () => {
         <div className="stat rounded-box bg-base-100 shadow-sm">
           <div className="stat-title">Completed</div>
           <div className="stat-value text-success">
-            {analytics?.completedHabits || 0}
+            {analytics?.completed || 0}
           </div>
           <div className="stat-desc">Completed today</div>
         </div>
@@ -113,8 +113,8 @@ const Dashboard = () => {
           <div className="stat-value text-warning">
             {Math.max(
               0,
-              (analytics?.expectedHabits || 0) -
-                (analytics?.completedHabits || 0),
+              (analytics?.expected || 0) -
+                (analytics?.completed || 0),
             )}
           </div>
           <div className="stat-desc">Habits left</div>
@@ -123,7 +123,7 @@ const Dashboard = () => {
         <div className="stat rounded-box bg-base-100 shadow-sm">
           <div className="stat-title">Score</div>
           <div className="stat-value">
-            {analytics?.completionPercentage || 0}%
+            {analytics?.overall || 0}%
           </div>
           <div className="stat-desc">Daily completion</div>
         </div>
