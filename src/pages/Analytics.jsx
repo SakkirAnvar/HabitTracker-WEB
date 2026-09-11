@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import MonthlyChart from "../components/analytics/MonthlyChart";
-import CalendarHeatmap from "../components/analytics/CalenderHeatMap";
 
 import {
   fetchDailyAnalytics,
@@ -10,10 +8,17 @@ import {
   fetchCalendarAnalytics,
 } from "../redux/analyticSlice";
 
+import { fetchHabits } from "../redux/habitSlice";
+
 import WeeklyChart from "../components/analytics/WeeklyChart";
+import MonthlyChart from "../components/analytics/MonthlyChart";
+import CalendarHeatmap from "../components/analytics/CalenderHeatMap";
+import HabitStreak from "../components/analytics/HabitStreak";
 
 const Analytics = () => {
   const dispatch = useDispatch();
+
+  // ================= ANALYTICS STATE =================
 
   const {
     daily,
@@ -32,22 +37,31 @@ const Analytics = () => {
     calendarError,
   } = useSelector((store) => store.analytic);
 
-  /* ================= FETCH ANALYTICS ================= */
+  // ================= HABIT STATE =================
+
+  const { habits, status: habitStatus } = useSelector((store) => store.habit);
+
+  // ================= FETCH DATA =================
 
   useEffect(() => {
     dispatch(fetchDailyAnalytics());
     dispatch(fetchWeeklyAnalytics());
     dispatch(fetchMonthlyAnalytics());
     dispatch(fetchCalendarAnalytics());
-  }, [dispatch]);
 
-  /* ================= LOADING ================= */
+    if (habitStatus === "idle") {
+      dispatch(fetchHabits());
+    }
+  }, [dispatch, habitStatus]);
+
+  // ================= LOADING =================
 
   const isLoading =
     dailyStatus === "loading" ||
     weeklyStatus === "loading" ||
     monthlyStatus === "loading" ||
-    calendarStatus === "loading";
+    calendarStatus === "loading" ||
+    habitStatus === "loading";
 
   if (isLoading) {
     return (
@@ -56,6 +70,8 @@ const Analytics = () => {
       </div>
     );
   }
+
+  // ================= RENDER =================
 
   return (
     <div className="space-y-6">
@@ -69,7 +85,7 @@ const Analytics = () => {
         </p>
       </div>
 
-      {/* ================= DAILY OVERVIEW ================= */}
+      {/* ================= DAILY SUMMARY ================= */}
 
       {dailyError && (
         <div className="alert alert-error">
@@ -82,7 +98,7 @@ const Analytics = () => {
           <h2 className="mb-3 text-lg font-semibold">Today</h2>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {/* Overall */}
+            {/* Completion */}
 
             <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
               <p className="text-sm text-base-content/60">Completion</p>
@@ -123,7 +139,7 @@ const Analytics = () => {
         </section>
       )}
 
-      {/* ================= CATEGORY PROGRESS ================= */}
+      {/* ================= CATEGORY SUMMARY ================= */}
 
       {daily?.categories && (
         <section>
@@ -133,18 +149,18 @@ const Analytics = () => {
             {Object.entries(daily.categories).map(([category, stats]) => (
               <div
                 key={category}
-                className="rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm"
+                className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium capitalize">{category}</h3>
+                  <h3 className="font-semibold capitalize">{category}</h3>
 
-                  <span className="text-sm font-semibold">
+                  <span className="text-sm font-semibold text-primary">
                     {stats.percentage}%
                   </span>
                 </div>
 
                 <progress
-                  className="progress progress-primary mt-3 w-full"
+                  className="progress progress-primary mt-4 w-full"
                   value={stats.percentage}
                   max="100"
                 />
@@ -172,7 +188,7 @@ const Analytics = () => {
         </section>
       )}
 
-      {/* ================= MONTHLY PLACEHOLDER ================= */}
+      {/* ================= MONTHLY ================= */}
 
       {monthlyError && (
         <div className="alert alert-error">
@@ -186,7 +202,7 @@ const Analytics = () => {
         </section>
       )}
 
-      {/* ================= CALENDAR PLACEHOLDER ================= */}
+      {/* ================= CALENDAR ================= */}
 
       {calendarError && (
         <div className="alert alert-error">
@@ -197,6 +213,14 @@ const Analytics = () => {
       {calendar && (
         <section>
           <CalendarHeatmap data={calendar} />
+        </section>
+      )}
+
+      {/* ================= HABIT STREAK ================= */}
+
+      {habits.length > 0 && (
+        <section>
+          <HabitStreak habits={habits} />
         </section>
       )}
     </div>
