@@ -12,6 +12,7 @@ import Habits from "./pages/Habits";
 import Goals from "./pages/Goals";
 import Journal from "./pages/Journal";
 import Analytics from "./pages/Analytics";
+import Profile from "./pages/Profile";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -47,6 +48,7 @@ const App = () => {
           <Route path="/goals" element={<Goals />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>
