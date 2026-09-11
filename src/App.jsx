@@ -13,6 +13,7 @@ import Goals from "./pages/Goals";
 import Journal from "./pages/Journal";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -49,6 +50,7 @@ const App = () => {
           <Route path="/journal" element={<Journal />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>
