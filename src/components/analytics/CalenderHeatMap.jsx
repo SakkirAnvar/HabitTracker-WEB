@@ -31,12 +31,6 @@ const CalendarHeatmap = ({ data }) => {
     });
   };
 
-  const getDayName = (date) => {
-    return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
-      weekday: "short",
-    });
-  };
-
   const completedDays = data.calendar.filter(
     (day) => day.status === "completed",
   ).length;
