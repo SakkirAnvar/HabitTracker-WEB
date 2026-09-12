@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import HelpAndSupport from "./pages/HelpAndSupport";
+import ErrorPage from "./pages/ErrorPage";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -53,6 +54,8 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/help" element={<HelpAndSupport />} />
+          <Route path="/*" element={<ErrorPage />} />
+          
         </Route>
       </Routes>
     </BrowserRouter>

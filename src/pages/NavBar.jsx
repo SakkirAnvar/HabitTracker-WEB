@@ -1,12 +1,15 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/userSlice";
+import { BACKEND_URL } from "../utils/constants";
 
 const NavBar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const user = useSelector((state) => state.user.user);
+
+  const profilePhoto = BACKEND_URL + user.profilePhoto
 
   const handleLogout = async () => {
     try {
@@ -106,7 +109,7 @@ const NavBar = () => {
                 <div className="w-9 rounded-full ring-1 ring-base-300">
                   <img
                     src={
-                      user?.photoUrl ||
+                      profilePhoto ||
                       "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
                     }
                     alt="Profile"
@@ -156,7 +159,7 @@ const NavBar = () => {
                     <div className="w-11 rounded-full">
                       <img
                         src={
-                          user?.photoUrl ||
+                          profilePhoto ||
                           "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
                         }
                         alt="Profile"
