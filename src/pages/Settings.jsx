@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { changePassword } from "../redux/userSlice";
-import { applyTheme, getStoredTheme } from "../utils/theme";
+import { changePassword, changeTheme } from "../redux/userSlice";
+import { applyTheme } from "../utils/theme";
 
 const Settings = () => {
   const dispatch = useDispatch();
 
-  const { status, error } = useSelector((store) => store.user);
+  const { user, status, error } = useSelector((store) => store.user);
 
-  const [theme, setTheme] = useState(() => getStoredTheme());
+ 
+const [theme, setTheme] = useState(
+  user?.theme || "system"
+);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -17,10 +20,18 @@ const Settings = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [formError, setFormError] = useState("");
 
-  const handleThemeChange = (newTheme) => {
+  const handleThemeChange = async (newTheme) => {
+  try {
     setTheme(newTheme);
+
     applyTheme(newTheme);
-  };
+
+    await dispatch(changeTheme(newTheme)).unwrap();
+  } catch (err) {
+    setTheme(theme);
+    applyTheme(theme);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();

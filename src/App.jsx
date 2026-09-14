@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { applyTheme } from "./utils/theme";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { checkAuth } from "./redux/userSlice";
@@ -19,12 +20,19 @@ import ErrorPage from "./pages/ErrorPage";
 
 const App = () => {
   const dispatch = useDispatch();
+  const user = useSelector((store) => store.user.user);
 
   const initialized = useSelector((state) => state.user.initialized);
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (user?.theme) {
+      applyTheme(user.theme);
+    }
+  }, [user?.theme]);
 
   if (!initialized) {
     return (

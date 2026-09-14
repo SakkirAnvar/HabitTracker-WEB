@@ -6,6 +6,7 @@ import {
   logoutApi,
   signupApi,
   updateProfileApi,
+  updateTheme,
 } from "../api/authApi";
 export const checkAuth = createAsyncThunk(
   "user/checkAuth",
@@ -109,6 +110,19 @@ export const changePassword = createAsyncThunk(
   },
 );
 
+export const changeTheme = createAsyncThunk(
+  "user/changeTheme",
+  async (theme, { rejectWithValue }) => {
+    try {
+      return await updateTheme(theme);
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update theme",
+      );
+    }
+  },
+);
+
 const initialState = {
   user: null,
   status: "loading",
@@ -205,6 +219,10 @@ const userSlice = createSlice({
 
       .addCase(changePassword.rejected, (state, action) => {
         state.error = action.payload;
+      })
+
+      .addCase(changeTheme.fulfilled, (state, action) => {
+        state.user = action.payload.data;
       });
   },
 });

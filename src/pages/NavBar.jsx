@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/userSlice";
 import { BACKEND_URL } from "../utils/constants";
+import { applyTheme } from "../utils/theme";
 
 const NavBar = () => {
   const dispatch = useDispatch();
@@ -9,17 +10,17 @@ const NavBar = () => {
 
   const user = useSelector((state) => state.user.user);
 
-  const profilePhoto = BACKEND_URL + user.profilePhoto
+  const profilePhoto = BACKEND_URL + user.profilePhoto;
 
   const handleLogout = async () => {
     try {
       await dispatch(logout()).unwrap();
+      applyTheme("system");
       navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-
 
   return (
     <div className="w-full ">
