@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { AVEN_LOGO } from "../utils/constants";
 
 const ErrorPage = () => {
   const location = useLocation();
@@ -6,27 +7,29 @@ const ErrorPage = () => {
   const is404 = location.pathname !== "/error";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-base-200 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-base-200 px-4 text-base-content">
       <div className="w-full max-w-lg text-center">
-        {/* Logo / Brand */}
+        {/* ================= BRAND ================= */}
+
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-xl font-bold"
+          className="inline-flex items-center transition-opacity hover:opacity-90"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-content">
-            A
-          </span>
-
-          <span className="tracking-tight">aven</span>
+          <img
+            src={AVEN_LOGO}
+            alt="Aven - Build your better days"
+            className="w-36.25 h-auto object-contain"
+          />
         </Link>
 
-        {/* Error */}
+        {/* ================= ERROR ================= */}
+
         <div className="mt-12">
           <p className="text-7xl font-bold tracking-tight text-primary sm:text-8xl">
             {is404 ? "404" : "500"}
           </p>
 
-          <h1 className="mt-5 text-2xl font-bold sm:text-3xl">
+          <h1 className="mt-5 text-2xl font-bold text-base-content sm:text-3xl">
             {is404 ? "Page not found" : "Something went wrong"}
           </h1>
 
@@ -36,7 +39,8 @@ const ErrorPage = () => {
               : "Something unexpected happened. Please try again in a moment."}
           </p>
 
-          {/* Actions */}
+          {/* ================= ACTIONS ================= */}
+
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
@@ -52,7 +56,8 @@ const ErrorPage = () => {
           </div>
         </div>
 
-        {/* Bottom */}
+        {/* ================= FOOTER ================= */}
+
         <p className="mt-16 text-xs text-base-content/40">
           Aven · Build your better days.
         </p>

@@ -1,46 +1,109 @@
 @import "tailwindcss";
+
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
+  themes:
+    light --default,
+    dark --prefersdark;
 }
+
+/* ================================
+   AVEN LIGHT THEME
+================================ */
 @plugin "daisyui/theme" {
-  name: "habitly";
+  name: "light";
   default: true;
   prefersdark: false;
   color-scheme: light;
 
   --color-base-100: #ffffff;
-  --color-base-200: #f6f7f9;
-  --color-base-300: #e2e8f0;
+  --color-base-200: #f7f9f8;
+  --color-base-300: #dce8e4;
+  --color-base-content: #12352f;
 
-  --color-base-content: #172554;
-
-  --color-primary: #243db8;
+  --color-primary: #075e4b;
   --color-primary-content: #ffffff;
 
-  --color-secondary: #9adfcb;
-  --color-secondary-content: #172554;
+  --color-secondary: #35b779;
+  --color-secondary-content: #ffffff;
 
-  --color-accent: #dcd5f8;
-  --color-accent-content: #172554;
+  --color-accent: #e8f5f0;
+  --color-accent-content: #075e4b;
 
-  --color-neutral: #1e293b;
+  --color-neutral: #12352f;
   --color-neutral-content: #ffffff;
 
-  --color-info: #60a5fa;
+  --color-info: #5b9bd5;
   --color-info-content: #ffffff;
 
-  --color-success: #8dd9c3;
-  --color-success-content: #172554;
+  --color-success: #35b779;
+  --color-success-content: #ffffff;
 
-  --color-warning: #f2c66d;
-  --color-warning-content: #172554;
+  --color-warning: #e8b84a;
+  --color-warning-content: #12352f;
 
-  --color-error: #e58a8a;
+  --color-error: #d96c6c;
   --color-error-content: #ffffff;
 
   --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+
+  --border: 1px;
+}
+
+/* ================================
+   AVEN DARK THEME
+================================ */
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --color-base-100: #151a18;
+  --color-base-200: #0f1312;
+  --color-base-300: #252d29;
+
+  /* Text */
+  --color-base-content: #e7ece9;
+
+  /* Aven primary */
+  --color-primary: #5cc99a;
+  --color-primary-content: #092019;
+
+  /* Secondary */
+  --color-secondary: #8fd3b3;
+  --color-secondary-content: #10251c;
+
+  /* Soft Aven accent */
+  --color-accent: #20362d;
+  --color-accent-content: #a8dfc3;
+
+  /* Neutral */
+  --color-neutral: #d6ded9;
+  --color-neutral-content: #151a18;
+
+  /* Info */
+  --color-info: #82b8d9;
+  --color-info-content: #0b1a22;
+
+  /* Success */
+  --color-success: #62c995;
+  --color-success-content: #092019;
+
+  /* Warning */
+  --color-warning: #d9b96e;
+  --color-warning-content: #211b0c;
+
+  /* Error */
+  --color-error: #de8585;
+  --color-error-content: #260f0f;
+
+  /* Shape */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
 
   --border: 1px;
 }

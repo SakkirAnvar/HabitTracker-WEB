@@ -9,7 +9,6 @@ const Profile = () => {
   const { user, status, error } = useSelector((store) => store.user);
 
   const [firstName, setFirstName] = useState(user?.firstName || "");
-
   const [lastName, setLastName] = useState(user?.lastName || "");
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -28,6 +27,7 @@ const Profile = () => {
   };
 
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+
   const [photoPreview, setPhotoPreview] = useState(() =>
     getProfilePhotoUrl(user?.profilePhoto),
   );
@@ -35,7 +35,13 @@ const Profile = () => {
   if (!user) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
-        <p className="text-base-content/60">Unable to load profile.</p>
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-2xl">
+          👤
+        </div>
+
+        <p className="font-medium text-base-content">
+          Unable to load profile.
+        </p>
 
         <p className="text-sm text-base-content/40">
           User information is not available.
@@ -43,6 +49,10 @@ const Profile = () => {
       </div>
     );
   }
+
+  // =========================
+  // Submit
+  // =========================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +81,6 @@ const Profile = () => {
       await dispatch(updateProfile(formData)).unwrap();
 
       setSuccessMessage("Profile updated successfully.");
-
       setSelectedPhoto(null);
     } catch (err) {
       setFormError(
@@ -81,6 +90,10 @@ const Profile = () => {
       );
     }
   };
+
+  // =========================
+  // Photo change
+  // =========================
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -100,6 +113,7 @@ const Profile = () => {
     }
 
     setFormError("");
+    setSuccessMessage("");
 
     setSelectedPhoto(file);
 
@@ -111,52 +125,104 @@ const Profile = () => {
   const isUpdating = status === "loading";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">Profile</h1>
+    <div className="mx-auto w-full max-w-3xl space-y-6">
+      {/* ================= HEADER ================= */}
 
-        <p className="mt-1 text-sm text-base-content/60">
-          Manage your personal information.
+      <section>
+        <div className="mb-2 flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-lg">
+            👤
+          </span>
+
+          <span className="text-sm font-medium text-primary">
+            Account
+          </span>
+        </div>
+
+        <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+          Profile
+        </h1>
+
+        <p className="mt-1 text-sm leading-6 text-base-content/60 sm:text-base">
+          Manage your personal information and profile photo.
         </p>
-      </div>
+      </section>
 
-      {/* Profile Card */}
-      <div className="rounded-xl border border-base-300 bg-base-100 shadow-sm">
-        <div className="border-b border-base-300 p-5">
-          <h2 className="text-lg font-semibold">Personal Information</h2>
+      {/* ================= PROFILE CARD ================= */}
+
+      <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+        {/* Card Header */}
+
+        <div className="border-b border-base-300 p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-base-content">
+            Personal Information
+          </h2>
 
           <p className="mt-1 text-sm text-base-content/60">
-            Update the name associated with your account.
+            Update the information associated with your Aven account.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-5">
-          {/* Error */}
+        <form onSubmit={handleSubmit}>
+          {/* ================= MESSAGES ================= */}
+
           {(formError || error) && (
-            <div className="alert alert-error">
+            <div className="mx-5 mt-5 flex items-center gap-3 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error sm:mx-6">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m0 3.75h.008M10.29 3.86l-7.5 13A2 2 0 004.52 20h14.96a2 2 0 001.73-3.14l-7.5-13a2 2 0 00-3.46 0z"
+                />
+              </svg>
+
               <span>{formError || error}</span>
             </div>
           )}
 
-          {/* Success */}
           {successMessage && (
-            <div className="alert alert-success">
+            <div className="mx-5 mt-5 flex items-center gap-3 rounded-xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-medium text-success sm:mx-6">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m5 12 4 4L19 6"
+                />
+              </svg>
+
               <span>{successMessage}</span>
             </div>
           )}
 
-          {/* Profile Photo */}
-          <div className="border-b border-base-300 p-5">
-            <h2 className="text-lg font-semibold">Profile Photo</h2>
+          {/* ================= PROFILE PHOTO ================= */}
+
+          <div className="border-b border-base-300 p-5 sm:p-6">
+            <h3 className="font-semibold text-base-content">
+              Profile Photo
+            </h3>
 
             <p className="mt-1 text-sm text-base-content/60">
               Choose a profile photo that represents you.
             </p>
 
-            <div className="mt-5 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
               {/* Avatar */}
-              <div className="avatar">
+
+              <div className="avatar shrink-0">
                 <div className="w-24 rounded-full ring-2 ring-primary/20 ring-offset-2 ring-offset-base-100">
                   <img
                     src={photoPreview}
@@ -170,6 +236,7 @@ const Profile = () => {
               </div>
 
               {/* Upload */}
+
               <div>
                 <label
                   htmlFor="profilePhoto"
@@ -191,78 +258,92 @@ const Profile = () => {
                 </p>
 
                 {selectedPhoto && (
-                  <p className="mt-1 text-xs text-primary">
-                    {selectedPhoto.name}
-                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-success" />
+
+                    <p className="max-w-xs truncate text-xs font-medium text-primary">
+                      {selectedPhoto.name}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Names */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* ================= FORM FIELDS ================= */}
+
+          <div className="space-y-5 p-5 sm:p-6">
+            {/* Names */}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="firstName"
+                  className="mb-2 block text-sm font-medium text-base-content"
+                >
+                  First Name
+                </label>
+
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="input w-full border-base-300 bg-base-100 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+                  maxLength={50}
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="lastName"
+                  className="mb-2 block text-sm font-medium text-base-content"
+                >
+                  Last Name
+                </label>
+
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="input w-full border-base-300 bg-base-100 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+                  maxLength={50}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+
             <div>
               <label
-                htmlFor="firstName"
-                className="mb-2 block text-sm font-medium"
+                htmlFor="email"
+                className="mb-2 block text-sm font-medium text-base-content"
               >
-                First Name
+                Email
               </label>
 
               <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="input input-bordered w-full"
-                maxLength={50}
-                required
+                id="email"
+                type="email"
+                value={user.emailId || ""}
+                className="input w-full border-base-300 bg-base-200 text-base-content/60"
+                disabled
               />
-            </div>
 
-            <div>
-              <label
-                htmlFor="lastName"
-                className="mb-2 block text-sm font-medium"
-              >
-                Last Name
-              </label>
-
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="input input-bordered w-full"
-                maxLength={50}
-                required
-              />
+              <p className="mt-1.5 text-xs text-base-content/50">
+                Your email address cannot be changed here.
+              </p>
             </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium">
-              Email
-            </label>
+          {/* ================= ACTIONS ================= */}
 
-            <input
-              id="email"
-              type="email"
-              value={user.emailId || ""}
-              className="input input-bordered w-full bg-base-200"
-              disabled
-            />
-
-            <p className="mt-1 text-xs text-base-content/50">
-              Your email address cannot be changed here.
-            </p>
-          </div>
-
-          {/* Submit */}
-          <div className="flex justify-end">
+          <div className="flex justify-end border-t border-base-300 px-5 py-4 sm:px-6">
             <button
               type="submit"
               className="btn btn-primary"
@@ -279,24 +360,49 @@ const Profile = () => {
             </button>
           </div>
         </form>
-      </div>
+      </section>
 
-      {/* Account Information */}
-      <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Account Information</h2>
+      {/* ================= ACCOUNT INFORMATION ================= */}
 
-        <div className="mt-4 space-y-3 text-sm">
-          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-            <span className="text-base-content/60">Email</span>
-
-            <span className="font-medium">{user.emailId}</span>
+      <section className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-lg">
+            ℹ️
           </div>
 
-          {user.createdAt && (
-            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-              <span className="text-base-content/60">Member since</span>
+          <div>
+            <h2 className="text-lg font-semibold text-base-content">
+              Account Information
+            </h2>
 
-              <span className="font-medium">
+            <p className="text-sm text-base-content/50">
+              Basic information about your Aven account.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 divide-y divide-base-300 rounded-xl border border-base-300">
+          {/* Email */}
+
+          <div className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-sm text-base-content/60">
+              Email
+            </span>
+
+            <span className="text-sm font-medium text-base-content">
+              {user.emailId}
+            </span>
+          </div>
+
+          {/* Member Since */}
+
+          {user.createdAt && (
+            <div className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-sm text-base-content/60">
+                Member since
+              </span>
+
+              <span className="text-sm font-medium text-base-content">
                 {new Date(user.createdAt).toLocaleDateString(undefined, {
                   day: "numeric",
                   month: "short",
@@ -306,6 +412,14 @@ const Profile = () => {
             </div>
           )}
         </div>
+      </section>
+
+      {/* ================= FOOTER ================= */}
+
+      <div className="pb-4 text-center">
+        <p className="text-xs text-base-content/40">
+          Aven · Build your better days.
+        </p>
       </div>
     </div>
   );

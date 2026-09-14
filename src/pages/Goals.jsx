@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { fetchGoals, removeGoal } from "../redux/goalSlice";
-
 import { fetchHabits } from "../redux/habitSlice";
 
 import GoalForm from "../components/goals/GoalForm";
@@ -22,6 +21,10 @@ const Goals = () => {
     dispatch(fetchGoals());
     dispatch(fetchHabits());
   }, [dispatch]);
+
+  // =========================
+  // Handlers
+  // =========================
 
   const handleCreate = () => {
     setEditingGoal(null);
@@ -65,36 +68,86 @@ const Goals = () => {
     setEditingGoal(null);
   };
 
+  // =========================
+  // Loading
+  // =========================
+
   if (status === "loading") {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="loading loading-spinner loading-lg" />
+        <div className="flex flex-col items-center gap-3">
+          <span className="loading loading-spinner loading-lg text-primary" />
+
+          <p className="text-sm text-base-content/60">Loading your goals...</p>
+        </div>
       </div>
     );
   }
 
+  // =========================
+  // UI
+  // =========================
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">Goals</h1>
+      {/* ================= HEADER ================= */}
 
-          <p className="mt-1 text-sm text-base-content/60">
-            Set meaningful goals and track your progress.
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-lg">
+              🎯
+            </span>
+
+            <span className="text-sm font-medium text-primary">
+              Personal Growth
+            </span>
+          </div>
+
+          <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+            Goals
+          </h1>
+
+          <p className="mt-1 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
+            Set meaningful goals and turn your intentions into consistent
+            progress.
           </p>
         </div>
 
         {!showForm && (
-          <button onClick={handleCreate} className="btn btn-primary">
-            + Create Goal
+          <button
+            type="button"
+            onClick={handleCreate}
+            className="btn btn-primary shrink-0"
+          >
+            <span className="text-lg leading-none">+</span>
+            Create Goal
           </button>
         )}
-      </div>
+      </section>
 
-      {/* Error */}
+      {/* ================= ERROR ================= */}
+
       {error && (
-        <div className="alert alert-error">
+        <div
+          role="alert"
+          className="flex items-center gap-3 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v3.75m0 3.75h.008M10.29 3.86l-7.5 13A2 2 0 004.52 20h14.96a2 2 0 001.73-3.14l-7.5-13a2 2 0 00-3.46 0z"
+            />
+          </svg>
+
           <span>
             {typeof error === "string"
               ? error
@@ -103,7 +156,8 @@ const Goals = () => {
         </div>
       )}
 
-      {/* Goal Form */}
+      {/* ================= GOAL FORM ================= */}
+
       {showForm && (
         <GoalForm
           key={editingGoal?._id || "new"}
@@ -113,14 +167,25 @@ const Goals = () => {
         />
       )}
 
-      {/* Detailed Progress */}
-      {viewingGoal && !showForm && (
-        <div className="rounded-xl border border-base-300 bg-base-100 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">{viewingGoal.title}</h2>
+      {/* ================= DETAILED PROGRESS ================= */}
 
-              <p className="text-sm text-base-content/60">
+      {viewingGoal && !showForm && (
+        <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+          {/* Progress Header */}
+
+          <div className="flex flex-col gap-3 border-b border-base-300 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  🎯
+                </span>
+
+                <h2 className="truncate text-lg font-semibold text-base-content">
+                  {viewingGoal.title}
+                </h2>
+              </div>
+
+              <p className="mt-1 pl-10 text-sm text-base-content/60">
                 Detailed goal progress
               </p>
             </div>
@@ -128,48 +193,85 @@ const Goals = () => {
             <button
               type="button"
               onClick={() => setViewingGoal(null)}
-              className="btn btn-sm btn-ghost"
+              className="btn btn-sm btn-ghost self-start sm:self-auto"
             >
               Close
             </button>
           </div>
 
-          <GoalProgress goalId={viewingGoal._id} />
-        </div>
+          {/* Progress Content */}
+
+          <div className="p-5">
+            <GoalProgress goalId={viewingGoal._id} />
+          </div>
+        </section>
       )}
 
-      {/* Goals */}
+      {/* ================= GOALS LIST ================= */}
+
       {!showForm && (
-        <>
+        <section>
           {goals?.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              {goals.map((goal) => (
-                <GoalCard
-                  key={goal._id}
-                  goal={goal}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onViewProgress={handleViewProgress}
-                />
-              ))}
-            </div>
+            <>
+              {/* Section heading */}
+
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-base-content">
+                    Your Goals
+                  </h2>
+
+                  <p className="mt-0.5 text-sm text-base-content/60">
+                    Keep moving forward, one milestone at a time.
+                  </p>
+                </div>
+
+                <span className="badge badge-ghost">
+                  {goals.length} {goals.length === 1 ? "goal" : "goals"}
+                </span>
+              </div>
+
+              {/* Goal cards */}
+
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                {goals.map((goal) => (
+                  <GoalCard
+                    key={goal._id}
+                    goal={goal}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onViewProgress={handleViewProgress}
+                  />
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center">
-              <div className="text-5xl">🎯</div>
+            /* ================= EMPTY STATE ================= */
 
-              <h2 className="mt-4 text-xl font-semibold">No goals yet</h2>
+            <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-12 text-center shadow-sm">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-3xl">
+                🎯
+              </div>
 
-              <p className="mt-2 text-sm text-base-content/60">
+              <h2 className="mt-5 text-xl font-semibold text-base-content">
+                No goals yet
+              </h2>
+
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-base-content/60">
                 Create your first goal and start working toward something
                 meaningful.
               </p>
 
-              <button onClick={handleCreate} className="btn btn-primary mt-5">
+              <button
+                type="button"
+                onClick={handleCreate}
+                className="btn btn-primary mt-6"
+              >
                 Create Your First Goal
               </button>
             </div>
           )}
-        </>
+        </section>
       )}
     </div>
   );

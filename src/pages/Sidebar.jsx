@@ -12,7 +12,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <path
             strokeLinecap="round"
@@ -33,7 +33,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <circle cx="12" cy="12" r="9" />
           <path
@@ -55,7 +55,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <circle cx="12" cy="12" r="8.5" />
           <circle cx="12" cy="12" r="4.5" />
@@ -74,7 +74,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <path
             strokeLinecap="round"
@@ -95,7 +95,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <path
             strokeLinecap="round"
@@ -128,7 +128,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <circle cx="12" cy="8" r="3.5" />
           <path
@@ -150,7 +150,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <path
             strokeLinecap="round"
@@ -176,7 +176,7 @@ const Sidebar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.8"
           stroke="currentColor"
-          className="w-5 h-5"
+          className="h-5 w-5"
         >
           <circle cx="12" cy="12" r="9" />
           <path
@@ -184,29 +184,55 @@ const Sidebar = () => {
             strokeLinejoin="round"
             d="M9.75 9a2.25 2.25 0 114.13 1.3c-.55.76-1.88 1.2-1.88 2.7"
           />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5h.01" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 16.5h.01"
+          />
         </svg>
       ),
     },
   ];
 
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 ${
-      isActive
-        ? "bg-[#EEF2FF] text-[#243DB8] font-semibold"
-        : "text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#172554]"
-    }`;
+    `
+      flex w-full items-center gap-3
+      rounded-xl px-4 py-3
+      transition-all duration-200
+      ${
+        isActive
+          ? "bg-primary/10 text-primary font-semibold"
+          : "text-base-content/60 hover:bg-base-200 hover:text-base-content"
+      }
+    `;
 
   return (
-    <aside className="hidden md:flex w-64 lg:w-68 pt-4 h-[calc(100vh-2rem)] flex-col bg-base-100 border-r border-base-200">
+    <aside
+      className="
+        hidden
+        h-[calc(100vh-2rem)]
+        w-64
+        flex-col
+        border-r
+        border-base-300
+        bg-base-100
+        pt-4
+        md:flex
+        lg:w-68
+      "
+    >
       {/* ================= NAVIGATION ================= */}
 
-      <div className="flex-1 px-4 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-4">
         {/* Main navigation */}
 
         <nav className="space-y-1">
           {navItems.map((item) => (
-            <NavLink key={item.path} to={item.path} className={linkClass}>
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={linkClass}
+            >
               <span className="shrink-0">{item.icon}</span>
 
               <span>{item.name}</span>
@@ -216,13 +242,17 @@ const Sidebar = () => {
 
         {/* Divider */}
 
-        <div className="my-7 border-t border-base-200" />
+        <div className="my-7 border-t border-base-300" />
 
         {/* Account */}
 
         <nav className="space-y-1">
           {accountItems.map((item) => (
-            <NavLink key={item.path} to={item.path} className={linkClass}>
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={linkClass}
+            >
               <span className="shrink-0">{item.icon}</span>
 
               <span>{item.name}</span>
@@ -234,19 +264,62 @@ const Sidebar = () => {
       {/* ================= BOTTOM PROMO ================= */}
 
       <div className="p-5">
-        <div className="relative overflow-hidden rounded-2xl bg-[#E8F7F2] p-5 min-h-48">
-          {/* Decorative circle */}
+        <div
+          className="
+            relative
+            min-h-48
+            overflow-hidden
+            rounded-2xl
+            border
+            border-primary/10
+            bg-primary/10
+            p-5
+          "
+        >
+          {/* Decorative circles */}
 
-          <div className="absolute -bottom-12 -right-12 w-36 h-36 rounded-full bg-[#CDEFE4]" />
+          <div
+            className="
+              absolute
+              -bottom-12
+              -right-12
+              h-36
+              w-36
+              rounded-full
+              bg-primary/10
+            "
+          />
 
-          <div className="absolute bottom-[-30px] left-[-30px] w-24 h-24 rounded-full bg-[#DDF3F1]" />
+          <div
+            className="
+              absolute
+              bottom-[-30px]
+              left-[-30px]
+              h-24
+              w-24
+              rounded-full
+              bg-secondary/10
+            "
+          />
 
           {/* Plant */}
 
-          <div className="absolute right-5 top-7 text-5xl">🌱</div>
+          <div
+            className="
+              absolute
+              right-5
+              top-7
+              text-5xl
+              drop-shadow-sm
+            "
+          >
+            🌱
+          </div>
+
+          {/* Content */}
 
           <div className="relative z-10">
-            <h3 className="text-xl font-bold leading-tight text-[#172554]">
+            <h3 className="text-xl font-bold leading-tight text-base-content">
               Small
               <br />
               Steps
@@ -254,7 +327,7 @@ const Sidebar = () => {
               Big Changes
             </h3>
 
-            <p className="mt-4 text-sm leading-5 text-[#64748B] max-w-36">
+            <p className="mt-4 max-w-36 text-sm leading-5 text-base-content/60">
               Consistency creates a better you.
             </p>
           </div>

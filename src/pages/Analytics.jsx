@@ -18,30 +18,22 @@ import HabitStreak from "../components/analytics/HabitStreak";
 const Analytics = () => {
   const dispatch = useDispatch();
 
-  // ================= ANALYTICS STATE =================
-
   const {
     daily,
     weekly,
     monthly,
     calendar,
-
     dailyStatus,
     weeklyStatus,
     monthlyStatus,
     calendarStatus,
-
     dailyError,
     weeklyError,
     monthlyError,
     calendarError,
   } = useSelector((store) => store.analytic);
 
-  // ================= HABIT STATE =================
-
   const { habits, status: habitStatus } = useSelector((store) => store.habit);
-
-  // ================= FETCH DATA =================
 
   useEffect(() => {
     dispatch(fetchDailyAnalytics());
@@ -54,8 +46,6 @@ const Analytics = () => {
     }
   }, [dispatch, habitStatus]);
 
-  // ================= LOADING =================
-
   const isLoading =
     dailyStatus === "loading" ||
     weeklyStatus === "loading" ||
@@ -66,26 +56,26 @@ const Analytics = () => {
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <span className="loading loading-spinner loading-lg" />
+        <span className="loading loading-spinner loading-lg text-primary" />
       </div>
     );
   }
 
-  // ================= RENDER =================
-
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       {/* ================= HEADER ================= */}
 
       <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">Analytics</h1>
+        <h1 className="text-2xl font-bold text-base-content sm:text-3xl">
+          Analytics
+        </h1>
 
         <p className="mt-1 text-sm text-base-content/60">
           Understand your consistency and track your growth.
         </p>
       </div>
 
-      {/* ================= DAILY SUMMARY ================= */}
+      {/* ================= DAILY ERROR ================= */}
 
       {dailyError && (
         <div className="alert alert-error">
@@ -93,17 +83,23 @@ const Analytics = () => {
         </div>
       )}
 
+      {/* ================= DAILY SUMMARY ================= */}
+
       {daily && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">Today</h2>
+          <h2 className="mb-3 text-lg font-semibold text-base-content">
+            Today
+          </h2>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Completion */}
 
-            <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
               <p className="text-sm text-base-content/60">Completion</p>
 
-              <p className="mt-2 text-3xl font-bold">{daily.overall}%</p>
+              <p className="mt-2 text-3xl font-bold text-base-content">
+                {daily.overall}%
+              </p>
 
               <progress
                 className="progress progress-primary mt-3 w-full"
@@ -114,10 +110,12 @@ const Analytics = () => {
 
             {/* Completed */}
 
-            <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
               <p className="text-sm text-base-content/60">Completed</p>
 
-              <p className="mt-2 text-3xl font-bold">{daily.completed}</p>
+              <p className="mt-2 text-3xl font-bold text-base-content">
+                {daily.completed}
+              </p>
 
               <p className="mt-1 text-sm text-base-content/50">
                 of {daily.expected} expected
@@ -126,10 +124,12 @@ const Analytics = () => {
 
             {/* Expected */}
 
-            <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
               <p className="text-sm text-base-content/60">Expected Habits</p>
 
-              <p className="mt-2 text-3xl font-bold">{daily.expected}</p>
+              <p className="mt-2 text-3xl font-bold text-base-content">
+                {daily.expected}
+              </p>
 
               <p className="mt-1 text-sm text-base-content/50">
                 scheduled today
@@ -143,16 +143,20 @@ const Analytics = () => {
 
       {daily?.categories && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">Today's Categories</h2>
+          <h2 className="mb-3 text-lg font-semibold text-base-content">
+            Today's Categories
+          </h2>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Object.entries(daily.categories).map(([category, stats]) => (
               <div
                 key={category}
-                className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm"
+                className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
               >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold capitalize">{category}</h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-semibold capitalize text-base-content">
+                    {category}
+                  </h3>
 
                   <span className="text-sm font-semibold text-primary">
                     {stats.percentage}%
@@ -182,11 +186,7 @@ const Analytics = () => {
         </div>
       )}
 
-      {weekly && (
-        <section>
-          <WeeklyChart data={weekly} />
-        </section>
-      )}
+      {weekly && <WeeklyChart data={weekly} />}
 
       {/* ================= MONTHLY ================= */}
 
@@ -196,11 +196,7 @@ const Analytics = () => {
         </div>
       )}
 
-      {monthly && (
-        <section>
-          <MonthlyChart data={monthly} />
-        </section>
-      )}
+      {monthly && <MonthlyChart data={monthly} />}
 
       {/* ================= CALENDAR ================= */}
 
@@ -210,19 +206,11 @@ const Analytics = () => {
         </div>
       )}
 
-      {calendar && (
-        <section>
-          <CalendarHeatmap data={calendar} />
-        </section>
-      )}
+      {calendar && <CalendarHeatmap data={calendar} />}
 
       {/* ================= HABIT STREAK ================= */}
 
-      {habits.length > 0 && (
-        <section>
-          <HabitStreak habits={habits} />
-        </section>
-      )}
+      {habits?.length > 0 && <HabitStreak habits={habits} />}
     </div>
   );
 };

@@ -43,39 +43,81 @@ const AttachHabit = ({ goal, onSuccess }) => {
   };
 
   return (
-    <div className="mt-4 rounded-lg border border-base-300 bg-base-200 p-4">
-      <h3 className="mb-3 font-semibold">Attach Habit</h3>
+    <div className="mt-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
+      {/* Header */}
+      <div className="mb-4 flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
+          🌱
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-base-content">Attach a Habit</h3>
+
+          <p className="mt-0.5 text-sm text-base-content/60">
+            Connect a habit to help you make progress toward this goal.
+          </p>
+        </div>
+      </div>
 
       {availableHabits.length === 0 ? (
-        <p className="text-sm text-base-content/60">
-          No available habits to attach.
-        </p>
+        <div className="rounded-xl border border-dashed border-base-300 bg-base-200 px-4 py-5 text-center">
+          <div className="mb-2 text-2xl">🌿</div>
+
+          <p className="text-sm font-medium text-base-content">
+            No available habits
+          </p>
+
+          <p className="mt-1 text-xs text-base-content/60">
+            All your existing habits are already attached to this goal.
+          </p>
+        </div>
       ) : (
-        <>
-          <select
-            value={selectedHabit}
-            onChange={(e) => setSelectedHabit(e.target.value)}
-            className="select select-bordered w-full"
-          >
-            <option value="">Select a habit</option>
+        <div className="space-y-3">
+          {/* Habit Select */}
+          <div>
+            <label
+              htmlFor={`habit-${goal._id}`}
+              className="mb-1.5 block text-sm font-medium text-base-content"
+            >
+              Choose a habit
+            </label>
 
-            {availableHabits.map((habit) => (
-              <option key={habit._id} value={habit._id}>
-                {habit.habitName}
-              </option>
-            ))}
-          </select>
+            <select
+              id={`habit-${goal._id}`}
+              value={selectedHabit}
+              onChange={(e) => {
+                setSelectedHabit(e.target.value);
+                if (error) setError("");
+              }}
+              className="select select-bordered w-full border-base-300 bg-base-100 text-base-content focus:border-primary focus:outline-none"
+            >
+              <option value="">Select a habit</option>
 
-          {error && <p className="mt-2 text-sm text-error">{error}</p>}
+              {availableHabits.map((habit) => (
+                <option key={habit._id} value={habit._id}>
+                  {habit.habitName}
+                </option>
+              ))}
+            </select>
+          </div>
 
+          {/* Error */}
+          {error && (
+            <div className="rounded-xl border border-error/20 bg-error/10 px-3 py-2.5 text-sm font-medium text-error">
+              {error}
+            </div>
+          )}
+
+          {/* Action */}
           <button
             type="button"
             onClick={handleAttach}
-            className="btn btn-primary btn-sm mt-3"
+            disabled={!selectedHabit}
+            className="btn btn-primary btn-sm w-full sm:w-auto"
           >
-            Attach Habit
+            + Attach Habit
           </button>
-        </>
+        </div>
       )}
     </div>
   );

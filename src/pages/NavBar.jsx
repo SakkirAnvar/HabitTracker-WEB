@@ -1,8 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/userSlice";
-import { BACKEND_URL } from "../utils/constants";
+import { AVEN_LOGO, BACKEND_URL } from "../utils/constants";
 import { applyTheme } from "../utils/theme";
+
+const DEFAULT_PROFILE_PHOTO =
+  "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
 
 const NavBar = () => {
   const dispatch = useDispatch();
@@ -10,12 +13,16 @@ const NavBar = () => {
 
   const user = useSelector((state) => state.user.user);
 
-  const profilePhoto = BACKEND_URL + user.profilePhoto;
+  const profilePhoto = user?.profilePhoto
+    ? `${BACKEND_URL}${user.profilePhoto}`
+    : DEFAULT_PROFILE_PHOTO;
 
   const handleLogout = async () => {
     try {
       await dispatch(logout()).unwrap();
+
       applyTheme("system");
+
       navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
@@ -23,109 +30,70 @@ const NavBar = () => {
   };
 
   return (
-    <div className="w-full ">
-      <div className="navbar bg-base-100  shadow-sm border border-base-200 px-4 lg:px-6">
+    <div className="w-full">
+      <div
+        className="
+          navbar
+          min-h-16
+          bg-base-100
+          border-b
+          border-base-300
+          px-4
+          shadow-sm
+          lg:px-6
+        "
+      >
         {/* ================= LOGO ================= */}
 
         <div className="flex-1">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            {/* Logo */}
-            <div className="w-10 h-10 rounded-full bg-[#9ADFCB] flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="w-6 h-6 text-[#243DB8]"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 21C7 18 4 14.5 4 10.5A4.5 4.5 0 018.5 6c1.4 0 2.7.65 3.5 1.7A4.5 4.5 0 0115.5 6 4.5 4.5 0 0120 10.5C20 14.5 17 18 12 21z"
-                />
-              </svg>
-            </div>
-
-            <span className="text-2xl font-bold text-[#172554]">Habitly</span>
+          <Link
+            to="/dashboard"
+            className="flex items-center rounded-lg transition-opacity hover:opacity-90"
+          >
+            <img
+              src={AVEN_LOGO}
+              alt="Aven"
+              className="w-36.25 h-auto object-contain"
+            />
           </Link>
         </div>
 
         {/* ================= RIGHT SECTION ================= */}
 
-        <div className="flex-none flex items-center gap-2 ml-2">
-          {/* Search */}
-
-          <div className="hidden xl:flex items-center">
-            <label className="input input-bordered w-64 h-11 rounded-xl bg-base-100 border-base-300">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="w-5 h-5 text-[#64748B]"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-4-4" />
-              </svg>
-
-              <input type="search" placeholder="Search users..." />
-            </label>
-          </div>
-
-          {/* Notifications */}
-
-          <button type="button" className="btn btn-ghost btn-circle relative">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.8"
-              stroke="currentColor"
-              className="w-6 h-6 text-[#475569]"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9a6 6 0 00-12 0v.75a8.967 8.967 0 01-2.31 6.022c1.733.64 3.56 1.08 5.454 1.31m5.713 0a24.255 24.255 0 01-5.713 0m5.713 0a3 3 0 11-5.713 0"
-              />
-            </svg>
-
-            {/* Notification dot */}
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white" />
-          </button>
-
+        <div className="ml-2 flex flex-none items-center gap-2">
           {/* ================= USER DROPDOWN ================= */}
 
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost h-12 px-2 rounded-xl gap-2"
+              className="
+                btn
+                btn-ghost
+                h-12
+                gap-2
+                rounded-xl
+                px-2
+                text-base-content
+                hover:bg-base-200
+              "
             >
               {/* Avatar */}
 
               <div className="avatar">
                 <div className="w-9 rounded-full ring-1 ring-base-300">
-                  <img
-                    src={
-                      profilePhoto ||
-                      "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                    }
-                    alt="Profile"
-                  />
+                  <img src={profilePhoto} alt="Profile" />
                 </div>
               </div>
 
               {/* User name */}
 
-              <div className="hidden md:block text-left">
-                <p className="text-sm font-semibold text-[#172554] leading-tight">
+              <div className="hidden text-left md:block">
+                <p className="text-sm font-semibold leading-tight text-base-content">
                   {user?.firstName} {user?.lastName}
                 </p>
 
-                <p className="text-xs text-[#64748B]">View profile</p>
+                <p className="text-xs text-base-content/60">View profile</p>
               </div>
 
               {/* Arrow */}
@@ -136,7 +104,7 @@ const NavBar = () => {
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="w-4 h-4 text-[#64748B]"
+                className="h-4 w-4 text-base-content/60"
               >
                 <path
                   strokeLinecap="round"
@@ -146,51 +114,64 @@ const NavBar = () => {
               </svg>
             </div>
 
-            {/* Dropdown */}
+            {/* ================= DROPDOWN ================= */}
 
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-2xl z-50 mt-3 w-64 p-3 shadow-lg border border-base-200"
+              className="
+                menu
+                menu-sm
+                dropdown-content
+                z-50
+                mt-3
+                w-64
+                rounded-2xl
+                border
+                border-base-300
+                bg-base-100
+                p-3
+                text-base-content
+                shadow-lg
+              "
             >
-              {/* User information */}
+              {/* ================= USER INFORMATION ================= */}
 
               <li className="mb-2">
                 <div className="flex items-center gap-3 px-2 py-3 hover:bg-transparent">
                   <div className="avatar">
-                    <div className="w-11 rounded-full">
-                      <img
-                        src={
-                          profilePhoto ||
-                          "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                        }
-                        alt="Profile"
-                      />
+                    <div className="w-11 rounded-full ring-1 ring-base-300">
+                      <img src={profilePhoto} alt="Profile" />
                     </div>
                   </div>
 
-                  <div>
-                    <p className="font-semibold text-[#172554]">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-base-content">
                       {user?.firstName} {user?.lastName}
                     </p>
 
-                    <p className="text-xs text-[#64748B]">{user?.emailId}</p>
+                    <p className="truncate text-xs text-base-content/60">
+                      {user?.emailId}
+                    </p>
                   </div>
                 </div>
               </li>
 
               <div className="divider my-1" />
 
-              {/* Profile */}
+              {/* ================= PROFILE ================= */}
 
               <li>
-                <Link to="/profile">
+                <Link
+                  to="/profile"
+                  className="text-base-content hover:bg-base-200"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth="1.8"
                     stroke="currentColor"
-                    className="w-5 h-5"
+                    className="h-5 w-5"
                   >
                     <path
                       strokeLinecap="round"
@@ -202,17 +183,20 @@ const NavBar = () => {
                 </Link>
               </li>
 
-              {/* Settings */}
+              {/* ================= SETTINGS ================= */}
 
               <li>
-                <Link to="/settings">
+                <Link
+                  to="/settings"
+                  className="text-base-content hover:bg-base-200"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth="1.8"
                     stroke="currentColor"
-                    className="w-5 h-5"
+                    className="h-5 w-5"
                   >
                     <path
                       strokeLinecap="round"
@@ -226,12 +210,15 @@ const NavBar = () => {
 
               <div className="divider my-1" />
 
-              {/* Logout */}
+              {/* ================= LOGOUT ================= */}
 
               <li>
                 <button
                   onClick={handleLogout}
-                  className="text-red-500 hover:bg-red-50"
+                  className="
+                    text-error
+                    hover:bg-error/10
+                  "
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -239,7 +226,7 @@ const NavBar = () => {
                     viewBox="0 0 24 24"
                     strokeWidth="1.8"
                     stroke="currentColor"
-                    className="w-5 h-5"
+                    className="h-5 w-5"
                   >
                     <path
                       strokeLinecap="round"

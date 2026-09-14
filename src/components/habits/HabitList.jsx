@@ -1,22 +1,30 @@
 import HabitCard from "./HabitCard";
 
 const HabitList = ({ habits, logs, onDelete, onEdit, onProgressSuccess }) => {
+  // ================= EMPTY STATE =================
+
   if (!habits || habits.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center">
-        <div className="text-4xl">🌱</div>
+      <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-12 text-center shadow-sm">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl">
+          🌱
+        </div>
 
-        <h3 className="mt-3 text-lg font-semibold">No habits yet</h3>
+        <h3 className="mt-4 text-lg font-semibold text-base-content">
+          No habits yet
+        </h3>
 
-        <p className="mt-1 text-sm text-base-content/60">
-          Start by creating your first habit.
+        <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-base-content/60">
+          Start small and build better days, one habit at a time.
         </p>
       </div>
     );
   }
 
+  // ================= HABIT LIST =================
+
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
       {habits.map((habit) => {
         const habitLog = logs?.find(
           (log) => log.habitId === habit._id || log.habitId?._id === habit._id,

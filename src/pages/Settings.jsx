@@ -8,10 +8,7 @@ const Settings = () => {
 
   const { user, status, error } = useSelector((store) => store.user);
 
- 
-const [theme, setTheme] = useState(
-  user?.theme || "system"
-);
+  const [theme, setTheme] = useState(user?.theme || "system");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -21,17 +18,18 @@ const [theme, setTheme] = useState(
   const [formError, setFormError] = useState("");
 
   const handleThemeChange = async (newTheme) => {
-  try {
-    setTheme(newTheme);
+    const previousTheme = theme;
 
-    applyTheme(newTheme);
+    try {
+      setTheme(newTheme);
+      applyTheme(newTheme);
 
-    await dispatch(changeTheme(newTheme)).unwrap();
-  } catch (err) {
-    setTheme(theme);
-    applyTheme(theme);
-  }
-};
+      await dispatch(changeTheme(newTheme)).unwrap();
+    } catch (err) {
+      setTheme(previousTheme);
+      applyTheme(previousTheme);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,31 +84,43 @@ const [theme, setTheme] = useState(
   const isLoading = status === "loading";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {/* Header */}
+    <div className="mx-auto w-full max-w-4xl space-y-6 pb-8">
+      {/* =========================================
+          HEADER
+      ========================================= */}
       <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">Settings</h1>
+        <h1 className="text-2xl font-bold text-base-content sm:text-3xl">
+          Settings
+        </h1>
 
         <p className="mt-1 text-sm text-base-content/60">
           Manage your account and security preferences.
         </p>
       </div>
 
-      {/* Change Password */}
-      <section className="rounded-xl border border-base-300 bg-base-100 shadow-sm">
-        <div className="border-b border-base-300 p-5">
-          <h2 className="text-lg font-semibold">Change Password</h2>
+      {/* =========================================
+          CHANGE PASSWORD
+      ========================================= */}
+      <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+        {/* Header */}
+        <div className="border-b border-base-300 px-5 py-5 sm:px-6">
+          <h2 className="text-lg font-semibold text-base-content">
+            Change Password
+          </h2>
 
           <p className="mt-1 text-sm text-base-content/60">
             Update your password to keep your account secure.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-5">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5 p-5 sm:p-6">
           {/* Current Password */}
           <div>
-            <label className="label">
-              <span className="label-text font-medium">Current Password</span>
+            <label className="label mb-1">
+              <span className="label-text font-medium text-base-content">
+                Current Password
+              </span>
             </label>
 
             <input
@@ -118,15 +128,26 @@ const [theme, setTheme] = useState(
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Enter current password"
-              className="input input-bordered w-full"
+              className="
+                input
+                w-full
+                bg-base-100
+                text-base-content
+                placeholder:text-base-content/40
+                border-base-300
+                focus:border-primary
+                focus:outline-none
+              "
               autoComplete="current-password"
             />
           </div>
 
           {/* New Password */}
           <div>
-            <label className="label">
-              <span className="label-text font-medium">New Password</span>
+            <label className="label mb-1">
+              <span className="label-text font-medium text-base-content">
+                New Password
+              </span>
             </label>
 
             <input
@@ -134,19 +155,28 @@ const [theme, setTheme] = useState(
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
-              className="input input-bordered w-full"
+              className="
+                input
+                w-full
+                bg-base-100
+                text-base-content
+                placeholder:text-base-content/40
+                border-base-300
+                focus:border-primary
+                focus:outline-none
+              "
               autoComplete="new-password"
             />
 
-            <p className="mt-1 text-xs text-base-content/50">
+            <p className="mt-1.5 text-xs text-base-content/50">
               Minimum 6 characters.
             </p>
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="label">
-              <span className="label-text font-medium">
+            <label className="label mb-1">
+              <span className="label-text font-medium text-base-content">
                 Confirm New Password
               </span>
             </label>
@@ -156,7 +186,16 @@ const [theme, setTheme] = useState(
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
-              className="input input-bordered w-full"
+              className="
+                input
+                w-full
+                bg-base-100
+                text-base-content
+                placeholder:text-base-content/40
+                border-base-300
+                focus:border-primary
+                focus:outline-none
+              "
               autoComplete="new-password"
             />
           </div>
@@ -176,10 +215,10 @@ const [theme, setTheme] = useState(
           )}
 
           {/* Submit */}
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-1">
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary min-w-40"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -195,137 +234,188 @@ const [theme, setTheme] = useState(
         </form>
       </section>
 
-      {/* Appearance */}
-      <section className="rounded-2xl border border-base-300 bg-base-100 shadow-sm">
-        <div className="border-b border-base-300 p-5">
-          <h2 className="text-lg font-semibold">Appearance</h2>
+      {/* =========================================
+          APPEARANCE
+      ========================================= */}
+      <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+        {/* Header */}
+        <div className="border-b border-base-300 px-5 py-5 sm:px-6">
+          <h2 className="text-lg font-semibold text-base-content">
+            Appearance
+          </h2>
 
           <p className="mt-1 text-sm text-base-content/60">
             Customize how Aven looks on your device.
           </p>
         </div>
 
-        <div className="p-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {/* Light */}
+        {/* Theme Options */}
+        <div className="p-5 sm:p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* =====================================
+                LIGHT
+            ===================================== */}
             <button
               type="button"
               onClick={() => handleThemeChange("light")}
-              className={`group rounded-xl border p-4 text-left transition-all ${
-                theme === "light"
-                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                  : "border-base-300 hover:border-primary/40 hover:bg-base-200"
-              }`}
+              className={`
+                group rounded-2xl border p-4 text-left
+                transition-all duration-200
+                ${
+                  theme === "light"
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                    : "border-base-300 hover:border-primary/40 hover:bg-base-200"
+                }
+              `}
             >
-              <div className="mb-4 overflow-hidden rounded-lg border border-base-300 bg-base-200">
-                <div className="flex h-20 flex-col gap-2 p-3">
-                  <div className="h-2 w-1/3 rounded bg-base-300" />
-                  <div className="h-2 w-2/3 rounded bg-base-300" />
+              {/* Preview */}
+              <div className="mb-4 overflow-hidden rounded-xl border border-[#dce8e4] bg-[#f7f9f8]">
+                <div className="h-20 p-3">
+                  <div className="mb-2 h-2 w-1/3 rounded-full bg-[#dce8e4]" />
+                  <div className="h-2 w-2/3 rounded-full bg-[#dce8e4]" />
 
-                  <div className="mt-1 flex gap-2">
-                    <div className="h-7 flex-1 rounded bg-base-100 shadow-sm" />
-                    <div className="h-7 flex-1 rounded bg-base-100 shadow-sm" />
+                  <div className="mt-3 flex gap-2">
+                    <div className="h-7 flex-1 rounded-md bg-white shadow-sm" />
+                    <div className="h-7 flex-1 rounded-md bg-white shadow-sm" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Label */}
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="font-semibold">Light</p>
+                  <p className="font-semibold text-base-content">Light</p>
+
                   <p className="mt-0.5 text-xs text-base-content/60">
                     Clean and bright
                   </p>
                 </div>
 
                 <span
-                  className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                    theme === "light"
-                      ? "border-primary bg-primary text-primary-content"
-                      : "border-base-300"
-                  }`}
+                  className={`
+                    flex h-5 w-5 shrink-0 items-center justify-center
+                    rounded-full border
+                    ${
+                      theme === "light"
+                        ? "border-primary bg-primary text-primary-content"
+                        : "border-base-300"
+                    }
+                  `}
                 >
-                  {theme === "light" && <span className="text-xs">✓</span>}
+                  {theme === "light" && (
+                    <span className="text-xs font-bold">✓</span>
+                  )}
                 </span>
               </div>
             </button>
 
-            {/* Dark */}
+            {/* =====================================
+                DARK
+            ===================================== */}
             <button
               type="button"
               onClick={() => handleThemeChange("dark")}
-              className={`group rounded-xl border p-4 text-left transition-all ${
-                theme === "dark"
-                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                  : "border-base-300 hover:border-primary/40 hover:bg-base-200"
-              }`}
+              className={`
+                group rounded-2xl border p-4 text-left
+                transition-all duration-200
+                ${
+                  theme === "dark"
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                    : "border-base-300 hover:border-primary/40 hover:bg-base-200"
+                }
+              `}
             >
-              <div className="mb-4 overflow-hidden rounded-lg border border-base-300 bg-neutral">
-                <div className="flex h-20 flex-col gap-2 p-3">
-                  <div className="h-2 w-1/3 rounded bg-neutral-content/20" />
-                  <div className="h-2 w-2/3 rounded bg-neutral-content/20" />
+              {/* Preview */}
+              <div className="mb-4 overflow-hidden rounded-xl border border-[#263b35] bg-[#071512]">
+                <div className="h-20 p-3">
+                  <div className="mb-2 h-2 w-1/3 rounded-full bg-[#263b35]" />
+                  <div className="h-2 w-2/3 rounded-full bg-[#263b35]" />
 
-                  <div className="mt-1 flex gap-2">
-                    <div className="h-7 flex-1 rounded bg-neutral-content/10" />
-                    <div className="h-7 flex-1 rounded bg-neutral-content/10" />
+                  <div className="mt-3 flex gap-2">
+                    <div className="h-7 flex-1 rounded-md bg-[#0d211c]" />
+                    <div className="h-7 flex-1 rounded-md bg-[#0d211c]" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Label */}
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="font-semibold">Dark</p>
+                  <p className="font-semibold text-base-content">Dark</p>
+
                   <p className="mt-0.5 text-xs text-base-content/60">
                     Easy on the eyes
                   </p>
                 </div>
 
                 <span
-                  className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                    theme === "dark"
-                      ? "border-primary bg-primary text-primary-content"
-                      : "border-base-300"
-                  }`}
+                  className={`
+                    flex h-5 w-5 shrink-0 items-center justify-center
+                    rounded-full border
+                    ${
+                      theme === "dark"
+                        ? "border-primary bg-primary text-primary-content"
+                        : "border-base-300"
+                    }
+                  `}
                 >
-                  {theme === "dark" && <span className="text-xs">✓</span>}
+                  {theme === "dark" && (
+                    <span className="text-xs font-bold">✓</span>
+                  )}
                 </span>
               </div>
             </button>
 
-            {/* System */}
+            {/* =====================================
+                SYSTEM
+            ===================================== */}
             <button
               type="button"
               onClick={() => handleThemeChange("system")}
-              className={`group rounded-xl border p-4 text-left transition-all ${
-                theme === "system"
-                  ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                  : "border-base-300 hover:border-primary/40 hover:bg-base-200"
-              }`}
+              className={`
+                group rounded-2xl border p-4 text-left
+                transition-all duration-200
+                ${
+                  theme === "system"
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                    : "border-base-300 hover:border-primary/40 hover:bg-base-200"
+                }
+              `}
             >
-              <div className="mb-4 overflow-hidden rounded-lg border border-base-300 bg-base-200">
+              {/* Preview */}
+              <div className="mb-4 overflow-hidden rounded-xl border border-base-300 bg-base-200">
                 <div className="flex h-20 items-center justify-center">
                   <div className="flex h-10 w-16 overflow-hidden rounded-md border border-base-300">
-                    <div className="w-1/2 bg-base-100" />
-                    <div className="w-1/2 bg-neutral" />
+                    <div className="w-1/2 bg-[#f7f9f8]" />
+                    <div className="w-1/2 bg-[#0d211c]" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Label */}
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="font-semibold">System</p>
+                  <p className="font-semibold text-base-content">System</p>
+
                   <p className="mt-0.5 text-xs text-base-content/60">
                     Follow device settings
                   </p>
                 </div>
 
                 <span
-                  className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                    theme === "system"
-                      ? "border-primary bg-primary text-primary-content"
-                      : "border-base-300"
-                  }`}
+                  className={`
+                    flex h-5 w-5 shrink-0 items-center justify-center
+                    rounded-full border
+                    ${
+                      theme === "system"
+                        ? "border-primary bg-primary text-primary-content"
+                        : "border-base-300"
+                    }
+                  `}
                 >
-                  {theme === "system" && <span className="text-xs">✓</span>}
+                  {theme === "system" && (
+                    <span className="text-xs font-bold">✓</span>
+                  )}
                 </span>
               </div>
             </button>
@@ -333,19 +423,25 @@ const [theme, setTheme] = useState(
         </div>
       </section>
 
-      {/* Account Security */}
-      <section className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Account Security</h2>
+      {/* =========================================
+          ACCOUNT SECURITY
+      ========================================= */}
+      <section className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+        <h2 className="text-lg font-semibold text-base-content">
+          Account Security
+        </h2>
 
         <p className="mt-1 text-sm text-base-content/60">
           Keep your password private and avoid reusing it across different
           accounts.
         </p>
 
-        <div className="mt-4 rounded-lg bg-base-200 p-4">
-          <p className="text-sm font-medium">🔐 Password security</p>
+        <div className="mt-4 rounded-xl border border-base-300 bg-base-200 p-4">
+          <p className="text-sm font-medium text-base-content">
+            🔐 Password security
+          </p>
 
-          <p className="mt-1 text-xs text-base-content/60">
+          <p className="mt-1 text-xs leading-5 text-base-content/60">
             Use a strong password that is difficult for others to guess.
           </p>
         </div>
