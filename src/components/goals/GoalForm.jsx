@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addGoal, editGoal } from "../../redux/goalSlice";
+import AlertMessage from "../../layout/AlertMessage";
 
 const getInitialForm = (goal) => ({
   title: goal?.title || "",
@@ -16,6 +17,8 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
 
   const [form, setForm] = useState(() => getInitialForm(goal));
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("success");
 
   const isEditing = Boolean(goal);
 
@@ -69,13 +72,22 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
             data: payload,
           }),
         ).unwrap();
+        setMessage("Goal updated successfully!");
       } else {
         await dispatch(addGoal(payload)).unwrap();
       }
-
-      onSuccess?.();
+      setMessage("Goal created successfully!");
+      setMessageType("success");
+      setTimeout(() => {
+        onSuccess?.();
+      }, 3000);
     } catch (err) {
-      setError(err?.message || err?.payload?.message || "Failed to save goal.");
+      setMessageType("error");
+      console.log(message);
+      
+      setMessage(
+        typeof err === "string" ? err : err?.message || "Failed to save Goal",
+      );
     }
   };
 
@@ -88,9 +100,14 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
         {isEditing ? "Edit Goal" : "Create Goal"}
       </h2>
 
-      {error && (
-        <div className="alert alert-error mb-4">
-          <span>{error}</span>
+      {message && (
+        <div className="mb-3">
+          <AlertMessage
+            type={messageType}
+            message={message}
+            duration={3000}
+            onClose={() => setMessage("")}
+          />
         </div>
       )}
 

@@ -9,7 +9,7 @@ const GoalProgress = ({ goalId }) => {
     progress,
     progressStatus,
     progressError,
-  } = useSelector((store) => store.goals);
+  } = useSelector((store) => store.goal);
 
   useEffect(() => {
     if (goalId) {

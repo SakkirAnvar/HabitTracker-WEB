@@ -64,12 +64,14 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
     setMessage("");
 
     if (!form.habitName.trim()) {
-      setError("Habit name is required.");
+      setMessageType("error")
+      setMessage("Habit name is required.");
       return;
     }
 
     if (form.frequency === "custom" && form.scheduledDays.length === 0) {
-      setError("Select at least one scheduled day.");
+      setMessageType("error")
+      setMessage("Select at least one scheduled day.");
       return;
     }
 
@@ -77,7 +79,8 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
       form.type !== "boolean" &&
       (form.target === "" || Number(form.target) <= 0)
     ) {
-      setError("Please enter a valid target.");
+      setMessageType("error")
+      setMessage("Please enter a valid target.");
       return;
     }
 
@@ -119,8 +122,6 @@ const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
         onSuccess?.();
       }, 3000);
     } catch (err) {
-      console.error("Habit save error:", err);
-
       setMessageType("error");
 
       setMessage(

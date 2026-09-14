@@ -1,9 +1,7 @@
 @import "tailwindcss";
-
 @plugin "daisyui" {
-  themes: habitly;
+  themes: light --default, dark --prefersdark;
 }
-
 @plugin "daisyui/theme" {
   name: "habitly";
   default: true;

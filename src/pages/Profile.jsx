@@ -147,52 +147,57 @@ const Profile = () => {
           )}
 
           {/* Profile Photo */}
-      <div className="border-b border-base-300 p-5">
-        <h2 className="text-lg font-semibold">Profile Photo</h2>
+          <div className="border-b border-base-300 p-5">
+            <h2 className="text-lg font-semibold">Profile Photo</h2>
 
-        <p className="mt-1 text-sm text-base-content/60">
-          Choose a profile photo that represents you.
-        </p>
-
-        <div className="mt-5 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          {/* Avatar */}
-          <div className="avatar">
-            <div className="w-24 rounded-full ring-2 ring-primary/20 ring-offset-2 ring-offset-base-100">
-              <img
-                src={photoPreview}
-                alt="Profile"
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "/default-avatar.png";
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Upload */}
-          <div>
-            <label htmlFor="profilePhoto" className="btn btn-outline btn-sm">
-              Choose Photo
-            </label>
-
-            <input
-              id="profilePhoto"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handlePhotoChange}
-              className="hidden"
-            />
-
-            <p className="mt-2 text-xs text-base-content/50">
-              JPG, PNG or WebP · Maximum 2MB
+            <p className="mt-1 text-sm text-base-content/60">
+              Choose a profile photo that represents you.
             </p>
 
-            {selectedPhoto && (
-              <p className="mt-1 text-xs text-primary">{selectedPhoto.name}</p>
-            )}
+            <div className="mt-5 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              {/* Avatar */}
+              <div className="avatar">
+                <div className="w-24 rounded-full ring-2 ring-primary/20 ring-offset-2 ring-offset-base-100">
+                  <img
+                    src={photoPreview}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/default-avatar.png";
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Upload */}
+              <div>
+                <label
+                  htmlFor="profilePhoto"
+                  className="btn btn-outline btn-sm"
+                >
+                  Choose Photo
+                </label>
+
+                <input
+                  id="profilePhoto"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+
+                <p className="mt-2 text-xs text-base-content/50">
+                  JPG, PNG or WebP · Maximum 2MB
+                </p>
+
+                {selectedPhoto && (
+                  <p className="mt-1 text-xs text-primary">
+                    {selectedPhoto.name}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
           {/* Names */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -255,7 +260,6 @@ const Profile = () => {
               Your email address cannot be changed here.
             </p>
           </div>
-
 
           {/* Submit */}
           <div className="flex justify-end">
