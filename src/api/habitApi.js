@@ -5,8 +5,14 @@ export const createHabit = async (data) => {
   return response.data;
 };
 
-export const getHabits = async () => {
-  const response = await api.get("/habits");
+export const getHabits = async ({ page = 1, limit = 6 } = {}) => {
+  const response = await api.get("/habits", {
+    params: {
+      page,
+      limit,
+    },
+  });
+
   return response.data;
 };
 

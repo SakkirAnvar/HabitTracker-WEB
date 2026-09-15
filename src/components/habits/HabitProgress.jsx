@@ -1,112 +1,50 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-
+import { getLocalDateString } from "../../utils/date";
 import { addHabitLog, editHabitLog } from "../../redux/habitLogSlice";
 
 const HabitProgress = ({ habit, existingLog, onSuccess }) => {
   const dispatch = useDispatch();
 
   const [value, setValue] = useState(existingLog?.value ?? "");
-
   const [loading, setLoading] = useState(false);
+  const [saveState, setSaveState] = useState("idle");
   const [error, setError] = useState("");
 
-  /*
-   * Keep local value synchronized with the latest log.
-   *
-   * This is important when:
-   * - A log is created
-   * - A log is edited
-   * - The selected day changes
-   * - Redux refreshes the habit log
-   */
-  useEffect(() => {
-    setValue(existingLog?.value ?? "");
-    setError("");
-  }, [existingLog]);
-
-  // ================= HABIT TYPE =================
-
   const habitType = habit?.type || "boolean";
-
   const isBoolean = habitType === "boolean";
-
   const isNumeric = habitType === "numeric" || habitType === "count";
-
   const isDuration = habitType === "duration";
-
   const isRating = habitType === "rating";
-
-  // ================= COMPLETION =================
 
   const isCompleted =
     isBoolean && (Number(value) === 1 || existingLog?.completed === true);
 
-  // ================= SAVE =================
+  const saveProgress = async (newValue) => {
+    if (loading) return;
 
-  const handleSubmit = async () => {
     setError("");
 
-    /*
-     * Boolean habits only accept 0 or 1.
-     */
-    if (isBoolean) {
-      const booleanValue = Number(value);
+    const existingValue = existingLog?.value ?? "";
 
-      if (![0, 1].includes(booleanValue)) {
-        setError("Please mark the habit as complete or incomplete.");
-        return;
-      }
+    if (existingLog?._id && String(existingValue) === String(newValue)) {
+      setSaveState("saved");
+      return;
     }
 
-    /*
-     * Rating must be between 1 and 5.
-     */
-    if (isRating) {
-      const rating = Number(value);
+    setLoading(true);
+    setSaveState("saving");
 
-      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-        setError("Please select a rating between 1 and 5.");
-        return;
-      }
-    }
-
-    /*
-     * Numeric / duration values.
-     */
-    if (isNumeric || isDuration) {
-      if (value === "") {
-        setError("Please enter your progress.");
-        return;
-      }
-
-      const numericValue = Number(value);
-
-      if (Number.isNaN(numericValue) || numericValue < 0) {
-        setError("Please enter a valid value.");
-        return;
-      }
-    }
-
-    let finalValue;
-
-    if (isBoolean) {
-      finalValue = Number(value);
-    } else if (isRating) {
-      finalValue = Number(value);
-    } else {
-      finalValue = Number(value);
-    }
+    const date = getLocalDateString();
 
     try {
-      setLoading(true);
-
       if (existingLog?._id) {
         await dispatch(
           editHabitLog({
             id: existingLog._id,
             data: {
-              value: finalValue,
+              value: newValue,
+              date,
             },
           }),
         ).unwrap();
@@ -115,15 +53,23 @@ const HabitProgress = ({ habit, existingLog, onSuccess }) => {
           addHabitLog({
             habitId: habit._id,
             data: {
-              value: finalValue,
+              value: newValue,
+              date,
             },
           }),
         ).unwrap();
       }
 
+      setValue(newValue);
+      setSaveState("saved");
       setError("");
+
       onSuccess?.();
     } catch (err) {
+      console.error("Habit progress error:", err);
+
+      setSaveState("error");
+
       setError(
         typeof err === "string"
           ? err
@@ -134,204 +80,291 @@ const HabitProgress = ({ habit, existingLog, onSuccess }) => {
     }
   };
 
-  // ================= BOOLEAN TOGGLE =================
+  const handleComplete = async () => {
+    if (isCompleted || loading) return;
 
-  const handleBooleanToggle = () => {
-    setError("");
-
-    setValue(isCompleted ? 0 : 1);
+    await saveProgress(1);
   };
-
-  // ================= VALUE CHANGE =================
 
   const handleValueChange = (newValue) => {
     setValue(newValue);
-
-    if (error) {
-      setError("");
-    }
+    setError("");
+    setSaveState("idle");
   };
 
+  const handleNumberBlur = async () => {
+    if (value === "" || value === null || value === undefined) {
+      return;
+    }
+
+    const numericValue = Number(value);
+
+    if (Number.isNaN(numericValue)) {
+      setSaveState("error");
+      setError("Please enter a valid value.");
+      return;
+    }
+
+    if (numericValue < 0) {
+      setSaveState("error");
+      setError("Value cannot be negative.");
+      return;
+    }
+
+    await saveProgress(numericValue);
+  };
+
+  const handleNumberKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+    e.currentTarget.blur();
+  };
+
+  const handleRatingChange = async (rating) => {
+    if (loading) return;
+
+    setValue(rating);
+    setError("");
+    setSaveState("idle");
+
+    await saveProgress(Number(rating));
+  };
+
+  useEffect(() => {
+    if (saveState !== "saved") return;
+
+    const timer = setTimeout(() => {
+      setSaveState("idle");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [saveState]);
+
   return (
-    <div className="mt-4">
-      {/* ================= ERROR ================= */}
-
-      {error && (
-        <div className="mb-3 rounded-xl border border-error/20 bg-error/10 px-4 py-3">
-          <p className="text-sm font-medium text-error">{error}</p>
-        </div>
-      )}
-
-      {/* ================= BOOLEAN ================= */}
-
+    <div className="mt-3">
       {isBoolean && (
-        <div className="rounded-xl bg-base-200 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              type="button"
-              onClick={handleBooleanToggle}
-              disabled={loading}
-              className={`btn ${
-                isCompleted
-                  ? "btn-success"
-                  : "btn-outline border-base-300 bg-base-100 hover:border-primary hover:bg-primary/10 hover:text-primary"
-              }`}
-            >
-              {isCompleted ? "✓ Completed" : "Mark Complete"}
-            </button>
+        <div>
+          <button
+            type="button"
+            onClick={handleComplete}
+            disabled={isCompleted || loading}
+            className={`flex min-h-14 w-full items-center justify-between rounded-xl px-4 transition-all duration-200 ${
+              isCompleted
+                ? "cursor-default bg-success/10"
+                : "bg-base-100 hover:bg-primary/5"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${
+                  isCompleted
+                    ? "border-success bg-success text-success-content"
+                    : "border-base-300 bg-base-100 text-transparent"
+                }`}
+              >
+                ✓
+              </span>
 
-            <div className="flex items-center gap-2">
-              {isCompleted && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setValue(0);
-                    setError("");
-                  }}
-                  disabled={loading}
-                  className="btn btn-ghost btn-sm text-base-content/60 hover:bg-base-100 hover:text-base-content"
-                >
-                  Undo
-                </button>
-              )}
-
-              <SaveButton loading={loading} onClick={handleSubmit} />
+              <span
+                className={`text-sm font-semibold ${
+                  isCompleted ? "text-success" : "text-base-content"
+                }`}
+              >
+                {isCompleted
+                  ? "Completed"
+                  : loading
+                    ? "Completing..."
+                    : "Mark Complete"}
+              </span>
             </div>
+
+            {isCompleted ? (
+              <span className="text-xs font-semibold text-success">Done</span>
+            ) : (
+              <span className="text-lg text-base-content/25">→</span>
+            )}
+          </button>
+
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-xs text-base-content/40">
+              {isCompleted
+                ? "Great job! Habit completed for today."
+                : "Complete this habit when you're done."}
+            </p>
+
+            {!isCompleted && renderSaveStatus(saveState)}
           </div>
 
-          <p className="mt-3 text-xs text-base-content/50">
-            {isCompleted
-              ? "Great job! You completed this habit today."
-              : "Mark this habit complete when you finish it."}
-          </p>
+          {renderError(error)}
         </div>
       )}
-
-      {/* ================= NUMERIC / COUNT ================= */}
-
       {isNumeric && (
-        <div className="rounded-xl bg-base-200 p-4">
-          <div className="flex flex-col gap-2 sm:flex-row">
+        <div>
+          <div className="flex items-center gap-2 rounded-xl bg-base-200/70 p-2">
             <input
               type="number"
               min="0"
               step="any"
               value={value}
+              disabled={loading}
               onChange={(e) => handleValueChange(e.target.value)}
-              placeholder={
-                habit.target ? `Target: ${habit.target}` : "Enter progress"
-              }
-              className="input input-bordered w-full border-base-300 bg-base-100 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none"
+              onBlur={handleNumberBlur}
+              onKeyDown={handleNumberKeyDown}
+              placeholder={habit?.target ? `${habit.target}` : "Enter progress"}
+              className="input input-sm h-10 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm font-medium text-base-content placeholder:text-base-content/30 focus:outline-none focus:ring-0"
             />
 
-            <SaveButton loading={loading} onClick={handleSubmit} />
+            {habit?.unit && (
+              <span className="shrink-0 px-2 text-xs font-medium text-base-content/45">
+                {habit.unit}
+              </span>
+            )}
           </div>
 
-          <ProgressInfo value={value} target={habit.target} unit={habit.unit} />
+          <div className="mt-2 flex justify-end">
+            {renderSaveStatus(saveState)}
+          </div>
+
+          <ProgressInfo
+            value={value}
+            target={habit?.target}
+            unit={habit?.unit}
+          />
+
+          {renderError(error)}
         </div>
       )}
-
-      {/* ================= DURATION ================= */}
-
       {isDuration && (
-        <div className="rounded-xl bg-base-200 p-4">
-          <div className="flex flex-col gap-2 sm:flex-row">
+        <div>
+          <div className="flex items-center gap-2 rounded-xl bg-base-200/70 p-2">
             <input
               type="number"
               min="0"
               step="1"
               value={value}
+              disabled={loading}
               onChange={(e) => handleValueChange(e.target.value)}
-              placeholder={
-                habit.target ? `Target: ${habit.target}` : "Enter duration"
-              }
-              className="input input-bordered w-full border-base-300 bg-base-100 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none"
+              onBlur={handleNumberBlur}
+              onKeyDown={handleNumberKeyDown}
+              placeholder={habit?.target ? `${habit.target}` : "Enter duration"}
+              className="input input-sm h-10 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm font-medium text-base-content placeholder:text-base-content/30 focus:outline-none focus:ring-0"
             />
 
-            <SaveButton loading={loading} onClick={handleSubmit} />
+            <span className="shrink-0 px-2 text-xs font-medium text-base-content/45">
+              {habit?.unit || "minutes"}
+            </span>
+          </div>
+
+          <div className="mt-2 flex justify-end">
+            {renderSaveStatus(saveState)}
           </div>
 
           <ProgressInfo
             value={value}
-            target={habit.target}
-            unit={habit.unit || "minutes"}
+            target={habit?.target}
+            unit={habit?.unit || "minutes"}
           />
+
+          {renderError(error)}
         </div>
       )}
-
-      {/* ================= RATING ================= */}
-
       {isRating && (
-        <div className="rounded-xl bg-base-200 p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-base-content">
-                How did you do today?
+                Today's rating
               </p>
 
-              <p className="mt-0.5 text-xs text-base-content/50">
-                Choose a rating from 1 to 5.
+              <p className="mt-0.5 text-xs text-base-content/40">
+                Choose 1 to 5
               </p>
             </div>
 
-            <div className="rating rating-lg">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <input
-                  key={rating}
-                  type="radio"
-                  name={`rating-${habit._id}`}
-                  value={rating}
-                  checked={Number(value) === rating}
-                  onChange={() => handleValueChange(rating)}
-                  className="mask mask-star-2 bg-warning"
-                  aria-label={`${rating} star${rating > 1 ? "s" : ""}`}
-                />
-              ))}
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((rating) => {
+                const selected = Number(value) >= rating;
+
+                return (
+                  <button
+                    key={rating}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleRatingChange(rating)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-lg transition ${
+                      selected
+                        ? "text-warning"
+                        : "text-base-content/20 hover:bg-warning/10 hover:text-warning"
+                    }`}
+                    aria-label={`${rating} star${rating > 1 ? "s" : ""}`}
+                  >
+                    {selected ? "★" : "☆"}
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          <div className="mt-2 flex justify-end">
+            {renderSaveStatus(saveState)}
           </div>
 
           {value !== "" && (
-            <div className="mt-4 flex items-center justify-between rounded-lg bg-base-100 px-3 py-2">
-              <span className="text-xs text-base-content/50">Your rating</span>
+            <div className="mt-3 flex items-center justify-between rounded-lg bg-base-200 px-3 py-2">
+              <span className="text-xs text-base-content/45">Your rating</span>
 
-              <span className="font-semibold text-warning">{value} / 5 ⭐</span>
+              <span className="text-xs font-bold text-warning">
+                {value} / 5
+              </span>
             </div>
           )}
 
-          <div className="mt-3 flex justify-end">
-            <SaveButton loading={loading} onClick={handleSubmit} />
-          </div>
+          {Number(value) === 5 && (
+            <div className="mt-3 rounded-lg bg-success/10 px-3 py-2">
+              <p className="text-xs font-semibold text-success">✓ Completed</p>
+            </div>
+          )}
+
+          {renderError(error)}
         </div>
       )}
     </div>
   );
 };
+const renderSaveStatus = (saveState) => {
+  if (saveState === "saving") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-base-content/45">
+        <span className="loading loading-spinner loading-xs" />
+        Saving...
+      </span>
+    );
+  }
 
-/* =========================================================
-   SAVE BUTTON
-========================================================= */
+  if (saveState === "saved") {
+    return (
+      <span className="text-[11px] font-semibold text-success">✓ Saved</span>
+    );
+  }
 
-const SaveButton = ({ loading, onClick }) => {
+  if (saveState === "error") {
+    return (
+      <span className="text-[11px] font-medium text-error">Not saved</span>
+    );
+  }
+
+  return null;
+};
+const renderError = (error) => {
+  if (!error) return null;
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={loading}
-      className="btn btn-primary min-w-20"
-    >
-      {loading ? (
-        <span className="loading loading-spinner loading-sm" />
-      ) : (
-        "Save"
-      )}
-    </button>
+    <div className="mt-3 rounded-lg bg-error/10 px-3 py-2">
+      <p className="text-xs font-medium text-error">{error}</p>
+    </div>
   );
 };
-
-/* =========================================================
-   PROGRESS INFO
-========================================================= */
-
 const ProgressInfo = ({ value, target, unit }) => {
   if (value === "" || value === null || value === undefined) {
     return null;
@@ -349,19 +382,17 @@ const ProgressInfo = ({ value, target, unit }) => {
     Math.max(0, Math.round((current / goal) * 100)),
   );
 
-  const isComplete = current >= goal;
+  const isTargetReached = current >= goal;
 
   return (
-    <div className="mt-4">
-      {/* Progress header */}
-
-      <div className="mb-2 flex items-center justify-between gap-3">
+    <div className="mt-3">
+      <div className="mb-2 flex items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-base-content/45">
+          <p className="text-xs font-medium text-base-content/45">
             Today's Progress
           </p>
 
-          <p className="mt-1 text-sm font-semibold text-base-content">
+          <p className="mt-0.5 text-sm font-semibold text-base-content">
             {current} / {goal}
             {unit ? ` ${unit}` : ""}
           </p>
@@ -369,36 +400,29 @@ const ProgressInfo = ({ value, target, unit }) => {
 
         <div className="text-right">
           <span
-            className={`text-sm font-bold ${
-              isComplete ? "text-success" : "text-primary"
+            className={`text-xs font-bold ${
+              isTargetReached ? "text-success" : "text-base-content/50"
             }`}
           >
             {percentage}%
           </span>
 
-          {isComplete && <p className="text-[11px] text-success">Completed</p>}
+          {isTargetReached && (
+            <p className="text-[10px] font-semibold text-success">Completed</p>
+          )}
         </div>
       </div>
 
-      {/* Progress bar */}
-
-      <progress
-        className={`progress w-full ${
-          isComplete ? "progress-success" : "progress-primary"
-        }`}
-        value={percentage}
-        max="100"
-      />
-
-      {/* Completion message */}
-
-      {isComplete && (
-        <div className="mt-3 rounded-lg border border-success/20 bg-success/10 px-3 py-2">
-          <p className="text-xs font-medium text-success">
-            🎉 You've reached your target for today!
-          </p>
-        </div>
-      )}
+      <div className="h-1.5 overflow-hidden rounded-full bg-base-300">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${
+            isTargetReached ? "bg-success" : "bg-primary"
+          }`}
+          style={{
+            width: `${percentage}%`,
+          }}
+        />
+      </div>
     </div>
   );
 };

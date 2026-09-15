@@ -3,49 +3,77 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { fetchHabits, removeHabit } from "../redux/habitSlice";
 import { fetchHabitLogsByDate } from "../redux/habitLogSlice";
+import Pagination from "../layout/Pagination";
 
 import HabitList from "../components/habits/HabitList";
 import HabitForm from "../components/habits/HabitForm";
+import DeleteModal from "../layout/DeleteModal";
+
+import { getLocalDateString } from "../utils/date";
+
+const ITEMS_PER_PAGE = 6;
 
 const Habits = () => {
   const dispatch = useDispatch();
 
-  const { habits, status } = useSelector((state) => state.habit);
+  const {
+    habits,
+    status,
+    currentPage,
+    totalPages,
+    totalHabits,
+    hasNextPage,
+    hasPreviousPage,
+  } = useSelector((state) => state.habit);
 
-  const { logs, status: logStatus } = useSelector(
-    (state) => state.habitLog,
-  );
+  const { logs } = useSelector((state) => state.habitLog);
 
   const [editingHabit, setEditingHabit] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  // Today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split("T")[0];
+  const [habitToDelete, setHabitToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // =========================
-  // Fetch data
-  // =========================
+  const today = getLocalDateString();
 
   useEffect(() => {
-    dispatch(fetchHabits());
+    dispatch(
+      fetchHabits({
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
+  }, [dispatch, currentPage]);
+
+  useEffect(() => {
     dispatch(fetchHabitLogsByDate(today));
   }, [dispatch, today]);
 
-  // =========================
-  // Handlers
-  // =========================
+  const handleDelete = (habit) => {
+    setHabitToDelete(habit);
+  };
 
-  const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this habit?",
-    );
-
-    if (!confirmed) return;
+  const confirmDelete = async () => {
+    if (!habitToDelete?._id || deleteLoading) return;
 
     try {
-      await dispatch(removeHabit(id)).unwrap();
+      setDeleteLoading(true);
+
+      await dispatch(removeHabit(habitToDelete._id)).unwrap();
+
+      setHabitToDelete(null);
+
+      // Refresh current page
+      dispatch(
+        fetchHabits({
+          page: currentPage,
+          limit: ITEMS_PER_PAGE,
+        }),
+      );
     } catch (error) {
       console.error("Failed to delete habit:", error);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -62,36 +90,37 @@ const Habits = () => {
   const handleFormSuccess = () => {
     setEditingHabit(null);
     setShowForm(false);
-  };
+    dispatch(
+      fetchHabits({
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
 
+    dispatch(fetchHabitLogsByDate(today));
+  };
   const handleCancel = () => {
     setEditingHabit(null);
     setShowForm(false);
   };
 
   const handleProgressSuccess = () => {
-    // Refresh today's logs after saving progress
     dispatch(fetchHabitLogsByDate(today));
+
+    dispatch(
+      fetchHabits({
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
   };
 
-  const isLoading = status === "loading" || logStatus === "loading";
+  const isLoading = status === "loading";
 
   return (
     <div className="space-y-6">
-      {/* ================= HEADER ================= */}
-
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-lg">
-              🌱
-            </span>
-
-            <span className="text-sm font-medium text-primary">
-              Daily Growth
-            </span>
-          </div>
-
           <h1 className="text-2xl font-bold tracking-tight text-base-content md:text-3xl">
             My Habits
           </h1>
@@ -113,8 +142,6 @@ const Habits = () => {
         )}
       </section>
 
-      {/* ================= HABIT FORM ================= */}
-
       {showForm && (
         <HabitForm
           key={editingHabit?._id || "new"}
@@ -123,8 +150,6 @@ const Habits = () => {
           onCancel={handleCancel}
         />
       )}
-
-      {/* ================= LOADING ================= */}
 
       {isLoading && (
         <div className="flex min-h-[30vh] items-center justify-center">
@@ -138,11 +163,9 @@ const Habits = () => {
         </div>
       )}
 
-      {/* ================= HABITS ================= */}
-
       {!showForm && !isLoading && (
         <section>
-          {habits?.length > 0 && (
+          {totalHabits > 0 && (
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-base-content">
@@ -155,8 +178,7 @@ const Habits = () => {
               </div>
 
               <span className="badge badge-ghost">
-                {habits.length}{" "}
-                {habits.length === 1 ? "habit" : "habits"}
+                {totalHabits} {totalHabits === 1 ? "habit" : "habits"}
               </span>
             </div>
           )}
@@ -168,8 +190,36 @@ const Habits = () => {
             onEdit={handleEdit}
             onProgressSuccess={handleProgressSuccess}
           />
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            onPageChange={(page) => {
+              dispatch(
+                fetchHabits({
+                  page,
+                  limit: ITEMS_PER_PAGE,
+                }),
+              );
+            }}
+          />
         </section>
       )}
+
+      <DeleteModal
+        isOpen={Boolean(habitToDelete)}
+        itemName={habitToDelete?.habitName}
+        itemType="Habit"
+        loading={deleteLoading}
+        onCancel={() => {
+          if (!deleteLoading) {
+            setHabitToDelete(null);
+          }
+        }}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

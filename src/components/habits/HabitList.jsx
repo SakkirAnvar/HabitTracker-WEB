@@ -1,8 +1,6 @@
 import HabitCard from "./HabitCard";
 
 const HabitList = ({ habits, logs, onDelete, onEdit, onProgressSuccess }) => {
-  // ================= EMPTY STATE =================
-
   if (!habits || habits.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-12 text-center shadow-sm">
@@ -20,8 +18,6 @@ const HabitList = ({ habits, logs, onDelete, onEdit, onProgressSuccess }) => {
       </div>
     );
   }
-
-  // ================= HABIT LIST =================
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">

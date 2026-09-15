@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
 import {
   getHabits,
   createHabit,
@@ -9,9 +10,9 @@ import {
 
 export const fetchHabits = createAsyncThunk(
   "habits/fetchHabits",
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, limit = 6 } = {}, { rejectWithValue }) => {
     try {
-      return await getHabits();
+      return await getHabits({ page, limit });
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch habits",
@@ -64,6 +65,7 @@ export const removeHabit = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       await deleteHabit(id);
+
       return id;
     } catch (error) {
       return rejectWithValue(
@@ -75,12 +77,22 @@ export const removeHabit = createAsyncThunk(
 
 const initialState = {
   habits: [],
+
   status: "idle",
   error: null,
+
+  currentPage: 1,
+  totalPages: 1,
+  totalHabits: 0,
+  limit: 6,
+
+  hasNextPage: false,
+  hasPreviousPage: false,
 };
 
 const habitSlice = createSlice({
   name: "habits",
+
   initialState,
 
   reducers: {
@@ -92,7 +104,6 @@ const habitSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // Fetch
       .addCase(fetchHabits.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -100,7 +111,25 @@ const habitSlice = createSlice({
 
       .addCase(fetchHabits.fulfilled, (state, action) => {
         state.status = "succeeded";
+
         state.habits = action.payload.data || [];
+
+        // Pagination
+        const pagination = action.payload.pagination;
+
+        if (pagination) {
+          state.currentPage = pagination.currentPage || 1;
+
+          state.totalPages = pagination.totalPages || 1;
+
+          state.totalHabits = pagination.totalHabits || 0;
+
+          state.limit = pagination.limit || 6;
+
+          state.hasNextPage = pagination.hasNextPage || false;
+
+          state.hasPreviousPage = pagination.hasPreviousPage || false;
+        }
       })
 
       .addCase(fetchHabits.rejected, (state, action) => {
@@ -108,16 +137,14 @@ const habitSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Create
       .addCase(addHabit.fulfilled, (state, action) => {
-        state.habits.push(action.payload.data);
+        state.error = null;
       })
 
       .addCase(addHabit.rejected, (state, action) => {
         state.error = action.payload;
       })
 
-      // Update
       .addCase(editHabit.fulfilled, (state, action) => {
         const updatedHabit = action.payload.data;
 
@@ -130,7 +157,10 @@ const habitSlice = createSlice({
         }
       })
 
-      // Toggle
+      .addCase(editHabit.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
       .addCase(toggleHabitStatus.fulfilled, (state, action) => {
         const updatedHabit = action.payload.data;
 
@@ -146,11 +176,16 @@ const habitSlice = createSlice({
         }
       })
 
-      // Delete
+      .addCase(toggleHabitStatus.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
       .addCase(removeHabit.fulfilled, (state, action) => {
         state.habits = state.habits.filter(
           (habit) => habit._id !== action.payload,
         );
+
+        state.totalHabits = Math.max(0, state.totalHabits - 1);
       })
 
       .addCase(removeHabit.rejected, (state, action) => {

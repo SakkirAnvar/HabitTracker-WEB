@@ -7,118 +7,153 @@ const HabitCard = ({
   onEdit,
   onProgressSuccess,
 }) => {
-  const getCategoryBadge = () => {
-    switch (habit.category) {
-      case "Spiritual":
-        return "badge-secondary";
+  const category = getCategoryConfig(habit.category);
 
-      case "Skills":
-        return "badge-info";
+  const hasTarget =
+    habit.target !== undefined && habit.target !== null && habit.target !== "";
 
-      case "Physical":
-        return "badge-success";
-
-      case "Personal":
-        return "badge-warning";
-
+  const formatType = (type) => {
+    switch (type) {
+      case "boolean":
+        return "Done / Not Done";
+      case "count":
+        return "Count";
+      case "numeric":
+        return "Count";
+      case "duration":
+        return "Duration";
+      case "rating":
+        return "Rating";
       default:
-        return "badge-ghost";
+        return type;
     }
   };
 
-  const getCategoryIcon = () => {
-    switch (habit.category) {
-      case "Spiritual":
-        return "🧘";
-
-      case "Skills":
-        return "📚";
-
-      case "Physical":
-        return "💪";
-
-      case "Personal":
-        return "🌱";
-
+  const formatFrequency = (frequency) => {
+    switch (frequency) {
+      case "daily":
+        return "Daily";
+      case "weekly":
+        return "Weekly";
+      case "monthly":
+        return "Monthly";
+      case "custom":
+        return "Custom";
       default:
-        return "✨";
+        return frequency;
     }
   };
 
   return (
-    <article className="group rounded-2xl border border-base-300 bg-base-100 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="p-5 sm:p-6">
-        {/* ================= HEADER ================= */}
+    <article className="flex h-full flex-col rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-start gap-3">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${category.iconBg}`}
+        >
+          {category.icon}
+        </div>
 
-        <div className="flex items-start gap-4">
-          {/* Category icon */}
-          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg sm:flex">
-            {getCategoryIcon()}
-          </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-bold text-base-content sm:text-lg">
+                {habit.habitName}
+              </h2>
 
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="truncate text-lg font-semibold text-base-content">
-                  {habit.habitName}
-                </h2>
+              {habit.description && (
+                <p className="mt-1 line-clamp-1 text-sm text-base-content/55">
+                  {habit.description}
+                </p>
+              )}
+            </div>
 
-                {habit.description && (
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-base-content/60">
-                    {habit.description}
-                  </p>
-                )}
+            {(onEdit || onDelete) && (
+              <div className="dropdown dropdown-end shrink-0">
+                <button
+                  type="button"
+                  tabIndex={0}
+                  aria-label="Habit options"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-lg leading-none text-base-content/40 transition hover:bg-base-200 hover:text-base-content"
+                >
+                  ⋯
+                </button>
+
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content menu z-50 mt-1 w-32 rounded-xl border border-base-300 bg-base-100 p-1.5 shadow-lg"
+                >
+                  {onEdit && (
+                    <li>
+                      <button type="button" onClick={() => onEdit(habit)}>
+                        Edit
+                      </button>
+                    </li>
+                  )}
+
+                  {onDelete && (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(habit)}
+                        className="text-error hover:bg-error/10"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  )}
+                </ul>
               </div>
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${category.badge}`}
+            >
+              {habit.category}
+            </span>
 
-              <span className={`badge badge-sm ${getCategoryBadge()}`}>
-                {habit.category}
+            <span className="rounded-full border border-base-300 bg-base-100 px-2.5 py-1 text-[11px] font-medium text-base-content/50">
+              {formatFrequency(habit.frequency)}
+            </span>
+
+            {habit.type !== "boolean" && (
+              <span className="rounded-full border border-base-300 bg-base-100 px-2.5 py-1 text-[11px] font-medium text-base-content/50">
+                {formatType(habit.type)}
               </span>
-            </div>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* ================= HABIT DETAILS ================= */}
+      <div className="mt-5">
+        {/* Target */}
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="badge badge-outline border-base-300 text-base-content/70">
-            {habit.type}
-          </span>
+        {hasTarget && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
+                  Daily Target
+                </p>
 
-          <span className="badge badge-outline border-base-300 text-base-content/70">
-            {habit.frequency}
-          </span>
-        </div>
-
-        {/* ================= TARGET ================= */}
-
-        {habit.target !== undefined && habit.target !== null && (
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-base-200 px-4 py-3">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-base-content/45">
-                Daily Target
-              </p>
-
-              <p className="mt-1 text-sm font-semibold text-base-content">
-                {habit.target}
-                {habit.unit ? ` ${habit.unit}` : ""}
-              </p>
-            </div>
-
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm">
-              🎯
+                <p className="mt-1 text-sm font-bold text-base-content">
+                  {habit.target}
+                  {habit.unit ? ` ${habit.unit}` : ""}
+                </p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* ================= TODAY'S PROGRESS ================= */}
-
-        <div className="mt-5">
+        <div>
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-semibold text-base-content">
               Today's Progress
             </p>
 
-            <span className="text-xs text-base-content/50">Keep going</span>
+            <span className="text-xs text-base-content/40">
+              {getProgressLabel(habit, existingLog)}
+            </span>
           </div>
 
           <HabitProgress
@@ -128,35 +163,91 @@ const HabitCard = ({
             onSuccess={onProgressSuccess}
           />
         </div>
+      </div>
 
-        {/* ================= ACTIONS ================= */}
+      <div className="mt-auto pt-5">
+        <div className="flex items-center justify-between border-t border-base-300 pt-4">
+          <div className="flex items-center gap-2 text-sm text-base-content/50">
+            <span className="text-base">▥</span>
 
-        {(onEdit || onDelete) && (
-          <div className="mt-5 flex justify-end gap-2 border-t border-base-300 pt-4">
-            {onEdit && (
-              <button
-                type="button"
-                onClick={() => onEdit(habit)}
-                className="btn btn-sm btn-ghost text-base-content/70 hover:bg-base-200 hover:text-base-content"
-              >
-                Edit
-              </button>
-            )}
-
-            {onDelete && (
-              <button
-                type="button"
-                onClick={() => onDelete(habit._id)}
-                className="btn btn-sm btn-ghost text-error hover:bg-error/10"
-              >
-                Delete
-              </button>
-            )}
+            <span>Streak {habit.streak ?? 0} days</span>
           </div>
-        )}
+
+          <span className="text-lg text-base-content/30">→</span>
+        </div>
       </div>
     </article>
   );
+};
+
+const getCategoryConfig = (category) => {
+  switch (category) {
+    case "Physical":
+      return {
+        icon: "🏃",
+        iconBg: "bg-success/10 text-success",
+        badge: "border-success/20 bg-success/10 text-success",
+      };
+
+    case "Spiritual":
+      return {
+        icon: "🕊️",
+        iconBg: "bg-secondary/10 text-secondary",
+        badge: "border-secondary/20 bg-secondary/10 text-secondary",
+      };
+
+    case "Skills":
+      return {
+        icon: "🎯",
+        iconBg: "bg-info/10 text-info",
+        badge: "border-info/20 bg-info/10 text-info",
+      };
+
+    case "Personal":
+      return {
+        icon: "🌿",
+        iconBg: "bg-primary/10 text-primary",
+        badge: "border-primary/20 bg-primary/10 text-primary",
+      };
+
+    default:
+      return {
+        icon: "✨",
+        iconBg: "bg-base-200 text-base-content/60",
+        badge: "border-base-300 bg-base-200 text-base-content/60",
+      };
+  }
+};
+
+const getProgressLabel = (habit, existingLog) => {
+  if (!existingLog) {
+    return "Keep going";
+  }
+
+  if (habit.type === "boolean") {
+    return Number(existingLog.value) === 1 ? "Completed" : "Keep going";
+  }
+
+  if (
+    habit.type === "count" ||
+    habit.type === "numeric" ||
+    habit.type === "duration"
+  ) {
+    const current = Number(existingLog.value) || 0;
+    const target = Number(habit.target) || 0;
+
+    if (target > 0) {
+      return `${Math.min(100, Math.round((current / target) * 100))}%`;
+    }
+
+    return "Updated";
+  }
+
+  if (habit.type === "rating") {
+    return existingLog.value ? `${existingLog.value}/5` : "Keep going";
+  }
+
+  return "Keep going";
 };
 
 export default HabitCard;
