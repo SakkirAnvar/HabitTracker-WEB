@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { fetchHabits, removeHabit } from "../redux/habitSlice";
 import { fetchHabitLogsByDate } from "../redux/habitLogSlice";
 import Pagination from "../layout/Pagination";
-
+import DeleteModal from "../layout/DeleteModal";
 import HabitList from "../components/habits/HabitList";
 import HabitForm from "../components/habits/HabitForm";
-import DeleteModal from "../layout/DeleteModal";
+import { HabitShimmer } from "../layout/Shimmer";
 
 import { getLocalDateString } from "../utils/date";
 
@@ -30,7 +29,6 @@ const Habits = () => {
 
   const [editingHabit, setEditingHabit] = useState(null);
   const [showForm, setShowForm] = useState(false);
-
   const [habitToDelete, setHabitToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -63,7 +61,6 @@ const Habits = () => {
 
       setHabitToDelete(null);
 
-      // Refresh current page
       dispatch(
         fetchHabits({
           page: currentPage,
@@ -90,6 +87,7 @@ const Habits = () => {
   const handleFormSuccess = () => {
     setEditingHabit(null);
     setShowForm(false);
+
     dispatch(
       fetchHabits({
         page: 1,
@@ -99,6 +97,7 @@ const Habits = () => {
 
     dispatch(fetchHabitLogsByDate(today));
   };
+
   const handleCancel = () => {
     setEditingHabit(null);
     setShowForm(false);
@@ -115,7 +114,7 @@ const Habits = () => {
     );
   };
 
-  const isLoading = status === "loading";
+  const isInitialLoading = status === "loading" && habits.length === 0;
 
   return (
     <div className="space-y-6">
@@ -151,19 +150,22 @@ const Habits = () => {
         />
       )}
 
-      {isLoading && (
-        <div className="flex min-h-[30vh] items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <span className="loading loading-spinner loading-lg text-primary" />
+      {!showForm && isInitialLoading && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-5 w-28 animate-pulse rounded-lg bg-base-300/70" />
+              <div className="h-4 w-64 animate-pulse rounded-lg bg-base-300/70" />
+            </div>
 
-            <p className="text-sm text-base-content/60">
-              Loading your habits...
-            </p>
+            <div className="h-6 w-20 animate-pulse rounded-full bg-base-300/70" />
           </div>
-        </div>
+
+          <HabitShimmer />
+        </section>
       )}
 
-      {!showForm && !isLoading && (
+      {!showForm && !isInitialLoading && (
         <section>
           {totalHabits > 0 && (
             <div className="mb-4 flex items-center justify-between">

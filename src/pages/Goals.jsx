@@ -94,15 +94,6 @@ const Goals = () => {
 
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-lg">
-              🎯
-            </span>
-
-            <span className="text-sm font-medium text-primary">
-              Personal Growth
-            </span>
-          </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
             Goals

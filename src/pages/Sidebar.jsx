@@ -184,11 +184,7 @@ const Sidebar = () => {
             strokeLinejoin="round"
             d="M9.75 9a2.25 2.25 0 114.13 1.3c-.55.76-1.88 1.2-1.88 2.7"
           />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 16.5h.01"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5h.01" />
         </svg>
       ),
     },
@@ -201,7 +197,7 @@ const Sidebar = () => {
       transition-all duration-200
       ${
         isActive
-          ? "bg-primary/10 text-primary font-semibold"
+          ? "bg-primary/10 font-semibold text-primary"
           : "text-base-content/60 hover:bg-base-200 hover:text-base-content"
       }
     `;
@@ -210,8 +206,8 @@ const Sidebar = () => {
     <aside
       className="
         hidden
-        h-[calc(100vh-2rem)]
         w-64
+        self-stretch
         flex-col
         border-r
         border-base-300
@@ -225,14 +221,9 @@ const Sidebar = () => {
 
       <div className="flex-1 overflow-y-auto px-4">
         {/* Main navigation */}
-
         <nav className="space-y-1">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={linkClass}
-            >
+            <NavLink key={item.path} to={item.path} className={linkClass}>
               <span className="shrink-0">{item.icon}</span>
 
               <span>{item.name}</span>
@@ -241,18 +232,12 @@ const Sidebar = () => {
         </nav>
 
         {/* Divider */}
-
         <div className="my-7 border-t border-base-300" />
 
         {/* Account */}
-
         <nav className="space-y-1">
           {accountItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={linkClass}
-            >
+            <NavLink key={item.path} to={item.path} className={linkClass}>
               <span className="shrink-0">{item.icon}</span>
 
               <span>{item.name}</span>
@@ -293,8 +278,8 @@ const Sidebar = () => {
           <div
             className="
               absolute
-              bottom-[-30px]
-              left-[-30px]
+              -bottom-[30px]
+              -left-[30px]
               h-24
               w-24
               rounded-full
