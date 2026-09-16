@@ -12,14 +12,14 @@ import {
 } from "../api/goalApi";
 
 // ==============================
-// Fetch all goals
+// Fetch goals with pagination
 // ==============================
 
 export const fetchGoals = createAsyncThunk(
   "goals/fetchGoals",
-  async (_, { rejectWithValue }) => {
+  async ({ page = 1, limit = 6 } = {}, { rejectWithValue }) => {
     try {
-      return await getGoals();
+      return await getGoals({ page, limit });
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch goals",
@@ -88,7 +88,6 @@ export const removeGoal = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       await deleteGoal(id);
-
       return id;
     } catch (error) {
       return rejectWithValue(
@@ -163,6 +162,14 @@ const initialState = {
 
   error: null,
   progressError: null,
+
+  // Pagination
+  currentPage: 1,
+  totalPages: 1,
+  totalGoals: 0,
+  limit: 6,
+  hasNextPage: false,
+  hasPreviousPage: false,
 };
 
 // ==============================
@@ -203,7 +210,18 @@ const goalSlice = createSlice({
 
       .addCase(fetchGoals.fulfilled, (state, action) => {
         state.status = "succeeded";
+
         state.goals = action.payload.data || [];
+
+        // Pagination
+        const pagination = action.payload.pagination || {};
+
+        state.currentPage = pagination.currentPage || 1;
+        state.totalPages = pagination.totalPages || 1;
+        state.totalGoals = pagination.totalGoals || 0;
+        state.limit = pagination.limit || 6;
+        state.hasNextPage = pagination.hasNextPage || false;
+        state.hasPreviousPage = pagination.hasPreviousPage || false;
       })
 
       .addCase(fetchGoals.rejected, (state, action) => {
@@ -219,12 +237,10 @@ const goalSlice = createSlice({
         state.error = null;
       })
 
-      .addCase(addGoal.fulfilled, (state, action) => {
-        const newGoal = action.payload.data;
-
-        if (newGoal) {
-          state.goals.push(newGoal);
-        }
+      .addCase(addGoal.fulfilled, (state) => {
+        // Do not push here when using server-side pagination.
+        // Refetch the goals from the current UI.
+        state.error = null;
       })
 
       .addCase(addGoal.rejected, (state, action) => {
@@ -282,6 +298,8 @@ const goalSlice = createSlice({
 
       .addCase(removeGoal.fulfilled, (state, action) => {
         state.goals = state.goals.filter((goal) => goal._id !== action.payload);
+
+        state.totalGoals = Math.max(0, state.totalGoals - 1);
 
         if (state.selectedGoal?._id === action.payload) {
           state.selectedGoal = null;

@@ -205,17 +205,18 @@ const Sidebar = () => {
   return (
     <aside
       className="
-        hidden
-        w-64
-        self-stretch
-        flex-col
-        border-r
-        border-base-300
-        bg-base-100
-        pt-4
-        md:flex
-        lg:w-68
-      "
+    hidden
+    min-h-screen
+    w-64
+    self-stretch
+    flex-col
+    border-r
+    border-base-300
+    bg-base-100
+    pt-4
+    md:flex
+    lg:w-68
+  "
     >
       {/* ================= NAVIGATION ================= */}
 

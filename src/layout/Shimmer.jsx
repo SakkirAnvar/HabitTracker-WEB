@@ -104,37 +104,101 @@ export const HabitShimmer = () => {
 
 export const GoalShimmer = () => {
   return (
-    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={index}
-          className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
+          className="flex h-full flex-col rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6"
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 space-y-2">
-              <Shimmer className="h-5 w-3/5" />
-              <Shimmer className="h-4 w-4/5" />
+          {/* ================= HEADER ================= */}
+
+          <div className="flex items-start gap-4">
+            {/* Goal icon */}
+
+            <Shimmer className="h-12 w-12 shrink-0 rounded-xl" />
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-3">
+                {/* Title + description */}
+
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Shimmer className="h-5 w-2/3 rounded-md" />
+                  <Shimmer className="h-3.5 w-4/5 rounded-md" />
+                  <Shimmer className="h-3.5 w-3/5 rounded-md" />
+                </div>
+
+                {/* Status + menu */}
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <Shimmer className="h-6 w-16 rounded-full" />
+                  <Shimmer className="h-8 w-8 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ================= PROGRESS ================= */}
+
+          <div className="mt-6">
+            <div className="mb-2 flex items-end justify-between gap-3">
+              <Shimmer className="h-7 w-14 rounded-md" />
+              <Shimmer className="h-4 w-24 rounded-md" />
             </div>
 
-            <Shimmer className="h-8 w-8 rounded-lg" />
+            {/* Progress bar */}
+
+            <Shimmer className="h-2 w-full rounded-full" />
           </div>
+
+          {/* ================= META ================= */}
+
+          <div className="mt-5 grid grid-cols-3 divide-x divide-base-300 border-y border-base-300 py-4">
+            {/* Started */}
+
+            <div className="pr-3 space-y-2">
+              <Shimmer className="h-2.5 w-12 rounded-md" />
+              <Shimmer className="h-4 w-20 rounded-md" />
+            </div>
+
+            {/* Deadline */}
+
+            <div className="px-3 space-y-2">
+              <Shimmer className="h-2.5 w-14 rounded-md" />
+              <Shimmer className="h-4 w-20 rounded-md" />
+            </div>
+
+            {/* Time left */}
+
+            <div className="pl-3 space-y-2">
+              <Shimmer className="h-2.5 w-14 rounded-md" />
+              <Shimmer className="h-4 w-20 rounded-md" />
+            </div>
+          </div>
+
+          {/* ================= HABITS ================= */}
 
           <div className="mt-5">
-            <div className="flex justify-between">
-              <Shimmer className="h-4 w-24" />
-              <Shimmer className="h-4 w-12" />
+            {/* Habits header */}
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="space-y-2">
+                  <Shimmer className="h-4 w-14 rounded-md" />
+                  <Shimmer className="h-3 w-28 rounded-md" />
+                </div>
+
+                <Shimmer className="h-5 w-5 rounded-full" />
+              </div>
+
+              <Shimmer className="h-7 w-24 rounded-full" />
             </div>
 
-            <Shimmer className="mt-3 h-2 w-full rounded-full" />
+            {/* Attached habit chips */}
 
-            <div className="mt-4 flex justify-between">
-              <Shimmer className="h-4 w-20" />
-              <Shimmer className="h-4 w-20" />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Shimmer className="h-7 w-24 rounded-full" />
+              <Shimmer className="h-7 w-28 rounded-full" />
             </div>
-          </div>
-
-          <div className="mt-5 border-t border-base-300 pt-4">
-            <Shimmer className="h-4 w-32" />
           </div>
         </div>
       ))}

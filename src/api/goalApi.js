@@ -5,8 +5,14 @@ export const createGoal = async (data) => {
   return response.data;
 };
 
-export const getGoals = async () => {
-  const response = await api.get("/goals");
+export const getGoals = async ({ page = 1, limit = 6 } = {}) => {
+  const response = await api.get("/goals", {
+    params: {
+      page,
+      limit,
+    },
+  });
+
   return response.data;
 };
 
