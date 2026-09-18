@@ -908,4 +908,290 @@ export const ProfileShimmer = () => {
   );
 };
 
+export const SettingsShimmer = () => {
+  return (
+    <div className="mx-auto w-full max-w-6xl space-y-6 pb-8">
+      <section>
+        {/* Breadcrumb */}
+
+        <div className="mb-3 flex items-center gap-2">
+          <Shimmer className="h-4 w-4 rounded-full" />
+          <Shimmer className="h-4 w-16" />
+          <Shimmer className="h-4 w-3" />
+          <Shimmer className="h-4 w-20" />
+        </div>
+
+        {/* Header Banner */}
+
+        <div className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100 px-6 py-7 sm:px-8 sm:py-8">
+          <div className="space-y-3">
+            <Shimmer className="h-3 w-28" />
+            <Shimmer className="h-9 w-36 sm:h-10" />
+            <Shimmer className="h-4 w-80 max-w-full" />
+          </div>
+
+          {/* Decorative shape */}
+
+          <Shimmer className="absolute -right-8 -top-10 h-36 w-36 rounded-full" />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-sm">
+        {/* Header */}
+
+        <div className="border-b border-base-300 px-6 py-5 sm:px-8">
+          <div className="flex items-center gap-3">
+            <Shimmer className="h-10 w-10 rounded-xl" />
+
+            <div className="space-y-2">
+              <Shimmer className="h-5 w-24" />
+              <Shimmer className="h-4 w-72 max-w-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Password Form */}
+
+        <div className="px-6 py-6 sm:px-8">
+          <div className="mb-6 space-y-2">
+            <Shimmer className="h-5 w-36" />
+            <Shimmer className="h-4 w-72 max-w-full" />
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {/* Current Password */}
+
+            <div className="space-y-2">
+              <Shimmer className="h-4 w-32" />
+              <Shimmer className="h-11 w-full rounded-xl" />
+            </div>
+
+            {/* New Password */}
+
+            <div className="space-y-2">
+              <Shimmer className="h-4 w-28" />
+              <Shimmer className="h-11 w-full rounded-xl" />
+              <Shimmer className="h-3 w-32" />
+            </div>
+
+            {/* Confirm Password */}
+
+            <div className="space-y-2 md:col-span-2">
+              <Shimmer className="h-4 w-40" />
+              <Shimmer className="h-11 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+
+        {/* Action */}
+
+        <div className="flex justify-end border-t border-base-300 px-6 py-4 sm:px-8">
+          <Shimmer className="h-10 w-40 rounded-xl" />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-sm">
+        {/* Header */}
+
+        <div className="border-b border-base-300 px-6 py-5 sm:px-8">
+          <div className="flex items-center gap-3">
+            <Shimmer className="h-10 w-10 rounded-xl" />
+
+            <div className="space-y-2">
+              <Shimmer className="h-5 w-28" />
+              <Shimmer className="h-4 w-64 max-w-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Theme Cards */}
+
+        <div className="p-6 sm:p-8">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-base-300 p-4"
+              >
+                <Shimmer className="mb-4 h-24 w-full rounded-xl" />
+
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-2">
+                    <Shimmer className="h-4 w-16" />
+                    <Shimmer className="h-3 w-28" />
+                  </div>
+
+                  <Shimmer className="h-6 w-6 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-8">
+        <div className="flex items-center gap-3">
+          <Shimmer className="h-10 w-10 rounded-xl" />
+
+          <div className="space-y-2">
+            <Shimmer className="h-5 w-40" />
+            <Shimmer className="h-4 w-72 max-w-full" />
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-start gap-4 rounded-2xl border border-base-300 p-4 sm:p-5">
+          <Shimmer className="h-10 w-10 shrink-0 rounded-xl" />
+
+          <div className="flex-1 space-y-2">
+            <Shimmer className="h-4 w-36" />
+            <Shimmer className="h-3 w-full max-w-2xl" />
+            <Shimmer className="h-3 w-3/4 max-w-xl" />
+          </div>
+        </div>
+      </section>
+
+      <div className="pb-2">
+        <Shimmer className="mx-auto h-3 w-40" />
+      </div>
+    </div>
+  );
+};
+
+export const HelpAndSupportShimmer = () => {
+  return (
+    <div className="mx-auto w-full max-w-6xl space-y-7 pb-8">
+      <section className="relative overflow-hidden">
+        {/* Breadcrumb */}
+
+        <div className="mb-5 flex items-center gap-2">
+          <Shimmer className="h-4 w-4 rounded-full" />
+          <Shimmer className="h-4 w-12" />
+          <Shimmer className="h-4 w-3" />
+          <Shimmer className="h-4 w-28" />
+        </div>
+
+        <div className="relative min-h-[145px]">
+          <div className="space-y-3">
+            <Shimmer className="h-3 w-28" />
+            <Shimmer className="h-9 w-72 max-w-full sm:h-10" />
+            <Shimmer className="h-4 w-96 max-w-full" />
+          </div>
+
+          {/* Decorative area */}
+
+          <Shimmer className="absolute right-4 top-0 hidden h-28 w-44 rounded-3xl sm:block" />
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <Shimmer className="h-11 w-11 rounded-xl" />
+
+          <div className="space-y-2">
+            <Shimmer className="h-5 w-28" />
+            <Shimmer className="h-4 w-72 max-w-full" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Shimmer className="h-12 flex-1 rounded-xl" />
+          <Shimmer className="h-12 w-full rounded-xl sm:w-28" />
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-4 space-y-2">
+          <Shimmer className="h-6 w-36" />
+          <Shimmer className="h-4 w-72 max-w-full" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <Shimmer className="h-11 w-11 rounded-xl" />
+                <Shimmer className="h-8 w-8 rounded-full" />
+              </div>
+
+              <Shimmer className="mt-5 h-5 w-32" />
+              <Shimmer className="mt-2 h-4 w-full" />
+              <Shimmer className="mt-1.5 h-4 w-3/4" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <Shimmer className="h-6 w-56" />
+            <Shimmer className="h-4 w-64 max-w-full" />
+          </div>
+
+          {/* Category pills */}
+
+          <div className="flex flex-wrap gap-2">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <Shimmer key={item} className="h-8 w-16 rounded-full" />
+            ))}
+          </div>
+        </div>
+
+        {/* FAQ rows */}
+
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+            <div
+              key={item}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-base-300 bg-base-100 px-4 py-4 sm:px-5"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <Shimmer className="h-9 w-9 shrink-0 rounded-xl" />
+
+                <Shimmer className="h-4 w-72 max-w-[65vw]" />
+              </div>
+
+              <Shimmer className="h-8 w-8 shrink-0 rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-base-300 bg-base-100 shadow-sm">
+        <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between lg:p-7">
+          <div className="flex items-start gap-4">
+            <Shimmer className="h-11 w-11 shrink-0 rounded-xl" />
+
+            <div className="space-y-2">
+              <Shimmer className="h-5 w-32" />
+              <Shimmer className="h-4 w-96 max-w-full" />
+
+              <Shimmer className="mt-2 h-9 w-36 rounded-xl" />
+            </div>
+          </div>
+
+          <div className="hidden h-16 w-px bg-base-300 lg:block" />
+
+          <div className="flex items-center gap-3">
+            <Shimmer className="h-10 w-10 rounded-xl" />
+
+            <div className="space-y-2">
+              <Shimmer className="h-3 w-24" />
+              <Shimmer className="h-3 w-32" />
+              <Shimmer className="h-3 w-24" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="pb-2">
+        <Shimmer className="mx-auto h-3 w-40" />
+      </div>
+    </div>
+  );
+};
+
 export default Shimmer;
