@@ -30,14 +30,14 @@ const NavBar = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="sticky top-0 z-50 w-full">
       <div
         className="
           navbar
           min-h-16
-          bg-base-100
           border-b
           border-base-300
+          bg-base-100
           px-4
           shadow-sm
           lg:px-6
@@ -53,7 +53,7 @@ const NavBar = () => {
             <img
               src={AVEN_LOGO}
               alt="Aven"
-              className="w-36.25 h-auto object-contain"
+              className="h-auto w-36.25 object-contain"
             />
           </Link>
         </div>
@@ -78,15 +78,11 @@ const NavBar = () => {
                 hover:bg-base-200
               "
             >
-              {/* Avatar */}
-
               <div className="avatar">
                 <div className="w-9 rounded-full ring-1 ring-base-300">
                   <img src={profilePhoto} alt="Profile" />
                 </div>
               </div>
-
-              {/* User name */}
 
               <div className="hidden text-left md:block">
                 <p className="text-sm font-semibold leading-tight text-base-content">
@@ -95,8 +91,6 @@ const NavBar = () => {
 
                 <p className="text-xs text-base-content/60">View profile</p>
               </div>
-
-              {/* Arrow */}
 
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -134,7 +128,7 @@ const NavBar = () => {
                 shadow-lg
               "
             >
-              {/* ================= USER INFORMATION ================= */}
+              {/* USER INFORMATION */}
 
               <li className="mb-2">
                 <div className="flex items-center gap-3 px-2 py-3 hover:bg-transparent">
@@ -158,7 +152,7 @@ const NavBar = () => {
 
               <div className="divider my-1" />
 
-              {/* ================= PROFILE ================= */}
+              {/* PROFILE */}
 
               <li>
                 <Link
@@ -183,7 +177,7 @@ const NavBar = () => {
                 </Link>
               </li>
 
-              {/* ================= SETTINGS ================= */}
+              {/* SETTINGS */}
 
               <li>
                 <Link
@@ -210,15 +204,12 @@ const NavBar = () => {
 
               <div className="divider my-1" />
 
-              {/* ================= LOGOUT ================= */}
+              {/* LOGOUT */}
 
               <li>
                 <button
                   onClick={handleLogout}
-                  className="
-                    text-error
-                    hover:bg-error/10
-                  "
+                  className="text-error hover:bg-error/10"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

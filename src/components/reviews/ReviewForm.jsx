@@ -104,7 +104,7 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
 
       setTimeout(() => {
         onSuccess?.();
-      }, 2000);
+      }, 3000);
     } catch (err) {
       console.error("Review save error:", err);
 
@@ -118,7 +118,6 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
       setLoading(false);
     }
   };
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -380,7 +379,7 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary min-w-32 rounded-xl px-5"
+            className="btn btn-primary rounded-xl px-6"
           >
             {loading ? (
               <>

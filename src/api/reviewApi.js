@@ -10,8 +10,21 @@ export const getReviewByDate = async (date) => {
   return response.data;
 };
 
-export const getReviews = async () => {
-  const response = await api.get("/reviews");
+export const getReviews = async ({
+  page = 1,
+  limit = 6,
+  search = "",
+  sort = "newest",
+} = {}) => {
+  const response = await api.get("/reviews", {
+    params: {
+      page,
+      limit,
+      search,
+      sort,
+    },
+  });
+
   return response.data;
 };
 

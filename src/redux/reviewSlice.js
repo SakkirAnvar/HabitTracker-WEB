@@ -7,23 +7,29 @@ import {
   updateReview,
 } from "../api/reviewApi";
 
-/* ================= FETCH REVIEWS ================= */
-
 export const fetchReviews = createAsyncThunk(
   "review/fetchReviews",
-  async (_, { rejectWithValue }) => {
+  async (
+    { page = 1, limit = 6, search = "", sort = "newest" } = {},
+    { rejectWithValue },
+  ) => {
     try {
-      return await getReviews();
+      return await getReviews({
+        page,
+        limit,
+        search,
+        sort,
+      });
     } catch (error) {
       return rejectWithValue({
         status: error.response?.status,
         message: error.response?.data?.message || "Failed to fetch reviews",
+        data: error.response?.data?.data || [],
+        pagination: error.response?.data?.pagination || null,
       });
     }
   },
 );
-
-/* ================= FETCH REVIEW BY DATE ================= */
 
 export const fetchReviewByDate = createAsyncThunk(
   "review/fetchReviewByDate",
@@ -39,8 +45,6 @@ export const fetchReviewByDate = createAsyncThunk(
   },
 );
 
-/* ================= ADD REVIEW ================= */
-
 export const addReview = createAsyncThunk(
   "review/addReview",
   async (data, { rejectWithValue }) => {
@@ -53,8 +57,6 @@ export const addReview = createAsyncThunk(
     }
   },
 );
-
-/* ================= EDIT REVIEW ================= */
 
 export const editReview = createAsyncThunk(
   "review/editReview",
@@ -69,13 +71,19 @@ export const editReview = createAsyncThunk(
   },
 );
 
-/* ================= SLICE ================= */
-
 const reviewSlice = createSlice({
   name: "review",
 
   initialState: {
     reviews: [],
+
+    currentPage: 1,
+    totalPages: 1,
+    totalReviews: 0,
+    limit: 6,
+    hasNextPage: false,
+    hasPreviousPage: false,
+
     selectedReview: null,
 
     status: "idle",
@@ -96,8 +104,6 @@ const reviewSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      /* ================= FETCH REVIEWS ================= */
-
       .addCase(fetchReviews.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -107,6 +113,24 @@ const reviewSlice = createSlice({
         state.status = "succeeded";
 
         state.reviews = action.payload?.data || [];
+
+        const pagination = action.payload?.pagination;
+
+        if (pagination) {
+          state.currentPage = pagination.currentPage ?? 1;
+          state.totalPages = pagination.totalPages ?? 1;
+          state.totalReviews = pagination.totalReviews ?? 0;
+          state.limit = pagination.limit ?? 6;
+          state.hasNextPage = pagination.hasNextPage ?? false;
+          state.hasPreviousPage = pagination.hasPreviousPage ?? false;
+        } else {
+          state.currentPage = 1;
+          state.totalPages = 1;
+          state.totalReviews = state.reviews.length;
+          state.limit = 6;
+          state.hasNextPage = false;
+          state.hasPreviousPage = false;
+        }
       })
 
       .addCase(fetchReviews.rejected, (state, action) => {
@@ -114,15 +138,28 @@ const reviewSlice = createSlice({
 
         if (action.payload?.status === 404) {
           state.reviews = [];
+
+          state.currentPage = action.payload?.pagination?.currentPage ?? 1;
+
+          state.totalPages = action.payload?.pagination?.totalPages ?? 0;
+
+          state.totalReviews = action.payload?.pagination?.totalReviews ?? 0;
+
+          state.limit = action.payload?.pagination?.limit ?? 6;
+
+          state.hasNextPage = action.payload?.pagination?.hasNextPage ?? false;
+
+          state.hasPreviousPage =
+            action.payload?.pagination?.hasPreviousPage ?? false;
+
           state.status = "succeeded";
           state.error = null;
+
           return;
         }
 
         state.error = action.payload;
       })
-
-      /* ================= FETCH REVIEW BY DATE ================= */
 
       .addCase(fetchReviewByDate.pending, (state) => {
         state.selectedStatus = "loading";
@@ -141,9 +178,6 @@ const reviewSlice = createSlice({
         state.selectedError = action.payload;
         state.selectedReview = null;
       })
-
-      /* ================= ADD REVIEW ================= */
-
       .addCase(addReview.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -151,30 +185,19 @@ const reviewSlice = createSlice({
 
       .addCase(addReview.fulfilled, (state, action) => {
         state.status = "succeeded";
+        state.error = null;
 
         const review = action.payload?.data;
 
         if (!review) return;
 
         state.selectedReview = review;
-
-        const existingIndex = state.reviews.findIndex(
-          (item) => item._id === review._id,
-        );
-
-        if (existingIndex !== -1) {
-          state.reviews[existingIndex] = review;
-        } else {
-          state.reviews.unshift(review);
-        }
       })
 
       .addCase(addReview.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
-
-      /* ================= EDIT REVIEW ================= */
 
       .addCase(editReview.pending, (state) => {
         state.status = "loading";
@@ -183,20 +206,13 @@ const reviewSlice = createSlice({
 
       .addCase(editReview.fulfilled, (state, action) => {
         state.status = "succeeded";
+        state.error = null;
 
         const review = action.payload?.data;
 
         if (!review) return;
 
         state.selectedReview = review;
-
-        const index = state.reviews.findIndex(
-          (item) => item._id === review._id,
-        );
-
-        if (index !== -1) {
-          state.reviews[index] = review;
-        }
       })
 
       .addCase(editReview.rejected, (state, action) => {
