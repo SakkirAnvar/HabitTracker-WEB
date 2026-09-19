@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AnalyticsShimmer } from "../layout/Shimmer";
 import {
@@ -7,9 +7,7 @@ import {
   fetchMonthlyAnalytics,
   fetchCalendarAnalytics,
 } from "../redux/analyticSlice";
-
 import { fetchHabits } from "../redux/habitSlice";
-
 import WeeklyChart from "../components/analytics/WeeklyChart";
 import MonthlyChart from "../components/analytics/MonthlyChart";
 import CalendarHeatmap from "../components/analytics/CalenderHeatMap";
@@ -22,6 +20,33 @@ const categoryIcons = {
   personal: "🌱",
 };
 
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const getMonthString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
+};
+
+const getStartOfWeek = (date) => {
+  const current = new Date(date);
+  const day = current.getDay();
+
+  const difference = day === 0 ? -6 : 1 - day;
+
+  current.setDate(current.getDate() + difference);
+  current.setHours(0, 0, 0, 0);
+
+  return current;
+};
+
 const Analytics = () => {
   const dispatch = useDispatch();
 
@@ -30,42 +55,73 @@ const Analytics = () => {
     weekly,
     monthly,
     calendar,
-    dailyStatus,
-    weeklyStatus,
     monthlyStatus,
     calendarStatus,
-    weeklyError,
     monthlyError,
     calendarError,
   } = useSelector((store) => store.analytic);
 
   const { habits, status: habitStatus } = useSelector((store) => store.habit);
 
-  useEffect(() => {
-    dispatch(fetchDailyAnalytics());
-    dispatch(fetchWeeklyAnalytics());
-    dispatch(fetchMonthlyAnalytics());
-    dispatch(fetchCalendarAnalytics());
+  const today = new Date();
 
+  const currentMonth = getMonthString(today);
+  const currentWeek = getLocalDateString(getStartOfWeek(today));
+
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedWeek, setSelectedWeek] = useState(currentWeek);
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
+
+  useEffect(() => {
+    dispatch(
+      fetchDailyAnalytics({
+        date: selectedDate,
+      }),
+    );
+  }, [dispatch, selectedDate]);
+
+  useEffect(() => {
+    dispatch(
+      fetchWeeklyAnalytics({
+        date: selectedWeek,
+      }),
+    );
+  }, [dispatch, selectedWeek]);
+
+  useEffect(() => {
+    dispatch(
+      fetchMonthlyAnalytics({
+        date: `${selectedMonth}-01`,
+      }),
+    );
+  }, [dispatch, selectedMonth]);
+
+  useEffect(() => {
+    const [year, month] = selectedMonth.split("-");
+
+    dispatch(
+      fetchCalendarAnalytics({
+        year: Number(year),
+        month: Number(month),
+      }),
+    );
+  }, [dispatch, selectedMonth]);
+
+  useEffect(() => {
     if (habitStatus === "idle") {
       dispatch(fetchHabits());
     }
   }, [dispatch, habitStatus]);
 
-  const isLoading =
-    dailyStatus === "loading" ||
-    weeklyStatus === "loading" ||
-    monthlyStatus === "loading" ||
-    calendarStatus === "loading" ||
-    habitStatus === "loading";
+  const isInitialLoading = !daily && !weekly && !monthly && !calendar;
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <AnalyticsShimmer />;
   }
 
   return (
     <div className="w-full space-y-7 pb-8">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section>
         <div>
           <p className="mb-1 text-sm font-medium text-primary">Your progress</p>
 
@@ -78,190 +134,158 @@ const Analytics = () => {
             building better days.
           </p>
         </div>
-
-        {/* Date / Period */}
-        <div className="flex items-center gap-2 self-start rounded-xl border border-base-300 bg-base-100 px-3 py-2 shadow-sm sm:self-auto">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-primary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-
-          <span className="text-sm font-medium text-base-content">
-            This month
-          </span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-base-content/40"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 9l6 6 6-6"
-            />
-          </svg>
-        </div>
       </section>
 
       <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
-        <div className="relative z-10 max-w-2xl">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-base-100 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm">
-            <span>🌱</span>
-            Keep going
-          </div>
+        {/* Decorative background */}
+        <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full border-[18px] border-primary/10" />
 
-          <h2 className="text-xl font-bold text-base-content sm:text-2xl">
-            Small actions are becoming real progress.
-          </h2>
+        <div className="pointer-events-none absolute -bottom-12 right-20 h-28 w-28 rounded-full bg-secondary/10" />
 
-          <p className="mt-2 max-w-xl text-sm leading-6 text-base-content/60">
-            Your daily consistency adds up over time. Use your analytics to
-            understand what is working and keep moving forward.
-          </p>
-        </div>
-
-        {/* Decorative graphic */}
-        <div className="pointer-events-none absolute -right-6 -top-8 hidden h-48 w-48 rounded-full border-[18px] border-primary/10 sm:block" />
-
-        <div className="pointer-events-none absolute right-8 bottom-5 hidden h-20 w-20 rounded-full bg-secondary/10 sm:block" />
-
-        <div className="pointer-events-none absolute right-16 top-10 hidden text-5xl opacity-20 sm:block">
+        <div className="pointer-events-none absolute right-10 top-12 text-5xl text-primary/10">
           ✦
         </div>
 
-        <div className="pointer-events-none absolute right-16 bottom-5 hidden text-3xl opacity-20 sm:block">
-          🌿
-        </div>
-      </section>
+        {/* Header */}
+        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="mb-1 text-sm font-medium text-primary">
+              Daily progress
+            </p>
 
-      {daily && (
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+              Your day at a glance.
+            </h1>
+          </div>
+
+          {/* Date selector */}
+          <label className="flex h-10 shrink-0 items-center gap-2 rounded-xl border border-base-300 bg-base-100/90 px-3 shadow-sm backdrop-blur-sm">
+            <input
+              type="date"
+              value={selectedDate}
+              max={getLocalDateString()}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setSelectedDate(e.target.value);
+                }
+              }}
+              className="w-[135px] bg-transparent text-xs font-medium text-base-content outline-none"
+            />
+          </label>
+        </div>
+
+        {/* Daily Summary */}
+        <div className="relative z-10 mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {/* Completion Rate */}
-          <div className="group rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
+          <div className="rounded-2xl border border-base-300/70 bg-base-100/90 p-4 shadow-sm backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-base-content/60">
+                <p className="text-xs font-medium text-base-content/55">
                   Completion Rate
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-base-content">
+                <p className="mt-2 text-2xl font-bold tracking-tight text-base-content">
                   {daily.overall}%
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-sm text-primary">
                 ✓
               </div>
             </div>
 
             <progress
-              className="progress progress-primary mt-4 h-1.5 w-full"
+              className="progress progress-primary mt-3 h-1.5 w-full"
               value={daily.overall}
               max="100"
             />
 
-            <p className="mt-2 text-xs text-base-content/50">
-              Today's completion
+            <p className="mt-2 text-[11px] text-base-content/45">
+              Selected day's completion
             </p>
           </div>
 
-          {/* Completed */}
-          <div className="group rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
+          {/* Habits Completed */}
+          <div className="rounded-2xl border border-base-300/70 bg-base-100/90 p-4 shadow-sm backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-base-content/60">
+                <p className="text-xs font-medium text-base-content/55">
                   Habits Completed
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-base-content">
+                <p className="mt-2 text-2xl font-bold tracking-tight text-base-content">
                   {daily.completed}
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary/10 text-sm text-secondary">
                 ✓
               </div>
             </div>
 
-            <p className="mt-4 text-xs text-base-content/50">
-              Out of {daily.expected} expected today
+            <p className="mt-4 text-[11px] text-base-content/45">
+              Out of {daily.expected} expected
             </p>
           </div>
 
           {/* Expected */}
-          <div className="group rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
+          <div className="rounded-2xl border border-base-300/70 bg-base-100/90 p-4 shadow-sm backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-base-content/60">
-                  Expected Today
+                <p className="text-xs font-medium text-base-content/55">
+                  Expected
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-base-content">
+                <p className="mt-2 text-2xl font-bold tracking-tight text-base-content">
                   {daily.expected}
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary/10 text-sm text-secondary">
                 ○
               </div>
             </div>
 
-            <p className="mt-4 text-xs text-base-content/50">
-              Habits scheduled today
+            <p className="mt-4 text-[11px] text-base-content/45">
+              Habits scheduled for this day
             </p>
           </div>
 
           {/* Habits Tracked */}
-          <div className="group rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
+          <div className="rounded-2xl border border-base-300/70 bg-base-100/90 p-4 shadow-sm backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-base-content/60">
+                <p className="text-xs font-medium text-base-content/55">
                   Habits Tracked
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-base-content">
+                <p className="mt-2 text-2xl font-bold tracking-tight text-base-content">
                   {habits?.length || 0}
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-sm text-primary">
                 ◎
               </div>
             </div>
 
-            <p className="mt-4 text-xs text-base-content/50">
+            <p className="mt-4 text-[11px] text-base-content/45">
               Active habits in your routine
             </p>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {daily?.categories && (
         <section className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-          <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-base-content">
-                Category Progress
-              </h2>
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-base-content">
+              Category Progress
+            </h2>
 
-              <p className="text-sm text-base-content/50">
-                See how different areas of your routine are progressing today.
-              </p>
-            </div>
+            <p className="text-sm text-base-content/50">
+              See how different areas of your routine are progressing today.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -311,24 +335,22 @@ const Analytics = () => {
           </div>
         </section>
       )}
-
       <section className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-        {/* Weekly */}
+        {/* Weekly Progress */}
         <div className="flex min-w-0">
-          {weeklyError && (
-            <div className="alert alert-error mb-4 w-full rounded-xl">
-              <span>{weeklyError}</span>
-            </div>
-          )}
-
           {weekly && (
             <div className="flex w-full">
-              <WeeklyChart data={weekly} />
+              <WeeklyChart
+                data={weekly}
+                selectedWeek={selectedWeek}
+                onWeekChange={setSelectedWeek}
+                maxDate={getLocalDateString()}
+              />
             </div>
           )}
         </div>
 
-        {/* Calendar */}
+        {/* Consistency Calendar */}
         <div className="flex min-w-0">
           {calendarError && (
             <div className="alert alert-error mb-4 w-full rounded-xl">
@@ -338,7 +360,13 @@ const Analytics = () => {
 
           {calendar && (
             <div className="flex w-full">
-              <CalendarHeatmap data={calendar} />
+              <CalendarHeatmap
+                data={calendar}
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+                maxMonth={currentMonth}
+                loading={calendarStatus === "loading"}
+              />
             </div>
           )}
         </div>
@@ -351,7 +379,15 @@ const Analytics = () => {
           </div>
         )}
 
-        {monthly && <MonthlyChart data={monthly} />}
+        {monthly && (
+          <MonthlyChart
+            data={monthly}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            maxMonth={currentMonth}
+            loading={monthlyStatus === "loading"}
+          />
+        )}
       </section>
 
       {habits?.length > 0 && (
@@ -378,8 +414,8 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Decorative circles */}
         <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-primary/5" />
+
         <div className="pointer-events-none absolute -bottom-10 right-20 h-24 w-24 rounded-full bg-secondary/5" />
       </section>
     </div>

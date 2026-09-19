@@ -1,4 +1,4 @@
-const WeeklyChart = ({ data }) => {
+const WeeklyChart = ({ data, selectedWeek, onWeekChange, maxDate }) => {
   if (!data?.daily?.length) {
     return (
       <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center shadow-sm">
@@ -67,7 +67,6 @@ const WeeklyChart = ({ data }) => {
     <section className="flex h-full w-full flex-col rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
       <div className="flex items-center justify-between gap-3">
         {/* LEFT */}
-
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
             📊
@@ -85,10 +84,8 @@ const WeeklyChart = ({ data }) => {
         </div>
 
         {/* RIGHT */}
-
         <div className="flex shrink-0 items-center">
           {/* Average */}
-
           <div className="hidden px-4 text-center sm:block sm:px-5">
             <p className="text-[10px] font-medium text-base-content/50">
               Weekly Average
@@ -101,29 +98,34 @@ const WeeklyChart = ({ data }) => {
 
           <div className="hidden h-9 w-px bg-base-300 sm:block" />
 
-          {/* Selector */}
+          {/* Week selector */}
+          <label className="ml-0 flex h-10 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-3 transition hover:bg-base-200 sm:ml-3">
+            <input
+              type="date"
+              value={selectedWeek}
+              max={maxDate}
+              onChange={(e) => {
+                const value = e.target.value;
 
-          <button
-            type="button"
-            className="ml-0 flex h-10 min-w-[105px] items-center justify-between gap-3 rounded-xl border border-base-300 bg-base-100 px-3 text-xs font-medium text-base-content transition hover:bg-base-200 sm:ml-3"
-          >
-            <span>This Week</span>
+                if (!value) return;
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-3.5 w-3.5 text-base-content/50"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 9l6 6 6-6"
-              />
-            </svg>
-          </button>
+                const selected = new Date(`${value}T00:00:00`);
+                const day = selected.getDay();
+
+                // Monday = first day of week
+                const difference = day === 0 ? -6 : 1 - day;
+
+                selected.setDate(selected.getDate() + difference);
+
+                const year = selected.getFullYear();
+                const month = String(selected.getMonth() + 1).padStart(2, "0");
+                const date = String(selected.getDate()).padStart(2, "0");
+
+                onWeekChange(`${year}-${month}-${date}`);
+              }}
+              className="w-[125px] bg-transparent text-[11px] font-medium text-base-content outline-none"
+            />
+          </label>
         </div>
       </div>
 

@@ -1,4 +1,10 @@
-const MonthlyChart = ({ data }) => {
+const MonthlyChart = ({
+  data,
+  selectedMonth,
+  onMonthChange,
+  maxMonth,
+  loading = false,
+}) => {
   if (!data?.daily?.length) {
     return (
       <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center shadow-sm">
@@ -167,252 +173,265 @@ const MonthlyChart = ({ data }) => {
   });
 
   return (
-    <section className="rounded-2xl border border-base-300 bg-base-100 px-5 pb-4 pt-5 shadow-sm sm:px-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        {/* LEFT */}
+    <div className="relative w-full">
+      <section
+        className={`rounded-2xl border border-base-300 bg-base-100 px-5 pb-4 pt-5 shadow-sm transition-opacity duration-200 sm:px-6 ${
+          loading ? "opacity-60" : "opacity-100"
+        }`}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* LEFT */}
 
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base">
-            📈
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base">
+              📈
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold leading-tight text-base-content">
+                Monthly Progress
+              </h2>
+
+              <p className="mt-1 text-xs text-base-content/55 sm:text-sm">
+                Daily consistency throughout the month.
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h2 className="text-lg font-semibold leading-tight text-base-content">
-              Monthly Progress
-            </h2>
+          {/* RIGHT */}
 
-            <p className="mt-1 text-xs text-base-content/55 sm:text-sm">
-              Daily consistency throughout the month.
-            </p>
-          </div>
-        </div>
+          <div className="flex items-center justify-between lg:justify-end">
+            {/* Monthly Average */}
 
-        {/* RIGHT */}
+            <div className="px-3 text-center sm:px-5">
+              <p className="text-[9px] font-medium text-base-content/50">
+                Monthly Average
+              </p>
 
-        <div className="flex items-center justify-between lg:justify-end">
-          {/* Monthly Average */}
+              <p className="mt-1 text-lg font-bold leading-none text-primary sm:text-xl">
+                {monthlyAverage}%
+              </p>
+            </div>
 
-          <div className="px-3 text-center sm:px-5">
-            <p className="text-[9px] font-medium text-base-content/50">
-              Monthly Average
-            </p>
+            <div className="h-8 w-px bg-base-300" />
 
-            <p className="mt-1 text-lg font-bold leading-none text-primary sm:text-xl">
-              {monthlyAverage}%
-            </p>
-          </div>
+            {/* Best Day */}
 
-          <div className="h-8 w-px bg-base-300" />
+            <div className="px-3 text-center sm:px-5">
+              <p className="text-[9px] font-medium text-base-content/50">
+                Best Day
+              </p>
 
-          {/* Best Day */}
+              <p className="mt-1 text-sm font-bold leading-none text-primary">
+                {bestDayValue}%
+              </p>
 
-          <div className="px-3 text-center sm:px-5">
-            <p className="text-[9px] font-medium text-base-content/50">
-              Best Day
-            </p>
+              <p className="mt-1 text-[9px] text-base-content/45">
+                {bestDay ? formatDate(bestDay.date) : "-"}
+              </p>
+            </div>
 
-            <p className="mt-1 text-sm font-bold leading-none text-primary">
-              {bestDayValue}%
-            </p>
-
-            <p className="mt-1 text-[9px] text-base-content/45">
-              {bestDay ? formatDate(bestDay.date) : "-"}
-            </p>
-          </div>
-
-          <div className="hidden h-8 w-px bg-base-300 sm:block" />
-
-          {/* Month */}
-
-          <button
-            type="button"
-            className="ml-2 hidden h-9 min-w-[105px] items-center justify-between gap-3 rounded-xl border border-base-300 bg-base-100 px-3 text-[11px] font-medium text-base-content transition hover:bg-base-200 sm:flex"
-          >
-            <span>This Month</span>
-
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-3.5 w-3.5 text-base-content/50"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 9l6 6 6-6"
+            <div className="hidden h-8 w-px bg-base-300 sm:block" />
+            {/* Month selector */}
+            <label className="flex h-9 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-3 transition hover:bg-base-200">
+              <input
+                type="month"
+                value={selectedMonth}
+                max={maxMonth}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onMonthChange(e.target.value);
+                  }
+                }}
+                className="w-[120px] bg-transparent text-[11px] font-medium text-base-content outline-none"
               />
-            </svg>
-          </button>
+            </label>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-4 w-full overflow-x-auto">
-        <div className="min-w-[680px]">
-          <div className="relative h-[260px] w-full">
-            <svg
-              viewBox={`0 0 ${width} ${height}`}
-              className="h-full w-full overflow-visible"
-              preserveAspectRatio="none"
-            >
-              {/* GRID */}
+        <div className="mt-4 w-full overflow-x-auto">
+          <div className="min-w-[680px]">
+            <div className="relative h-[260px] w-full">
+              <svg
+                viewBox={`0 0 ${width} ${height}`}
+                className="h-full w-full overflow-visible"
+                preserveAspectRatio="none"
+              >
+                {/* GRID */}
 
-              {[100, 75, 50, 25, 0].map((value) => {
-                const y = padding.top + ((100 - value) / 100) * chartHeight;
+                {[100, 75, 50, 25, 0].map((value) => {
+                  const y = padding.top + ((100 - value) / 100) * chartHeight;
 
-                return (
-                  <g key={value}>
-                    <line
-                      x1={padding.left}
-                      x2={width - padding.right}
-                      y1={y}
-                      y2={y}
-                      className="stroke-base-300/55"
-                      strokeDasharray="3 5"
-                    />
+                  return (
+                    <g key={value}>
+                      <line
+                        x1={padding.left}
+                        x2={width - padding.right}
+                        y1={y}
+                        y2={y}
+                        className="stroke-base-300/55"
+                        strokeDasharray="3 5"
+                      />
 
-                    <text
-                      x={padding.left - 10}
-                      y={y + 4}
-                      textAnchor="end"
-                      className="fill-base-content/40 text-[10px]"
-                    >
-                      {value}
-                    </text>
-                  </g>
-                );
-              })}
+                      <text
+                        x={padding.left - 10}
+                        y={y + 4}
+                        textAnchor="end"
+                        className="fill-base-content/40 text-[10px]"
+                      >
+                        {value}
+                      </text>
+                    </g>
+                  );
+                })}
 
-              {/* AREA */}
+                {/* AREA */}
 
-              {areaPath && <path d={areaPath} className="fill-primary/10" />}
+                {areaPath && <path d={areaPath} className="fill-primary/10" />}
 
-              {/* LINE */}
+                {/* LINE */}
 
-              {linePath && (
-                <path
-                  d={linePath}
-                  fill="none"
-                  className="stroke-primary"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              )}
+                {linePath && (
+                  <path
+                    d={linePath}
+                    fill="none"
+                    className="stroke-primary"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
 
-              {/* PAST + TODAY */}
+                {/* PAST + TODAY */}
 
-              {progressPoints.map((point) => (
-                <circle
-                  key={point.date}
-                  cx={point.x}
-                  cy={point.y}
-                  r="3.5"
-                  className="fill-primary stroke-base-100"
-                  strokeWidth="2"
-                />
-              ))}
-
-              {/* FUTURE MARKERS */}
-
-              {points
-                .filter((point) => point.future)
-                .map((point) => (
+                {progressPoints.map((point) => (
                   <circle
-                    key={`future-${point.date}`}
+                    key={point.date}
                     cx={point.x}
-                    cy={bottomY}
-                    r="2"
-                    className="fill-base-content/20"
+                    cy={point.y}
+                    r="3.5"
+                    className="fill-primary stroke-base-100"
+                    strokeWidth="2"
                   />
                 ))}
 
-              {/* X LABELS */}
+                {/* FUTURE MARKERS */}
 
-              {labelIndexes.map((index) => {
-                const point = points[index];
-
-                return (
-                  <text
-                    key={`${point.date}-${index}`}
-                    x={point.x}
-                    y={height - 10}
-                    textAnchor="middle"
-                    className={`text-[10px] ${
-                      point.future
-                        ? "fill-base-content/30"
-                        : "fill-base-content/45"
-                    }`}
-                  >
-                    {formatDate(point.date)}
-                  </text>
-                );
-              })}
-            </svg>
-
-            <div className="absolute inset-0">
-              {points.map((point) => {
-                const x = (point.x / width) * 100;
-
-                const y = ((point.future ? bottomY : point.y) / height) * 100;
-
-                return (
-                  <div
-                    key={`hover-${point.date}`}
-                    className="group absolute h-8 w-8 -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                    }}
-                  >
-                    {/* Vertical guide */}
-
-                    {!point.future && (
-                      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[135px] -translate-x-1/2 -translate-y-full border-l border-dashed border-primary/20 opacity-0 transition-opacity group-hover:opacity-100" />
-                    )}
-
-                    {/* Point */}
-
-                    <div
-                      className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 shadow-sm ${
-                        point.future ? "bg-base-300" : "bg-primary"
-                      } opacity-0 transition-opacity group-hover:opacity-100`}
+                {points
+                  .filter((point) => point.future)
+                  .map((point) => (
+                    <circle
+                      key={`future-${point.date}`}
+                      cx={point.x}
+                      cy={bottomY}
+                      r="2"
+                      className="fill-base-content/20"
                     />
+                  ))}
 
-                    {/* Tooltip */}
+                {/* X LABELS */}
 
-                    <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 hidden w-[125px] -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 px-3 py-2.5 shadow-lg group-hover:block">
-                      <p className="text-[11px] font-semibold text-base-content">
-                        {formatFullDate(point.date)}
-                      </p>
+                {labelIndexes.map((index) => {
+                  const point = points[index];
 
-                      {point.future ? (
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-base-content/25" />
+                  return (
+                    <text
+                      key={`${point.date}-${index}`}
+                      x={point.x}
+                      y={height - 10}
+                      textAnchor="middle"
+                      className={`text-[10px] ${
+                        point.future
+                          ? "fill-base-content/30"
+                          : "fill-base-content/45"
+                      }`}
+                    >
+                      {formatDate(point.date)}
+                    </text>
+                  );
+                })}
+              </svg>
 
-                          <span className="text-[11px] font-medium text-base-content/60">
-                            Assigned
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-primary" />
+              <div className="absolute inset-0">
+                {points.map((point) => {
+                  const x = (point.x / width) * 100;
 
-                          <span className="text-[11px] font-medium text-base-content/70">
-                            {point.value}% completed
-                          </span>
-                        </div>
+                  const y = ((point.future ? bottomY : point.y) / height) * 100;
+
+                  return (
+                    <div
+                      key={`hover-${point.date}`}
+                      className="group absolute h-8 w-8 -translate-x-1/2 -translate-y-1/2"
+                      style={{
+                        left: `${x}%`,
+                        top: `${y}%`,
+                      }}
+                    >
+                      {/* Vertical guide */}
+
+                      {!point.future && (
+                        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[135px] -translate-x-1/2 -translate-y-full border-l border-dashed border-primary/20 opacity-0 transition-opacity group-hover:opacity-100" />
                       )}
+
+                      {/* Point */}
+
+                      <div
+                        className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 shadow-sm ${
+                          point.future ? "bg-base-300" : "bg-primary"
+                        } opacity-0 transition-opacity group-hover:opacity-100`}
+                      />
+
+                      {/* Tooltip */}
+
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 hidden w-[125px] -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 px-3 py-2.5 shadow-lg group-hover:block">
+                        <p className="text-[11px] font-semibold text-base-content">
+                          {formatFullDate(point.date)}
+                        </p>
+
+                        {point.future ? (
+                          <div className="mt-1.5 flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-base-content/25" />
+
+                            <span className="text-[11px] font-medium text-base-content/60">
+                              Assigned
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="mt-1.5 flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-primary" />
+
+                            <span className="text-[11px] font-medium text-base-content/70">
+                              {point.value}% completed
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+      {loading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-base-100/45 backdrop-blur-[1px]">
+          <div className="flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse" />
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse"
+                style={{ animationDelay: "300ms" }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

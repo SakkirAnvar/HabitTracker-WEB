@@ -10,9 +10,9 @@ import {
 
 export const fetchDailyAnalytics = createAsyncThunk(
   "analytics/fetchDaily",
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      return await getDailyAnalytics();
+      return await getDailyAnalytics(params);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch daily analytics",
@@ -23,9 +23,9 @@ export const fetchDailyAnalytics = createAsyncThunk(
 
 export const fetchWeeklyAnalytics = createAsyncThunk(
   "analytics/fetchWeekly",
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      return await getWeeklyAnalytics();
+      return await getWeeklyAnalytics(params);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch weekly analytics",
@@ -36,9 +36,9 @@ export const fetchWeeklyAnalytics = createAsyncThunk(
 
 export const fetchMonthlyAnalytics = createAsyncThunk(
   "analytics/fetchMonthly",
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      return await getMonthlyAnalytics();
+      return await getMonthlyAnalytics(params);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch monthly analytics",
@@ -49,9 +49,9 @@ export const fetchMonthlyAnalytics = createAsyncThunk(
 
 export const fetchCalendarAnalytics = createAsyncThunk(
   "analytics/fetchCalendar",
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      return await getCalendarAnalytics();
+      return await getCalendarAnalytics(params);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch calendar analytics",

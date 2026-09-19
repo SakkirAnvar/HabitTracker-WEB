@@ -52,16 +52,16 @@ const Journal = () => {
     });
   };
 
-  const formatReviewDate = (date) => {
-    if (!date) return "-";
+  // const formatReviewDate = (date) => {
+  //   if (!date) return "-";
 
-    return new Date(date).toLocaleDateString(undefined, {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  //   return new Date(date).toLocaleDateString(undefined, {
+  //     weekday: "short",
+  //     day: "numeric",
+  //     month: "short",
+  //     year: "numeric",
+  //   });
+  // };
 
   const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [showForm, setShowForm] = useState(false);
