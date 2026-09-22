@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-
 import { addGoal, editGoal } from "../../redux/goalSlice";
 import AlertMessage from "../../layout/AlertMessage";
 
@@ -17,17 +16,12 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
   const dispatch = useDispatch();
 
   const [form, setForm] = useState(() => getInitialForm(goal));
-
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
   const [loading, setLoading] = useState(false);
 
   const isEditing = Boolean(goal);
-
-  // =========================
-  // CHANGE
-  // =========================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,19 +40,11 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
     }
   };
 
-  // =========================
-  // SUBMIT
-  // =========================
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
     setMessage("");
-
-    // =========================
-    // VALIDATION
-    // =========================
 
     if (!form.title.trim()) {
       setError("Goal title is required.");
@@ -132,87 +118,60 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5">
+      <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-5 sm:p-7">
+        {/* Decorative elements */}
+        <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full border-[14px] border-primary/10" />
 
-{/* =================================================
-    HEADER
-================================================= */}
+        <div className="pointer-events-none absolute -bottom-8 right-24 h-20 w-20 rounded-full bg-secondary/10" />
 
-<section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-5 sm:p-7">
-  {/* Decorative elements */}
-  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full border-[14px] border-primary/10" />
+        <div className="pointer-events-none absolute right-6 top-6 text-4xl text-primary/10">
+          ✦
+        </div>
 
-  <div className="pointer-events-none absolute -bottom-8 right-24 h-20 w-20 rounded-full bg-secondary/10" />
+        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-primary">
+                {isEditing ? "Refine your goal" : "Set your direction"}
+              </p>
 
-  <div className="pointer-events-none absolute right-6 top-6 text-4xl text-primary/10">
-    ✦
-  </div>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+                {isEditing ? "Edit Goal" : "Create a New Goal"}
+              </h2>
 
-  <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-    <div className="flex min-w-0 items-start gap-4">
-      {/* Goal icon */}
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          className="h-6 w-6"
-        >
-          <circle cx="12" cy="12" r="8.5" />
-          <circle cx="12" cy="12" r="4" />
-          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-        </svg>
-      </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/60">
+                {isEditing
+                  ? "Update your goal details and keep your progress moving forward."
+                  : "Define something meaningful, give it a clear target, and make it measurable."}
+              </p>
+            </div>
+          </div>
 
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-primary">
-          {isEditing ? "Refine your goal" : "Set your direction"}
-        </p>
-
-        <h2 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-          {isEditing ? "Edit Goal" : "Create a New Goal"}
-        </h2>
-
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/60">
-          {isEditing
-            ? "Update your goal details and keep your progress moving forward."
-            : "Define something meaningful, give it a clear target, and make it measurable."}
-        </p>
-      </div>
-    </div>
-
-    {onCancel && (
-      <button
-        type="button"
-        onClick={onCancel}
-        disabled={loading}
-        className="btn btn-outline btn-sm shrink-0 self-start rounded-xl sm:self-center"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-4 w-4"
-        >
-          <path
-            d="M15 18l-6-6 6-6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-
-        Back to Goals
-      </button>
-    )}
-  </div>
-</section>
-
-
-
-      {/* =================================================
-          FORM
-      ================================================= */}
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+              className="btn btn-outline btn-sm shrink-0 self-start rounded-xl sm:self-center"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-4 w-4"
+              >
+                <path
+                  d="M15 18l-6-6 6-6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Back to Goals
+            </button>
+          )}
+        </div>
+      </section>
 
       <div className="rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-7">
         {/* Alert */}
@@ -235,10 +194,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
             <p className="text-sm font-medium text-error">{error}</p>
           </div>
         )}
-
-        {/* =================================================
-            1. BASIC INFORMATION
-        ================================================= */}
 
         <section>
           <SectionHeader
@@ -313,10 +268,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
 
         <div className="my-7 border-t border-base-300" />
 
-        {/* =================================================
-            2. TARGET & MEASUREMENT
-        ================================================= */}
-
         <section>
           <SectionHeader
             number="2"
@@ -383,10 +334,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
 
         <div className="my-7 border-t border-base-300" />
 
-        {/* =================================================
-            3. TIMELINE
-        ================================================= */}
-
         <section>
           <SectionHeader
             number="3"
@@ -439,10 +386,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
           </div>
         </section>
 
-        {/* =================================================
-            ACTIONS
-        ================================================= */}
-
         <div className="mt-7 flex flex-col-reverse gap-2 border-t border-base-300 pt-5 sm:flex-row sm:justify-end">
           {onCancel && (
             <button
@@ -476,10 +419,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
     </form>
   );
 };
-
-/* =========================================================
-   SECTION HEADER
-========================================================= */
 
 const SectionHeader = ({ number, title, description }) => {
   return (

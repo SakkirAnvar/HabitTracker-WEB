@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import Pagination from "../layout/Pagination";
 import DeleteModal from "../layout/DeleteModal";
 import AlertMessage from "../layout/AlertMessage";
-
 import { fetchGoals, removeGoal } from "../redux/goalSlice";
 import { fetchHabits } from "../redux/habitSlice";
-
 import GoalForm from "../components/goals/GoalForm";
 import GoalCard from "../components/goals/GoalCard";
 import GoalProgress from "../components/goals/GoalProgress";
@@ -41,10 +38,6 @@ const Goals = () => {
     message: "",
   });
 
-  // =========================
-  // FETCH GOALS
-  // =========================
-
   useEffect(() => {
     dispatch(
       fetchGoals({
@@ -54,17 +47,9 @@ const Goals = () => {
     );
   }, [dispatch, currentPage]);
 
-  // =========================
-  // FETCH HABITS
-  // =========================
-
   useEffect(() => {
     dispatch(fetchHabits());
   }, [dispatch]);
-
-  // =========================
-  // ALERT
-  // =========================
 
   const showAlert = (type, message) => {
     setAlert({
@@ -80,29 +65,17 @@ const Goals = () => {
     });
   };
 
-  // =========================
-  // CREATE
-  // =========================
-
   const handleCreate = () => {
     setEditingGoal(null);
     setViewingGoal(null);
     setShowForm(true);
   };
 
-  // =========================
-  // EDIT
-  // =========================
-
   const handleEdit = (goal) => {
     setEditingGoal(goal);
     setViewingGoal(null);
     setShowForm(true);
   };
-
-  // =========================
-  // DELETE
-  // =========================
 
   const handleDelete = (goal) => {
     setGoalToDelete(goal);
@@ -148,19 +121,11 @@ const Goals = () => {
     }
   };
 
-  // =========================
-  // VIEW PROGRESS
-  // =========================
-
   const handleViewProgress = (goal) => {
     setViewingGoal(goal);
     setShowForm(false);
     setEditingGoal(null);
   };
-
-  // =========================
-  // FORM SUCCESS
-  // =========================
 
   const handleFormSuccess = () => {
     setShowForm(false);
@@ -174,18 +139,10 @@ const Goals = () => {
     );
   };
 
-  // =========================
-  // CANCEL
-  // =========================
-
   const handleCancel = () => {
     setShowForm(false);
     setEditingGoal(null);
   };
-
-  // =========================
-  // PAGE CHANGE
-  // =========================
 
   const handlePageChange = (page) => {
     setViewingGoal(null);
@@ -199,10 +156,6 @@ const Goals = () => {
       behavior: "smooth",
     });
   };
-
-  // =========================
-  // SUMMARY
-  // =========================
 
   const activeGoals = useMemo(() => {
     return goals?.filter((goal) => goal.status === "active").length || 0;
@@ -227,10 +180,6 @@ const Goals = () => {
     return Math.round(total / goals.length);
   }, [goals]);
 
-  // =========================
-  // INITIAL LOADING
-  // =========================
-
   const isInitialLoading = status === "loading" && goals.length === 0;
 
   if (isInitialLoading) {
@@ -246,14 +195,9 @@ const Goals = () => {
     );
   }
 
-  // =========================
-  // FORM VIEW
-  // =========================
-
   if (showForm) {
     return (
       <div className="space-y-6">
-
         {alert.message && (
           <AlertMessage
             type={alert.type}
@@ -275,10 +219,6 @@ const Goals = () => {
 
   return (
     <div className="space-y-6">
-      {/* =========================
-          HERO
-      ========================= */}
-
       {!viewingGoal && (
         <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
           <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[18px] border-primary/10" />
@@ -301,8 +241,7 @@ const Goals = () => {
               </h1>
 
               <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
-                Set clear goals, connect your habits, and keep moving toward
-                the things that matter most to you.
+                Set clear goals, build habits, and keep moving forward.
               </p>
             </div>
 
@@ -318,10 +257,6 @@ const Goals = () => {
         </section>
       )}
 
-      {/* =========================
-          ALERT
-      ========================= */}
-
       {alert.message && (
         <AlertMessage
           type={alert.type}
@@ -330,10 +265,6 @@ const Goals = () => {
           onClose={clearAlert}
         />
       )}
-
-      {/* =========================
-          DETAILED PROGRESS
-      ========================= */}
 
       {viewingGoal && (
         <section className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-sm">
@@ -382,12 +313,8 @@ const Goals = () => {
                   strokeWidth="1.8"
                   className="h-4 w-4"
                 >
-                  <path
-                    d="M6 6l12 12M18 6L6 18"
-                    strokeLinecap="round"
-                  />
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
                 </svg>
-
                 Close
               </button>
             </div>
@@ -398,10 +325,6 @@ const Goals = () => {
           </div>
         </section>
       )}
-
-      {/* =========================
-          GOALS DASHBOARD
-      ========================= */}
 
       {!viewingGoal && (
         <>
@@ -426,9 +349,7 @@ const Goals = () => {
                   </svg>
                 </div>
 
-                <p className="mt-4 text-sm text-base-content/55">
-                  Total goals
-                </p>
+                <p className="mt-4 text-sm text-base-content/55">Total goals</p>
 
                 <p className="mt-1 text-2xl font-bold text-base-content">
                   {totalGoals}
@@ -445,10 +366,7 @@ const Goals = () => {
                     className="h-5 w-5"
                   >
                     <circle cx="12" cy="12" r="8.5" />
-                    <path
-                      d="M8 12h8"
-                      strokeLinecap="round"
-                    />
+                    <path d="M8 12h8" strokeLinecap="round" />
                   </svg>
                 </div>
 
@@ -478,9 +396,7 @@ const Goals = () => {
                   </svg>
                 </div>
 
-                <p className="mt-4 text-sm text-base-content/55">
-                  Completed
-                </p>
+                <p className="mt-4 text-sm text-base-content/55">Completed</p>
 
                 <p className="mt-1 text-2xl font-bold text-base-content">
                   {completedGoals}
@@ -496,10 +412,7 @@ const Goals = () => {
                     strokeWidth="1.8"
                     className="h-5 w-5"
                   >
-                    <path
-                      d="M12 4v16M4 12h16"
-                      strokeLinecap="round"
-                    />
+                    <path d="M12 4v16M4 12h16" strokeLinecap="round" />
                   </svg>
                 </div>
 
@@ -513,10 +426,6 @@ const Goals = () => {
               </div>
             </section>
           )}
-
-          {/* =========================
-              GOAL LIST
-          ========================= */}
 
           <section className="space-y-5">
             {goals?.length > 0 ? (
@@ -533,8 +442,7 @@ const Goals = () => {
                   </div>
 
                   <span className="text-sm font-medium text-base-content/45">
-                    {totalGoals}{" "}
-                    {totalGoals === 1 ? "goal" : "goals"}
+                    {totalGoals} {totalGoals === 1 ? "goal" : "goals"}
                   </span>
                 </div>
 
@@ -564,10 +472,6 @@ const Goals = () => {
                 )}
               </>
             ) : (
-              /* =========================
-                 EMPTY STATE
-              ========================= */
-
               <div className="rounded-3xl border border-dashed border-base-300 bg-base-100 px-6 py-14 text-center shadow-sm">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <svg
@@ -578,10 +482,7 @@ const Goals = () => {
                     className="h-7 w-7"
                   >
                     <circle cx="12" cy="12" r="8.5" />
-                    <path
-                      d="M12 8v8M8 12h8"
-                      strokeLinecap="round"
-                    />
+                    <path d="M12 8v8M8 12h8" strokeLinecap="round" />
                   </svg>
                 </div>
 
@@ -590,8 +491,8 @@ const Goals = () => {
                 </h2>
 
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-base-content/55">
-                  Define something that matters to you, give it a clear
-                  target, and turn it into consistent progress.
+                  Define something that matters to you, give it a clear target,
+                  and turn it into consistent progress.
                 </p>
 
                 <button
@@ -607,10 +508,6 @@ const Goals = () => {
           </section>
         </>
       )}
-
-      {/* =========================
-          DELETE MODAL
-      ========================= */}
 
       <DeleteModal
         isOpen={Boolean(goalToDelete)}

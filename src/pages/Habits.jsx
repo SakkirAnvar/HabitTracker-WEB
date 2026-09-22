@@ -48,10 +48,6 @@ const Habits = () => {
 
   const today = getLocalDateString();
 
-  // =========================
-  // FETCH HABITS
-  // =========================
-
   useEffect(() => {
     dispatch(
       fetchHabits({
@@ -61,17 +57,9 @@ const Habits = () => {
     );
   }, [dispatch, currentPage]);
 
-  // =========================
-  // FETCH TODAY'S LOGS
-  // =========================
-
   useEffect(() => {
     dispatch(fetchHabitLogsByDate(today));
   }, [dispatch, today]);
-
-  // =========================
-  // TODAY STATS
-  // =========================
 
   const completedToday = useMemo(() => {
     return logs?.filter((log) => log.completed)?.length || 0;
@@ -86,10 +74,6 @@ const Habits = () => {
 
     return Math.max(...habits.map((habit) => habit.streak || 0));
   }, [habits]);
-
-  // =========================
-  // HANDLERS
-  // =========================
 
   const handleDelete = (habit) => {
     setHabitToDelete(habit);
@@ -184,14 +168,9 @@ const Habits = () => {
 
   const isInitialLoading = status === "loading" && habits.length === 0;
 
-  // =========================
-  // FORM VIEW
-  // =========================
-
   if (showForm) {
     return (
       <div className="space-y-6">
-
         <HabitForm
           key={editingHabit?._id || "new"}
           habit={editingHabit}
@@ -204,10 +183,6 @@ const Habits = () => {
 
   return (
     <div className="space-y-6">
-      {/* =========================
-          HERO
-      ========================= */}
-
       <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
         <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[18px] border-primary/10" />
 
@@ -230,8 +205,7 @@ const Habits = () => {
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
-              Small actions become meaningful progress when you repeat them
-              consistently. Keep your routine simple and keep moving forward.
+              Small steps. Stay consistent. Keep moving forward.
             </p>
           </div>
 
@@ -253,10 +227,6 @@ const Habits = () => {
         </div>
       </section>
 
-      {/* =========================
-          ALERT
-      ========================= */}
-
       {message && (
         <AlertMessage
           type={messageType}
@@ -265,10 +235,6 @@ const Habits = () => {
           onClose={() => setMessage("")}
         />
       )}
-
-      {/* =========================
-          INITIAL LOADING
-      ========================= */}
 
       {isInitialLoading && (
         <section className="space-y-5">
@@ -284,10 +250,6 @@ const Habits = () => {
           <HabitShimmer />
         </section>
       )}
-
-      {/* =========================
-          OVERVIEW
-      ========================= */}
 
       {!isInitialLoading && (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -398,10 +360,6 @@ const Habits = () => {
         </section>
       )}
 
-      {/* =========================
-          HABITS
-      ========================= */}
-
       {!isInitialLoading && (
         <section className="space-y-4">
           {/* Section Header */}
@@ -456,10 +414,6 @@ const Habits = () => {
           )}
         </section>
       )}
-
-      {/* =========================
-          DELETE MODAL
-      ========================= */}
 
       <DeleteModal
         isOpen={Boolean(habitToDelete)}
