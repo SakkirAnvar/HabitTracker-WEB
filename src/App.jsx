@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
+import AppLoader from "./layout/AppLoader";
 import { applyTheme } from "./utils/theme";
 import { checkAuth } from "./redux/userSlice";
 
@@ -17,6 +17,8 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import HelpAndSupport from "./pages/HelpAndSupport";
 import ErrorPage from "./pages/ErrorPage";
+import ArchivedHabits from "./components/habits/ArchivedHabits";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -36,28 +38,18 @@ const App = () => {
   // Apply user theme
   // =========================
 
-  useEffect(() => {
-    if (user?.theme) {
-      applyTheme(user.theme);
-    }
-  }, [user?.theme]);
+useEffect(() => {
+  if (user?.theme) {
+    applyTheme(user.theme, false);
+  }
+}, [user?.theme]);
 
   // =========================
   // Initial loading
   // =========================
-
   if (!initialized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-base-200 text-base-content">
-        <div className="flex flex-col items-center gap-3">
-          <span className="loading loading-spinner loading-lg text-primary" />
-
-          <p className="text-sm text-base-content/60">Loading Aven...</p>
-        </div>
-      </div>
-    );
+    return <AppLoader />;
   }
-
   return (
     <BrowserRouter>
       <Routes>
@@ -66,6 +58,8 @@ const App = () => {
         ========================= */}
 
         <Route path="/login" element={<Login />} />
+
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* =========================
             Protected Routes
@@ -83,6 +77,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
 
           <Route path="/habits" element={<Habits />} />
+          <Route path="/habits/archived-habits" element={<ArchivedHabits />} />
 
           <Route path="/goals" element={<Goals />} />
 
@@ -95,6 +90,7 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
 
           <Route path="/help" element={<HelpAndSupport />} />
+
 
           {/* Catch-all for authenticated users */}
 

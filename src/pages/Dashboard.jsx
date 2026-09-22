@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getDailyAnalytics } from "../api/analyticsApi";
+import { DashboardShimmer } from "../layout/Shimmer";
 
 const Dashboard = () => {
   const user = useSelector((state) => state.user.user);
@@ -9,26 +10,26 @@ const Dashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   const getGreeting = (name) => {
-  const hour = new Date().getHours();
+    const hour = new Date().getHours();
 
-  if (hour >= 5 && hour < 12) {
-    return `Good morning, ${name}!`;
-  }
+    if (hour >= 5 && hour < 12) {
+      return `Good morning, ${name}!`;
+    }
 
-  if (hour >= 12 && hour < 17) {
-    return `Good afternoon, ${name}!`;
-  }
+    if (hour >= 12 && hour < 17) {
+      return `Good afternoon, ${name}!`;
+    }
 
-  if (hour >= 17 && hour < 21) {
-    return `Good evening, ${name}!`;
-  }
+    if (hour >= 17 && hour < 21) {
+      return `Good evening, ${name}!`;
+    }
 
-  return `Good night, ${name}!`;
-};
+    return `Good night, ${name}!`;
+  };
 
-const greeting = getGreeting(user?.firstName);
+  const greeting = getGreeting(user?.firstName);
 
   useEffect(() => {
     const fetchDailyAnalytics = async () => {
@@ -55,17 +56,9 @@ const greeting = getGreeting(user?.firstName);
     fetchDailyAnalytics();
   }, []);
 
-  /* ================= LOADING ================= */
-
   if (loading) {
-    return (
-      <div className="flex min-h-[70vh] items-center justify-center">
-        <span className="loading loading-spinner loading-md text-primary" />
-      </div>
-    );
+    return <DashboardShimmer />;
   }
-
-  /* ================= ERROR ================= */
 
   if (error) {
     return (
@@ -83,8 +76,6 @@ const greeting = getGreeting(user?.firstName);
 
   const overall = Math.min(100, Math.max(0, Number(analytics?.overall) || 0));
 
-  /* ================= DATE ================= */
-
   const today = new Date();
 
   const formattedDate = today.toLocaleDateString("en-IN", {
@@ -93,8 +84,6 @@ const greeting = getGreeting(user?.firstName);
     month: "short",
     year: "numeric",
   });
-
-  /* ================= MESSAGE ================= */
 
   const getProgressMessage = () => {
     if (overall === 100) {
@@ -129,8 +118,6 @@ const greeting = getGreeting(user?.firstName);
   };
 
   const progressMessage = getProgressMessage();
-
-  /* ================= CATEGORY ICONS ================= */
 
   const categoryIcons = {
     spiritual: (
@@ -231,7 +218,7 @@ const greeting = getGreeting(user?.firstName);
             </p>
 
             <p className="mt-1 text-sm text-base-content/50">
-              Stay consistent. 🌿
+              Stay consistent.
             </p>
           </div>
         </header>

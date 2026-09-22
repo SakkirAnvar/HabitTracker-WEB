@@ -729,50 +729,6 @@ export const AnalyticsShimmer = () => {
   );
 };
 
-export const DashboardShimmer = () => {
-  return (
-    <div className="space-y-6">
-      <PageHeaderShimmer />
-
-      {/* Summary cards */}
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <Shimmer className="h-4 w-24" />
-              <Shimmer className="h-9 w-9 rounded-xl" />
-            </div>
-
-            <Shimmer className="mt-4 h-8 w-20" />
-            <Shimmer className="mt-2 h-3 w-28" />
-          </div>
-        ))}
-      </div>
-
-      {/* Main area */}
-
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <CardShimmer rows={5} />
-        </div>
-
-        <CardShimmer rows={5} />
-      </div>
-
-      {/* Bottom */}
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <CardShimmer rows={4} />
-        <CardShimmer rows={4} />
-      </div>
-    </div>
-  );
-};
-
 export const ProfileShimmer = () => {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-8">
@@ -1191,6 +1147,158 @@ export const HelpAndSupportShimmer = () => {
         <Shimmer className="mx-auto h-3 w-40" />
       </div>
     </div>
+  );
+};
+export const DashboardShimmer = () => {
+  return (
+    <div className="w-full animate-pulse">
+      <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        {/* ================= HEADER ================= */}
+
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-3">
+            <div className="h-8 w-64 rounded-lg bg-base-300" />
+            <div className="h-4 w-52 rounded bg-base-300" />
+          </div>
+
+          <div className="space-y-2 sm:text-right">
+            <div className="ml-auto h-4 w-36 rounded bg-base-300" />
+            <div className="ml-auto h-3 w-24 rounded bg-base-300" />
+          </div>
+        </div>
+
+        {/* ================= TODAY'S PROGRESS ================= */}
+
+        <section className="overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-sm">
+          <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[240px_1fr_180px] lg:items-center lg:p-10">
+            {/* Progress Ring */}
+
+            <div className="flex justify-center lg:justify-start">
+              <div className="flex h-48 w-48 items-center justify-center rounded-full border-[14px] border-base-300 bg-base-200">
+                <div className="flex h-36 w-36 items-center justify-center rounded-full bg-base-100">
+                  <div className="space-y-3 text-center">
+                    <div className="mx-auto h-10 w-20 rounded-lg bg-base-300" />
+                    <div className="mx-auto h-4 w-28 rounded bg-base-300" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Message */}
+
+            <div className="space-y-4 text-center lg:text-left">
+              <div className="h-3 w-24 rounded bg-base-300 mx-auto lg:mx-0" />
+
+              <div className="h-8 w-72 max-w-full rounded-lg bg-base-300 mx-auto lg:mx-0" />
+
+              <div className="space-y-2 max-w-lg mx-auto lg:mx-0">
+                <div className="h-3.5 w-full rounded bg-base-300" />
+                <div className="h-3.5 w-5/6 rounded bg-base-300" />
+              </div>
+
+              <div className="h-11 w-40 rounded-xl bg-base-300 mx-auto lg:mx-0" />
+            </div>
+
+            {/* Quote */}
+
+            <div className="hidden border-l border-base-300 pl-6 lg:block">
+              <div className="space-y-2">
+                <div className="h-3 w-full rounded bg-base-300" />
+                <div className="h-3 w-5/6 rounded bg-base-300" />
+                <div className="h-3 w-4/6 rounded bg-base-300" />
+              </div>
+
+              <div className="mt-5 h-1 w-8 rounded bg-base-300" />
+            </div>
+          </div>
+        </section>
+
+        {/* ================= SUMMARY ================= */}
+
+        <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="w-full space-y-3">
+                  <div className="h-4 w-24 rounded bg-base-300" />
+                  <div className="h-9 w-14 rounded-lg bg-base-300" />
+                  <div className="h-3 w-28 rounded bg-base-300" />
+                </div>
+
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-base-300" />
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* ================= CATEGORY PROGRESS ================= */}
+
+        <section className="mt-5 rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+          <div className="p-5 sm:p-6">
+            {/* Section header */}
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-2">
+                <div className="h-6 w-40 rounded-lg bg-base-300" />
+                <div className="h-3.5 w-64 max-w-full rounded bg-base-300" />
+              </div>
+
+              <div className="hidden h-4 w-16 rounded bg-base-300 sm:block" />
+            </div>
+
+            {/* Categories */}
+
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[1, 2, 3, 4].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-base-300 bg-base-200/30 p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-base-300" />
+
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="h-4 w-20 rounded bg-base-300" />
+
+                      <div className="h-3 w-24 rounded bg-base-300" />
+                    </div>
+
+                    <div className="h-4 w-10 rounded bg-base-300" />
+                  </div>
+
+                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-base-300">
+                    <div className="h-full w-2/3 rounded-full bg-base-200" />
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between">
+                    <div className="h-3 w-14 rounded bg-base-300" />
+                    <div className="h-3 w-10 rounded bg-base-300" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ================= MOBILE VIEW ALL ================= */}
+
+        <div className="mt-4 sm:hidden">
+          <div className="h-4 w-32 rounded bg-base-300" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ShimmerBlock = ({ className = "", style }) => {
+  return (
+    <div
+      className={`animate-pulse bg-base-300 ${className}`}
+      style={style}
+    />
   );
 };
 

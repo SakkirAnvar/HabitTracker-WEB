@@ -4,6 +4,7 @@ import { JournalShimmer } from "../layout/Shimmer";
 import Pagination from "../layout/Pagination";
 import { fetchReviewByDate, fetchReviews } from "../redux/reviewSlice";
 import ReviewForm from "../components/reviews/ReviewForm";
+import { EditIcon } from "../components/goals/GoalCard";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -447,105 +448,123 @@ const Journal = () => {
 
   return (
     <div className="w-full space-y-6 pb-8">
-      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-            Journal
-          </h1>
+      <section className="rounded-2xl border border-base-300 bg-base-100 px-5 py-5 shadow-sm sm:px-6">
+  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    {/* Heading */}
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary/60">
+        Daily reflection
+      </p>
 
-          <p className="mt-1 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
-            Reflect on your day, capture your thoughts, and build better habits.
-          </p>
-        </div>
+      <h1 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+        Journal
+      </h1>
 
-        <div className="flex items-center gap-2 self-start lg:self-auto">
-          {/* Previous */}
+      <p className="mt-1.5 max-w-xl text-sm leading-6 text-base-content/55">
+        Reflect on your day, capture what matters, and carry your
+        thoughts into tomorrow.
+      </p>
+    </div>
 
-          <button
-            type="button"
-            onClick={() => changeDate(-1)}
-            aria-label="Previous day"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-base-300 bg-base-100 text-base-content/55 transition hover:bg-base-200 hover:text-base-content"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
+    {/* Date Navigation */}
+    <div className="flex w-full items-center gap-1 rounded-xl border border-base-300 bg-base-200/40 p-1 sm:w-fit">
+      {/* Previous */}
+      <button
+        type="button"
+        onClick={() => changeDate(-1)}
+        aria-label="Previous day"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base-content/45 transition hover:bg-base-100 hover:text-base-content"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-4 w-4"
+        >
+          <path
+            d="m15 19-7-7 7-7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
-          {/* Date */}
+      {/* Date */}
+      <label className="flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-base-100 px-3 shadow-sm sm:flex-none">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-4 w-4 shrink-0 text-primary"
+        >
+          <path
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
 
-          <label className="flex h-10 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-primary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+        <input
+          type="date"
+          value={selectedDate}
+          max={getLocalDateString()}
+          onChange={handleDateChange}
+          className="w-[130px] bg-transparent text-center text-sm font-semibold text-base-content outline-none"
+        />
+      </label>
 
-            <input
-              type="date"
-              value={selectedDate}
-              max={getLocalDateString()}
-              onChange={handleDateChange}
-              className="w-[128px] bg-transparent text-sm font-medium text-base-content outline-none"
-            />
-          </label>
+      {/* Next */}
+      <button
+        type="button"
+        onClick={() => changeDate(1)}
+        disabled={selectedDate >= getLocalDateString()}
+        aria-label="Next day"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base-content/45 transition hover:bg-base-100 hover:text-base-content disabled:cursor-not-allowed disabled:opacity-25"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-4 w-4"
+        >
+          <path
+            d="m9 18 6-6-6-6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
 
-          {/* Next */}
+      {/* Today */}
+      <button
+        type="button"
+        onClick={goToToday}
+        disabled={selectedDate === getLocalDateString()}
+        className="hidden h-9 rounded-lg px-3 text-xs font-semibold text-primary transition hover:bg-base-100 disabled:cursor-default disabled:opacity-40 sm:block"
+      >
+        Today
+      </button>
+    </div>
+  </div>
 
-          <button
-            type="button"
-            onClick={() => changeDate(1)}
-            disabled={selectedDate >= getLocalDateString()}
-            aria-label="Next day"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-base-300 bg-base-100 text-base-content/55 transition hover:bg-base-200 hover:text-base-content disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-base-100"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 18l6-6-6-6"
-              />
-            </svg>
-          </button>
+  {/* Selected date indicator */}
+  <div className="mt-5 flex items-center gap-2 border-t border-base-300 pt-4">
+    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-          {/* Today */}
+    <span className="text-sm font-medium text-base-content/60">
+      {formatSelectedDate(selectedDate)}
+    </span>
 
-          <button
-            type="button"
-            onClick={goToToday}
-            className="hidden h-10 rounded-xl bg-primary/5 px-4 text-xs font-semibold text-primary transition hover:bg-primary/10 sm:block"
-          >
-            Today
-          </button>
-        </div>
-      </section>
+    {selectedDate === getLocalDateString() && (
+      <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
+        Today
+      </span>
+    )}
+  </div>
+</section>
 
       {isLoading && <JournalShimmer />}
 
@@ -652,20 +671,7 @@ const Journal = () => {
                       onClick={handleEdit}
                       className="flex items-center gap-2"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M16.862 4.487a2.25 2.25 0 113.182 3.182L8.25 19.643 4 20l.357-4.25L16.862 4.487z"
-                        />
-                      </svg>
+                      <EditIcon />
                       Edit Review
                     </button>
                   </li>

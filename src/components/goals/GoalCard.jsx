@@ -542,7 +542,7 @@ const GoalCard = ({
 // ICONS
 // =========================
 
-const EyeIcon = () => (
+export const EyeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -560,7 +560,7 @@ const EyeIcon = () => (
   </svg>
 );
 
-const EditIcon = () => (
+export const EditIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
@@ -582,7 +582,70 @@ const EditIcon = () => (
   </svg>
 );
 
-const DeleteIcon = () => (
+export const ArchiveIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.8}
+    stroke="currentColor"
+    className="h-4 w-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 7.5h18M4.5 7.5v10.125A2.375 2.375 0 006.875 20h10.25a2.375 2.375 0 002.375-2.375V7.5M9 11.5h6M5.25 4h13.5A1.25 1.25 0 0120 5.25v1A1.25 1.25 0 0118.75 7.5H5.25A1.25 1.25 0 014 6.25v-1A1.25 1.25 0 015.25 4z"
+    />
+  </svg>
+);
+
+export const RestoreIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    className="h-4 w-4"
+    aria-hidden="true"
+  >
+    {/* Circular restore arrow */}
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M20 11a8 8 0 0 0-14.9-4"
+    />
+
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M5 4v4h4"
+    />
+
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4 13a8 8 0 0 0 14.9 4"
+    />
+
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19 20v-4h-4"
+    />
+
+    {/* Timer inside */}
+    <circle cx="12" cy="12" r="3.2" />
+
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 10.5v1.7l1.2.8"
+    />
+  </svg>
+);
+
+export const DeleteIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"

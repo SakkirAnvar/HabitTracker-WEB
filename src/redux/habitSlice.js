@@ -6,6 +6,7 @@ import {
   updateHabit,
   toggleHabit,
   deleteHabit,
+  getArchivedHabits,
 } from "../api/habitApi";
 
 export const fetchHabits = createAsyncThunk(
@@ -16,6 +17,19 @@ export const fetchHabits = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch habits",
+      );
+    }
+  },
+);
+
+export const fetchArchivedHabits = createAsyncThunk(
+  "habits/fetchArchivedHabits",
+  async ({ page = 1, limit = 6 } = {}, { rejectWithValue }) => {
+    try {
+      return await getArchivedHabits({ page, limit });
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch archived habits",
       );
     }
   },
@@ -54,7 +68,7 @@ export const toggleHabitStatus = createAsyncThunk(
       return await toggleHabit(id);
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to toggle habit",
+        error.response?.data?.message || "Failed to update habit status",
       );
     }
   },
@@ -77,14 +91,24 @@ export const removeHabit = createAsyncThunk(
 
 const initialState = {
   habits: [],
+  archivedHabits: [],
 
   status: "idle",
+  archivedStatus: "idle",
+
   error: null,
+  archivedError: null,
 
   currentPage: 1,
   totalPages: 1,
   totalHabits: 0,
   limit: 6,
+
+  archivedCurrentPage: 1,
+  archivedTotalPages: 1,
+  archivedTotalHabits: 0,
+  archivedHasNextPage: false,
+  archivedHasPreviousPage: false,
 
   hasNextPage: false,
   hasPreviousPage: false,
@@ -101,97 +125,188 @@ const habitSlice = createSlice({
     },
   },
 
-  extraReducers: (builder) => {
-    builder
+ extraReducers: (builder) => {
+  builder
 
-      .addCase(fetchHabits.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
+    // =========================
+    // Active Habits
+    // =========================
 
-      .addCase(fetchHabits.fulfilled, (state, action) => {
-        state.status = "succeeded";
+    .addCase(fetchHabits.pending, (state) => {
+      state.status = "loading";
+      state.error = null;
+    })
 
-        state.habits = action.payload.data || [];
+    .addCase(fetchHabits.fulfilled, (state, action) => {
+      state.status = "succeeded";
 
-        // Pagination
-        const pagination = action.payload.pagination;
+      state.habits = action.payload.data || [];
 
-        if (pagination) {
-          state.currentPage = pagination.currentPage || 1;
+      const pagination = action.payload.pagination;
 
-          state.totalPages = pagination.totalPages || 1;
+      if (pagination) {
+        state.currentPage = pagination.currentPage || 1;
+        state.totalPages = pagination.totalPages || 1;
+        state.totalHabits = pagination.totalHabits || 0;
+        state.limit = pagination.limit || 6;
+        state.hasNextPage = pagination.hasNextPage || false;
+        state.hasPreviousPage = pagination.hasPreviousPage || false;
+      }
+    })
 
-          state.totalHabits = pagination.totalHabits || 0;
+    .addCase(fetchHabits.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.payload;
+    })
 
-          state.limit = pagination.limit || 6;
+    // =========================
+    // Archived Habits
+    // =========================
 
-          state.hasNextPage = pagination.hasNextPage || false;
+    .addCase(fetchArchivedHabits.pending, (state) => {
+      state.archivedStatus = "loading";
+      state.archivedError = null;
+    })
 
-          state.hasPreviousPage = pagination.hasPreviousPage || false;
+    .addCase(fetchArchivedHabits.fulfilled, (state, action) => {
+      state.archivedStatus = "succeeded";
+
+      state.archivedHabits = action.payload.data || [];
+
+      const pagination = action.payload.pagination;
+
+      if (pagination) {
+        state.archivedCurrentPage = pagination.currentPage || 1;
+        state.archivedTotalPages = pagination.totalPages || 1;
+        state.archivedTotalHabits = pagination.totalHabits || 0;
+        state.archivedHasNextPage = pagination.hasNextPage || false;
+        state.archivedHasPreviousPage =
+          pagination.hasPreviousPage || false;
+      }
+    })
+
+    .addCase(fetchArchivedHabits.rejected, (state, action) => {
+      state.archivedStatus = "failed";
+      state.archivedError = action.payload;
+    })
+
+    // =========================
+    // Create
+    // =========================
+
+    .addCase(addHabit.fulfilled, (state) => {
+      state.error = null;
+    })
+
+    .addCase(addHabit.rejected, (state, action) => {
+      state.error = action.payload;
+    })
+
+    // =========================
+    // Edit
+    // =========================
+
+    .addCase(editHabit.fulfilled, (state, action) => {
+      const updatedHabit = action.payload.data;
+
+      const index = state.habits.findIndex(
+        (habit) => habit._id === updatedHabit._id,
+      );
+
+      if (index !== -1) {
+        state.habits[index] = updatedHabit;
+      }
+    })
+
+    .addCase(editHabit.rejected, (state, action) => {
+      state.error = action.payload;
+    })
+
+    // =========================
+    // Archive / Restore
+    // =========================
+
+    .addCase(toggleHabitStatus.fulfilled, (state, action) => {
+      const updatedHabit = action.payload.data;
+
+      // Archiving an active habit
+      const activeIndex = state.habits.findIndex(
+        (habit) => habit._id === updatedHabit._id,
+      );
+
+      if (updatedHabit.active === false) {
+        if (activeIndex !== -1) {
+          state.habits.splice(activeIndex, 1);
+          state.totalHabits = Math.max(0, state.totalHabits - 1);
         }
-      })
 
-      .addCase(fetchHabits.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-
-      .addCase(addHabit.fulfilled, (state, action) => {
-        state.error = null;
-      })
-
-      .addCase(addHabit.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
-      .addCase(editHabit.fulfilled, (state, action) => {
-        const updatedHabit = action.payload.data;
-
-        const index = state.habits.findIndex(
+        // Add it to archived state
+        const archivedIndex = state.archivedHabits.findIndex(
           (habit) => habit._id === updatedHabit._id,
         );
 
-        if (index !== -1) {
-          state.habits[index] = updatedHabit;
+        if (archivedIndex === -1) {
+          state.archivedHabits.push(updatedHabit);
         }
-      })
+      }
 
-      .addCase(editHabit.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
-      .addCase(toggleHabitStatus.fulfilled, (state, action) => {
-        const updatedHabit = action.payload.data;
-
-        const index = state.habits.findIndex(
+      // Restoring an archived habit
+      else {
+        const archivedIndex = state.archivedHabits.findIndex(
           (habit) => habit._id === updatedHabit._id,
         );
 
-        if (index !== -1) {
-          state.habits[index] = {
-            ...state.habits[index],
-            ...updatedHabit,
-          };
+        if (archivedIndex !== -1) {
+          state.archivedHabits.splice(archivedIndex, 1);
+          state.archivedTotalHabits = Math.max(
+            0,
+            state.archivedTotalHabits - 1,
+          );
         }
-      })
 
-      .addCase(toggleHabitStatus.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-
-      .addCase(removeHabit.fulfilled, (state, action) => {
-        state.habits = state.habits.filter(
-          (habit) => habit._id !== action.payload,
+        const activeIndex = state.habits.findIndex(
+          (habit) => habit._id === updatedHabit._id,
         );
 
-        state.totalHabits = Math.max(0, state.totalHabits - 1);
-      })
+        if (activeIndex === -1) {
+          state.habits.unshift(updatedHabit);
+          state.totalHabits += 1;
+        } else {
+          state.habits[activeIndex] = updatedHabit;
+        }
+      }
+    })
 
-      .addCase(removeHabit.rejected, (state, action) => {
-        state.error = action.payload;
-      });
-  },
+    .addCase(toggleHabitStatus.rejected, (state, action) => {
+      state.error = action.payload;
+    })
+
+    // =========================
+    // Delete
+    // =========================
+
+    .addCase(removeHabit.fulfilled, (state, action) => {
+      const id = action.payload;
+
+      state.habits = state.habits.filter(
+        (habit) => habit._id !== id,
+      );
+
+      state.archivedHabits = state.archivedHabits.filter(
+        (habit) => habit._id !== id,
+      );
+
+      state.totalHabits = Math.max(0, state.totalHabits - 1);
+      state.archivedTotalHabits = Math.max(
+        0,
+        state.archivedTotalHabits - 1,
+      );
+    })
+
+    .addCase(removeHabit.rejected, (state, action) => {
+      state.error = action.payload;
+    });
+}
 });
 
 export const { clearHabitError } = habitSlice.actions;

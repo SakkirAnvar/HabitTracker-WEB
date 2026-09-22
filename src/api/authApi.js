@@ -42,3 +42,27 @@ export const updateTheme = async (theme) => {
 
   return response.data;
 };
+
+export const sendPasswordResetOtp = async ({ emailId }) => {
+  return api.post("/auth/forgot-password/send-otp", {
+    emailId,
+  });
+};
+
+export const verifyPasswordResetOtp = async ({ emailId, otp }) => {
+  const response = await api.post("/auth/forgot-password/verify-otp", {
+    emailId,
+    otp,
+  });
+
+  return response.data;
+};
+
+export const resetPassword = async ({ resetToken, newPassword }) => {
+  const response = await api.patch("/auth/forgot-password/reset", {
+    resetToken,
+    newPassword,
+  });
+
+  return response.data;
+};

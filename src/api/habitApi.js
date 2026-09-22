@@ -16,6 +16,18 @@ export const getHabits = async ({ page = 1, limit = 6 } = {}) => {
   return response.data;
 };
 
+export const getArchivedHabits = async ({ page = 1, limit = 6 } = {}) => {
+  const response = await api.get("/habits", {
+    params: {
+      page,
+      limit,
+      active: false,
+    },
+  });
+
+  return response.data;
+};
+
 export const getHabit = async (id) => {
   const response = await api.get(`/habits/${id}`);
   return response.data;
