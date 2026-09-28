@@ -49,7 +49,7 @@ const GoalProgress = ({ goalId }) => {
     return (
       <div className="mt-4 rounded-2xl border border-error/20 bg-error/10 p-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-error/10 text-error">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-error/10 font-semibold text-error">
             !
           </div>
 
@@ -84,20 +84,30 @@ const GoalProgress = ({ goalId }) => {
       ? Math.min(100, Math.round((currentProgress / target) * 100))
       : 0;
 
-  const isComplete = percentage >= 100;
+  // Backend-controlled status
+  const status = progress.status ?? progress.goal?.status ?? "active";
+
+  const isComplete = status === "completed";
+  const isExpired = status === "expired";
+  const isCancelled = status === "cancelled";
 
   return (
     <div className="mt-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold ${
               isComplete
                 ? "bg-success/10 text-success"
-                : "bg-primary/10 text-primary"
+                : isExpired
+                  ? "bg-warning/10 text-warning"
+                  : isCancelled
+                    ? "bg-error/10 text-error"
+                    : "bg-primary/10 text-primary"
             }`}
           >
-            {isComplete ? "✓" : "📊"}
+            {isComplete ? "✓" : "↗"}
           </div>
 
           <div className="min-w-0">
@@ -106,17 +116,22 @@ const GoalProgress = ({ goalId }) => {
             </h3>
 
             <p className="mt-0.5 text-xs text-base-content/50">
-              Track your current progress and stay consistent.
+              Track your progress toward your target.
             </p>
           </div>
         </div>
 
         {/* Percentage */}
-
         <div className="shrink-0 text-right">
           <p
             className={`text-2xl font-bold leading-none ${
-              isComplete ? "text-success" : "text-primary"
+              isComplete
+                ? "text-success"
+                : isExpired
+                  ? "text-warning"
+                  : isCancelled
+                    ? "text-error"
+                    : "text-primary"
             }`}
           >
             {percentage}%
@@ -126,11 +141,18 @@ const GoalProgress = ({ goalId }) => {
         </div>
       </div>
 
+      {/* Progress */}
       <div className="mt-5">
         <div className="h-2 overflow-hidden rounded-full bg-base-300">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              isComplete ? "bg-success" : "bg-primary"
+              isComplete
+                ? "bg-success"
+                : isExpired
+                  ? "bg-warning"
+                  : isCancelled
+                    ? "bg-error"
+                    : "bg-primary"
             }`}
             style={{
               width: `${percentage}%`,
@@ -139,74 +161,55 @@ const GoalProgress = ({ goalId }) => {
         </div>
       </div>
 
+      {/* Stats */}
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* Current */}
-
         <div className="rounded-xl border border-base-300 bg-base-200/60 p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-base-100 text-sm">
-              ⚑
-            </div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
+            Current
+          </p>
 
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
-                Current
-              </p>
+          <p className="mt-2 text-lg font-bold leading-none text-base-content">
+            {currentProgress}
+          </p>
 
-              <p className="mt-1 text-lg font-bold leading-none text-base-content">
-                {currentProgress}
-              </p>
-
-              <p className="mt-1 text-[11px] text-base-content/45">completed</p>
-            </div>
-          </div>
+          <p className="mt-1 text-[11px] text-base-content/45">
+            {progress.unit || "completed"}
+          </p>
         </div>
 
         {/* Target */}
-
         <div className="rounded-xl border border-base-300 bg-base-200/60 p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-base-100 text-sm">
-              🎯
-            </div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
+            Target
+          </p>
 
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
-                Target
-              </p>
+          <p className="mt-2 text-lg font-bold leading-none text-base-content">
+            {target}
+          </p>
 
-              <p className="mt-1 text-lg font-bold leading-none text-base-content">
-                {target}
-              </p>
-
-              <p className="mt-1 text-[11px] text-base-content/45">total</p>
-            </div>
-          </div>
+          <p className="mt-1 text-[11px] text-base-content/45">
+            {progress.unit || "total"}
+          </p>
         </div>
 
         {/* Remaining */}
-
         <div className="rounded-xl border border-base-300 bg-base-200/60 p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-base-100 text-sm">
-              📈
-            </div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
+            Remaining
+          </p>
 
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
-                Remaining
-              </p>
+          <p className="mt-2 text-lg font-bold leading-none text-base-content">
+            {remaining}
+          </p>
 
-              <p className="mt-1 text-lg font-bold leading-none text-base-content">
-                {remaining}
-              </p>
-
-              <p className="mt-1 text-[11px] text-base-content/45">to go</p>
-            </div>
-          </div>
+          <p className="mt-1 text-[11px] text-base-content/45">
+            {progress.unit || "to go"}
+          </p>
         </div>
       </div>
 
+      {/* Status message */}
       {isComplete && (
         <div className="mt-4 flex items-center gap-3 rounded-xl bg-success/10 px-4 py-3">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success text-xs font-bold text-success-content">
@@ -214,12 +217,38 @@ const GoalProgress = ({ goalId }) => {
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-success">Goal completed</p>
+            <p className="text-sm font-semibold text-success">
+              Goal completed
+            </p>
 
             <p className="mt-0.5 text-xs text-success/70">
-              You reached your target. Great work!
+              You reached your target.
             </p>
           </div>
+        </div>
+      )}
+
+      {isExpired && (
+        <div className="mt-4 rounded-xl bg-warning/10 px-4 py-3">
+          <p className="text-sm font-semibold text-warning">
+            Goal expired
+          </p>
+
+          <p className="mt-0.5 text-xs text-warning/70">
+            The deadline for this goal has passed.
+          </p>
+        </div>
+      )}
+
+      {isCancelled && (
+        <div className="mt-4 rounded-xl bg-error/10 px-4 py-3">
+          <p className="text-sm font-semibold text-error">
+            Goal cancelled
+          </p>
+
+          <p className="mt-0.5 text-xs text-error/70">
+            This goal is no longer active.
+          </p>
         </div>
       )}
     </div>

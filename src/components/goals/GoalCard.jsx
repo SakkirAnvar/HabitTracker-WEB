@@ -44,24 +44,29 @@ const GoalCard = ({
         return {
           label: "Completed",
           className: "bg-success/10 text-success",
-        };
-
-      case "cancelled":
-        return {
-          label: "Cancelled",
-          className: "bg-error/10 text-error",
+          progressClass: "bg-success",
         };
 
       case "expired":
         return {
           label: "Expired",
           className: "bg-warning/10 text-warning",
+          progressClass: "bg-warning",
         };
 
+      case "cancelled":
+        return {
+          label: "Cancelled",
+          className: "bg-error/10 text-error",
+          progressClass: "bg-error",
+        };
+
+      case "active":
       default:
         return {
           label: "Active",
-          className: "bg-primary text-primary-content",
+          className: "bg-primary/10 text-primary",
+          progressClass: "bg-primary",
         };
     }
   };
@@ -167,10 +172,9 @@ const GoalCard = ({
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-2xl">
           🎯
         </div>
+
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            {/* Title */}
-
             <div className="min-w-0">
               <h2 className="truncate text-lg font-bold text-base-content">
                 {goal.title}
@@ -184,6 +188,7 @@ const GoalCard = ({
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
+              {/* Backend-controlled status */}
               <span
                 className={`rounded-full px-3 py-1 text-[11px] font-semibold ${statusConfig.className}`}
               >
@@ -263,9 +268,7 @@ const GoalCard = ({
 
         <div className="h-2 overflow-hidden rounded-full bg-base-300">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              percentage >= 100 ? "bg-success" : "bg-primary"
-            }`}
+            className={`h-full rounded-full transition-all duration-500 ${statusConfig.progressClass}`}
             style={{
               width: `${percentage}%`,
             }}
@@ -274,8 +277,6 @@ const GoalCard = ({
       </div>
 
       <div className="mt-5 grid grid-cols-3 divide-x divide-base-300 border-y border-base-300 py-4">
-        {/* Started */}
-
         <div className="pr-3">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/40">
             Started
@@ -483,55 +484,6 @@ export const EditIcon = () => (
       strokeLinejoin="round"
       d="M16.5 3.5a2.12 2.12 0 013 3L8 18l-4 1 1-4 12.5-11.5z"
     />
-  </svg>
-);
-
-export const ArchiveIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.8}
-    stroke="currentColor"
-    className="h-4 w-4"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 7.5h18M4.5 7.5v10.125A2.375 2.375 0 006.875 20h10.25a2.375 2.375 0 002.375-2.375V7.5M9 11.5h6M5.25 4h13.5A1.25 1.25 0 0120 5.25v1A1.25 1.25 0 0118.75 7.5H5.25A1.25 1.25 0 014 6.25v-1A1.25 1.25 0 015.25 4z"
-    />
-  </svg>
-);
-
-export const RestoreIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    className="h-4 w-4"
-    aria-hidden="true"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M20 11a8 8 0 0 0-14.9-4"
-    />
-
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 4v4h4" />
-
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M4 13a8 8 0 0 0 14.9 4"
-    />
-
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20v-4h-4" />
-
-    <circle cx="12" cy="12" r="3.2" />
-
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5v1.7l1.2.8" />
   </svg>
 );
 

@@ -11,10 +11,6 @@ import {
   getGoalProgress,
 } from "../api/goalApi";
 
-// ==============================
-// Fetch goals with pagination
-// ==============================
-
 export const fetchGoals = createAsyncThunk(
   "goals/fetchGoals",
   async ({ page = 1, limit = 6 } = {}, { rejectWithValue }) => {
@@ -27,10 +23,6 @@ export const fetchGoals = createAsyncThunk(
     }
   },
 );
-
-// ==============================
-// Create goal
-// ==============================
 
 export const addGoal = createAsyncThunk(
   "goals/addGoal",
@@ -45,10 +37,6 @@ export const addGoal = createAsyncThunk(
   },
 );
 
-// ==============================
-// Get single goal
-// ==============================
-
 export const fetchGoal = createAsyncThunk(
   "goals/fetchGoal",
   async (id, { rejectWithValue }) => {
@@ -62,10 +50,6 @@ export const fetchGoal = createAsyncThunk(
   },
 );
 
-// ==============================
-// Update goal
-// ==============================
-
 export const editGoal = createAsyncThunk(
   "goals/editGoal",
   async ({ id, data }, { rejectWithValue }) => {
@@ -78,10 +62,6 @@ export const editGoal = createAsyncThunk(
     }
   },
 );
-
-// ==============================
-// Delete goal
-// ==============================
 
 export const removeGoal = createAsyncThunk(
   "goals/removeGoal",
@@ -97,10 +77,6 @@ export const removeGoal = createAsyncThunk(
   },
 );
 
-// ==============================
-// Add habit to goal
-// ==============================
-
 export const attachHabitToGoal = createAsyncThunk(
   "goals/attachHabitToGoal",
   async ({ goalId, habitId }, { rejectWithValue }) => {
@@ -113,10 +89,6 @@ export const attachHabitToGoal = createAsyncThunk(
     }
   },
 );
-
-// ==============================
-// Remove habit from goal
-// ==============================
 
 export const detachHabitFromGoal = createAsyncThunk(
   "goals/detachHabitFromGoal",
@@ -131,10 +103,6 @@ export const detachHabitFromGoal = createAsyncThunk(
   },
 );
 
-// ==============================
-// Get goal progress
-// ==============================
-
 export const fetchGoalProgress = createAsyncThunk(
   "goals/fetchGoalProgress",
   async (goalId, { rejectWithValue }) => {
@@ -147,10 +115,6 @@ export const fetchGoalProgress = createAsyncThunk(
     }
   },
 );
-
-// ==============================
-// Initial state
-// ==============================
 
 const initialState = {
   goals: [],
@@ -171,10 +135,6 @@ const initialState = {
   hasNextPage: false,
   hasPreviousPage: false,
 };
-
-// ==============================
-// Slice
-// ==============================
 
 const goalSlice = createSlice({
   name: "goals",
@@ -198,10 +158,6 @@ const goalSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-
-      // ==========================================
-      // FETCH ALL GOALS
-      // ==========================================
 
       .addCase(fetchGoals.pending, (state) => {
         state.status = "loading";
@@ -229,10 +185,6 @@ const goalSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ==========================================
-      // CREATE GOAL
-      // ==========================================
-
       .addCase(addGoal.pending, (state) => {
         state.error = null;
       })
@@ -246,10 +198,6 @@ const goalSlice = createSlice({
       .addCase(addGoal.rejected, (state, action) => {
         state.error = action.payload;
       })
-
-      // ==========================================
-      // FETCH SINGLE GOAL
-      // ==========================================
 
       .addCase(fetchGoal.pending, (state) => {
         state.status = "loading";
@@ -266,14 +214,8 @@ const goalSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ==========================================
-      // UPDATE GOAL
-      // ==========================================
-
       .addCase(editGoal.fulfilled, (state, action) => {
         const updatedGoal = action.payload.data;
-
-        if (!updatedGoal) return;
 
         const index = state.goals.findIndex(
           (goal) => goal._id === updatedGoal._id,
@@ -283,18 +225,12 @@ const goalSlice = createSlice({
           state.goals[index] = updatedGoal;
         }
 
-        if (state.selectedGoal?._id === updatedGoal._id) {
-          state.selectedGoal = updatedGoal;
-        }
+        state.error = null;
       })
 
       .addCase(editGoal.rejected, (state, action) => {
         state.error = action.payload;
       })
-
-      // ==========================================
-      // DELETE GOAL
-      // ==========================================
 
       .addCase(removeGoal.fulfilled, (state, action) => {
         state.goals = state.goals.filter((goal) => goal._id !== action.payload);
@@ -309,10 +245,6 @@ const goalSlice = createSlice({
       .addCase(removeGoal.rejected, (state, action) => {
         state.error = action.payload;
       })
-
-      // ==========================================
-      // ADD HABIT TO GOAL
-      // ==========================================
 
       .addCase(attachHabitToGoal.fulfilled, (state, action) => {
         const updatedGoal = action.payload.data;
@@ -336,10 +268,6 @@ const goalSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ==========================================
-      // REMOVE HABIT FROM GOAL
-      // ==========================================
-
       .addCase(detachHabitFromGoal.fulfilled, (state, action) => {
         const updatedGoal = action.payload.data;
 
@@ -361,10 +289,6 @@ const goalSlice = createSlice({
       .addCase(detachHabitFromGoal.rejected, (state, action) => {
         state.error = action.payload;
       })
-
-      // ==========================================
-      // GOAL PROGRESS
-      // ==========================================
 
       .addCase(fetchGoalProgress.pending, (state) => {
         state.progressStatus = "loading";

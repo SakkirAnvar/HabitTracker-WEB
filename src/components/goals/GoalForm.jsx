@@ -8,6 +8,7 @@ const getInitialForm = (goal) => ({
   title: goal?.title || "",
   description: goal?.description || "",
   target: goal?.target ?? "",
+  currentProgress: goal?.currentProgress ?? 0,
   unit: goal?.unit || "",
   startDate: goal?.startDate ? goal.startDate.slice(0, 10) : "",
   deadLine: goal?.deadLine ? goal.deadLine.slice(0, 10) : "",
@@ -17,7 +18,10 @@ const getErrorMessage = (error, fallback = "Failed to save goal.") => {
   if (!error) return fallback;
 
   if (typeof error === "string") return error;
-  if (typeof error?.payload === "string") return error.payload;
+
+  if (typeof error?.payload === "string") {
+    return error.payload;
+  }
 
   return (
     error?.payload?.message ||
@@ -97,6 +101,21 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
       return;
     }
 
+    const numericProgress = Number(form.currentProgress);
+
+    if (
+      !Number.isFinite(numericProgress) ||
+      numericProgress < 0
+    ) {
+      setError("Current progress must be a valid number.");
+      return;
+    }
+
+    if (numericProgress > numericTarget) {
+      setError("Current progress cannot exceed the target.");
+      return;
+    }
+
     if (!unit) {
       setError("Measurement is required.");
       return;
@@ -117,10 +136,17 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
       return;
     }
 
+    /*
+     * Status is intentionally NOT included here.
+     *
+     * The backend determines whether the goal is:
+     * active, completed, expired, or cancelled.
+     */
     const payload = {
       title,
       description,
       target: numericTarget,
+      currentProgress: numericProgress,
       unit,
       startDate: form.startDate,
       deadLine: form.deadLine,
@@ -160,9 +186,14 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5">
+    <form
+      onSubmit={handleSubmit}
+      autoComplete="off"
+      className="space-y-5"
+    >
+      {/* ================= HEADER ================= */}
+
       <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-5 sm:p-7">
-        {/* Decorative elements */}
         <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full border-[14px] border-primary/10" />
 
         <div className="pointer-events-none absolute -bottom-8 right-24 h-20 w-20 rounded-full bg-secondary/10" />
@@ -172,26 +203,24 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
         </div>
 
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-start gap-4">
-            <div className="min-w-0">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <div className="min-w-0">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  {isEditing ? "Refine your goal" : "Set your direction"}
-                </span>
-              </div>
-
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-                {isEditing ? "Edit Goal" : "Create Goal"}
-              </h2>
-
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/60">
-                {isEditing
-                  ? "Update your goal details and keep your progress moving forward."
-                  : "Define something meaningful, give it a clear target, and make it measurable."}
-              </p>
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                {isEditing ? "Refine your goal" : "Set your direction"}
+              </span>
             </div>
+
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+              {isEditing ? "Edit Goal" : "Create Goal"}
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/60">
+              {isEditing
+                ? "Update your goal details and keep your progress moving forward."
+                : "Define something meaningful, give it a clear target, and make it measurable."}
+            </p>
           </div>
 
           {onCancel && (
@@ -199,7 +228,7 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="btn btn-outline btn-sm shrink-0 self-start rounded-xl sm:self-center"
+              className="btn btn-outline btn-sm shrink-0 rounded-xl self-start sm:self-center"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -214,14 +243,17 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
                   strokeLinejoin="round"
                 />
               </svg>
+
               Back to Goals
             </button>
           )}
         </div>
       </section>
 
+      {/* ================= FORM ================= */}
+
       <div className="rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-7">
-        {/* Alert */}
+        {/* Alerts */}
 
         {message && (
           <div className="mb-5">
@@ -234,8 +266,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
           </div>
         )}
 
-        {/* Validation error */}
-
         {error && (
           <div className="mb-5">
             <AlertMessage
@@ -247,6 +277,8 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
           </div>
         )}
 
+        {/* ================= BASIC INFORMATION ================= */}
+
         <section>
           <SectionHeader
             number="1"
@@ -255,8 +287,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
           />
 
           <div className="mt-5 space-y-5">
-            {/* Goal Title */}
-
             <div>
               <label
                 htmlFor="goal-title"
@@ -283,8 +313,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
                 </span>
               </div>
             </div>
-
-            {/* Description */}
 
             <div>
               <label
@@ -320,6 +348,8 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
 
         <div className="my-7 border-t border-base-300" />
 
+        {/* ================= TARGET ================= */}
+
         <section>
           <SectionHeader
             number="2"
@@ -328,8 +358,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
           />
 
           <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {/* Target */}
-
             <div>
               <label
                 htmlFor="goal-target"
@@ -354,8 +382,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
                 The total amount you want to achieve.
               </p>
             </div>
-
-            {/* Measurement */}
 
             <div>
               <label
@@ -382,9 +408,42 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
               </p>
             </div>
           </div>
+
+          {/* Current progress is only relevant when editing */}
+
+          {isEditing && (
+            <div className="mt-5">
+              <label
+                htmlFor="goal-progress"
+                className="mb-2 block text-sm font-semibold text-base-content"
+              >
+                Current Progress
+              </label>
+
+              <input
+                id="goal-progress"
+                type="number"
+                name="currentProgress"
+                value={form.currentProgress}
+                min="0"
+                max={form.target || undefined}
+                step="any"
+                onChange={handleChange}
+                placeholder="0"
+                className="input input-md w-full border-base-300 bg-base-100 text-sm text-base-content placeholder:text-base-content/30 focus:border-primary focus:outline-none"
+              />
+
+              <p className="mt-1.5 text-xs text-base-content/45">
+                Update your progress. The goal status will be determined
+                automatically.
+              </p>
+            </div>
+          )}
         </section>
 
         <div className="my-7 border-t border-base-300" />
+
+        {/* ================= TIMELINE ================= */}
 
         <section>
           <SectionHeader
@@ -395,8 +454,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
 
           <div className="mt-5 rounded-2xl bg-base-200/60 p-4 sm:p-5">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              {/* Start Date */}
-
               <DatePicker
                 value={form.startDate}
                 max={form.deadLine || undefined}
@@ -411,8 +468,6 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
                   }));
                 }}
               />
-
-              {/* Deadline */}
 
               <DatePicker
                 value={form.deadLine}
@@ -431,6 +486,8 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
             </div>
           </div>
         </section>
+
+        {/* ================= ACTIONS ================= */}
 
         <div className="mt-7 flex flex-col-reverse gap-2 border-t border-base-300 pt-5 sm:flex-row sm:justify-end">
           {onCancel && (

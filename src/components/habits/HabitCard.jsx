@@ -1,9 +1,4 @@
-import {
-  ArchiveIcon,
-  DeleteIcon,
-  EditIcon,
-  RestoreIcon,
-} from "../goals/GoalCard";
+import { DeleteIcon, EditIcon } from "../goals/GoalCard";
 import HabitProgress from "./HabitProgress";
 
 const HabitCard = ({
@@ -428,6 +423,41 @@ const CalendarIcon = () => (
   >
     <rect x="3" y="4" width="18" height="17" rx="2" />
     <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />
+  </svg>
+);
+
+const ArchiveIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth="1.8"
+    stroke="currentColor"
+    className="h-4 w-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 7.5h18M5 7.5l1 12h12l1-12M9 11.5h6M9 4h6l1 3.5H8L9 4z"
+    />
+  </svg>
+);
+
+const RestoreIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth="1.8"
+    stroke="currentColor"
+    className="h-4 w-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 12a9 9 0 1 0 3-6.7"
+    />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 4v5h5" />
   </svg>
 );
 
