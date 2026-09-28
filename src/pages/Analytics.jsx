@@ -1,18 +1,14 @@
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { AnalyticsShimmer } from "../layout/Shimmer";
-
+import DatePicker from "../layout/DatePicker";
 import {
   fetchDailyAnalytics,
   fetchWeeklyAnalytics,
   fetchMonthlyAnalytics,
   fetchCalendarAnalytics,
 } from "../redux/analyticSlice";
-
 import { fetchHabits } from "../redux/habitSlice";
-
 import WeeklyChart from "../components/analytics/WeeklyChart";
 import MonthlyChart from "../components/analytics/MonthlyChart";
 import CalendarHeatmap from "../components/analytics/CalenderHeatMap";
@@ -55,15 +51,12 @@ const getStartOfWeek = (date) => {
 const formatSelectedDate = (dateString) => {
   if (!dateString) return "";
 
-  return new Date(`${dateString}T00:00:00`).toLocaleDateString(
-    undefined,
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    },
-  );
+  return new Date(`${dateString}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 };
 
 const Analytics = () => {
@@ -80,31 +73,20 @@ const Analytics = () => {
     calendarError,
   } = useSelector((store) => store.analytic);
 
-  const {
-    habits,
-    status: habitStatus,
-  } = useSelector((store) => store.habit);
+  const { habits, status: habitStatus } = useSelector((store) => store.habit);
 
   const today = new Date();
 
   const currentMonth = getMonthString(today);
 
-  const currentWeek = getLocalDateString(
-    getStartOfWeek(today),
-  );
+  const currentWeek = getLocalDateString(getStartOfWeek(today));
 
-  const [selectedMonth, setSelectedMonth] =
-    useState(currentMonth);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
-  const [selectedWeek, setSelectedWeek] =
-    useState(currentWeek);
+  const [selectedWeek, setSelectedWeek] = useState(currentWeek);
 
-  const [selectedDate, setSelectedDate] =
-    useState(getLocalDateString());
-
-  // =========================
-  // DAILY ANALYTICS
-  // =========================
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
+  const [openPicker, setOpenPicker] = useState(null);
 
   useEffect(() => {
     dispatch(
@@ -114,10 +96,6 @@ const Analytics = () => {
     );
   }, [dispatch, selectedDate]);
 
-  // =========================
-  // WEEKLY ANALYTICS
-  // =========================
-
   useEffect(() => {
     dispatch(
       fetchWeeklyAnalytics({
@@ -126,10 +104,6 @@ const Analytics = () => {
     );
   }, [dispatch, selectedWeek]);
 
-  // =========================
-  // MONTHLY ANALYTICS
-  // =========================
-
   useEffect(() => {
     dispatch(
       fetchMonthlyAnalytics({
@@ -137,10 +111,6 @@ const Analytics = () => {
       }),
     );
   }, [dispatch, selectedMonth]);
-
-  // =========================
-  // CALENDAR ANALYTICS
-  // =========================
 
   useEffect(() => {
     const [year, month] = selectedMonth.split("-");
@@ -153,33 +123,17 @@ const Analytics = () => {
     );
   }, [dispatch, selectedMonth]);
 
-  // =========================
-  // HABITS
-  // =========================
-
   useEffect(() => {
     if (habitStatus === "idle") {
       dispatch(fetchHabits());
     }
   }, [dispatch, habitStatus]);
 
-  // =========================
-  // INITIAL LOADING
-  // =========================
-
-  const isInitialLoading =
-    !daily &&
-    !weekly &&
-    !monthly &&
-    !calendar;
+  const isInitialLoading = !daily && !weekly && !monthly && !calendar;
 
   if (isInitialLoading) {
     return <AnalyticsShimmer />;
   }
-
-  // =========================
-  // SELECTED DAY VALUES
-  // =========================
 
   const completionRate = Math.min(
     100,
@@ -190,17 +144,10 @@ const Analytics = () => {
 
   const expected = Number(daily?.expected) || 0;
 
-  const remaining = Math.max(
-    expected - completed,
-    0,
-  );
+  const remaining = Math.max(expected - completed, 0);
 
   return (
     <div className="w-full space-y-6 pb-8">
-      {/* =================================================
-          DAILY PROGRESS
-      ================================================= */}
-
       <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
         {/* Decorative background */}
         <div className="pointer-events-none absolute -right-14 -top-14 h-48 w-48 rounded-full border-[20px] border-primary/10" />
@@ -215,48 +162,42 @@ const Analytics = () => {
           {/* Header */}
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold text-primary">
-                Daily progress
-              </p>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  Daily Progress
+                </span>
+              </div>
 
               <h1 className="mt-1 text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
                 Your day at a glance.
               </h1>
 
               <p className="mt-3 text-sm leading-6 text-base-content/60 sm:text-base">
-                See how your habits are progressing and understand
-                your consistency for the selected day.
+                See how your habits are progressing and understand your
+                consistency for the selected day.
               </p>
             </div>
 
             {/* Date selector */}
-           <label className="flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-base-300 bg-base-100/90 px-3 shadow-sm transition hover:border-primary/30 focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10">
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    className="h-4 w-4 shrink-0 text-primary"
-  >
-    <path
-      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
+            <div className="w-full shrink-0 sm:w-auto">
+              <DatePicker
+                value={selectedDate}
+                max={getLocalDateString()}
+                placeholder="Select date"
+                isOpen={openPicker === "daily"}
+                onOpen={() => setOpenPicker("daily")}
+                onClose={() => setOpenPicker(null)}
+                onChange={(date) => {
+                  if (!date) return;
 
-  <input
-    type="date"
-    value={selectedDate}
-    max={getLocalDateString()}
-    onChange={(e) => {
-      if (e.target.value) {
-        setSelectedDate(e.target.value);
-      }
-    }}
-    className="w-[130px] cursor-pointer bg-transparent text-xs font-semibold text-base-content outline-none"
-  />
-</label>
+                  setSelectedDate(date);
+                  setOpenPicker(null);
+                }}
+                align="right"
+              />
+            </div>
           </div>
 
           {/* Selected date */}
@@ -273,10 +214,6 @@ const Analytics = () => {
               </span>
             )}
           </div>
-
-          {/* =================================================
-              SELECTED DAY SUMMARY
-          ================================================= */}
 
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {/* Completion */}
@@ -415,10 +352,7 @@ const Analytics = () => {
                     strokeWidth="1.8"
                     className="h-4 w-4"
                   >
-                    <path
-                      d="M6 12h12"
-                      strokeLinecap="round"
-                    />
+                    <path d="M6 12h12" strokeLinecap="round" />
                     <circle cx="12" cy="12" r="8.5" />
                   </svg>
                 </div>
@@ -431,10 +365,6 @@ const Analytics = () => {
           </div>
         </div>
       </section>
-
-      {/* =================================================
-          CATEGORY PROGRESS
-      ================================================= */}
 
       {daily?.categories && (
         <section className="rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
@@ -453,113 +383,98 @@ const Analytics = () => {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {Object.entries(daily.categories).map(
-              ([category, stats]) => {
-                const percentage = Math.min(
-                  100,
-                  Math.max(
-                    0,
-                    Number(stats?.percentage) || 0,
-                  ),
-                );
+            {Object.entries(daily.categories).map(([category, stats]) => {
+              const percentage = Math.min(
+                100,
+                Math.max(0, Number(stats?.percentage) || 0),
+              );
 
-                const completedCategory =
-                  Number(stats?.completed) || 0;
+              const completedCategory = Number(stats?.completed) || 0;
 
-                const expectedCategory =
-                  Number(stats?.expected) || 0;
+              const expectedCategory = Number(stats?.expected) || 0;
 
-                const icon =
-                  categoryIcons[
-                    category.toLowerCase()
-                  ] || "🌿";
+              const icon = categoryIcons[category.toLowerCase()] || "🌿";
 
-                return (
-                  <div
-                    key={category}
-                    className="rounded-2xl border border-base-300 bg-base-200/30 p-4 transition hover:border-primary/15 hover:bg-primary/[0.025]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
-                          {icon}
-                        </div>
-
-                        <div className="min-w-0">
-                          <h3 className="truncate text-sm font-semibold capitalize text-base-content">
-                            {category}
-                          </h3>
-
-                          <p className="mt-0.5 text-xs text-base-content/45">
-                            {completedCategory} of{" "}
-                            {expectedCategory} completed
-                          </p>
-                        </div>
+              return (
+                <div
+                  key={category}
+                  className="rounded-2xl border border-base-300 bg-base-200/30 p-4 transition hover:border-primary/15 hover:bg-primary/[0.025]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
+                        {icon}
                       </div>
 
-                      <span className="shrink-0 text-sm font-bold text-primary">
-                        {percentage}%
-                      </span>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold capitalize text-base-content">
+                          {category}
+                        </h3>
+
+                        <p className="mt-0.5 text-xs text-base-content/45">
+                          {completedCategory} of {expectedCategory} completed
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-base-300">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all duration-500"
-                        style={{
-                          width: `${percentage}%`,
-                        }}
-                      />
-                    </div>
+                    <span className="shrink-0 text-sm font-bold text-primary">
+                      {percentage}%
+                    </span>
                   </div>
-                );
-              },
-            )}
+
+                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-base-300">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-500"
+                      style={{
+                        width: `${percentage}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* =================================================
-          WEEKLY + CALENDAR
-      ================================================= */}
-
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+      <section className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-2">
         {/* Weekly Progress */}
-        <div className="min-w-0">
+        <div className="min-w-0 h-full">
           {weekly ? (
-            <WeeklyChart
-              data={weekly}
-              selectedWeek={selectedWeek}
-              onWeekChange={setSelectedWeek}
-              maxDate={getLocalDateString()}
-            />
+            <div className="h-full [&>div]:h-full [&>section]:h-full">
+              <WeeklyChart
+                data={weekly}
+                selectedWeek={selectedWeek}
+                onWeekChange={setSelectedWeek}
+                maxDate={getLocalDateString()}
+              />
+            </div>
           ) : (
-            <div className="min-h-[300px] rounded-2xl border border-base-300 bg-base-100" />
+            <AnalyticsCardSkeleton type="weekly" />
           )}
         </div>
 
         {/* Consistency Calendar */}
-        <div className="min-w-0">
+        <div className="min-w-0 h-full">
           {calendarError ? (
-            <div className="rounded-2xl border border-error/20 bg-error/10 p-4 text-sm font-medium text-error">
+            <div className="flex min-h-[470px] h-full items-center rounded-3xl border border-error/20 bg-error/10 p-5 text-sm font-medium text-error">
               {calendarError}
             </div>
           ) : calendar ? (
-            <CalendarHeatmap
-              data={calendar}
-              selectedMonth={selectedMonth}
-              onMonthChange={setSelectedMonth}
-              maxMonth={currentMonth}
-              loading={calendarStatus === "loading"}
-            />
+            <div className="h-full">
+              <CalendarHeatmap
+                data={calendar}
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+                maxMonth={currentMonth}
+                loading={calendarStatus === "loading"}
+              />
+            </div>
           ) : (
-            <div className="min-h-[300px] rounded-2xl border border-base-300 bg-base-100" />
+            <AnalyticsCardSkeleton type="calendar" />
           )}
         </div>
       </section>
-
-      {/* =================================================
-          MONTHLY PROGRESS
-      ================================================= */}
 
       {monthlyError && (
         <div className="rounded-2xl border border-error/20 bg-error/10 p-4 text-sm font-medium text-error">
@@ -567,82 +482,84 @@ const Analytics = () => {
         </div>
       )}
 
-      {monthly && (
-        <section className="min-w-0">
+      <section className="min-w-0">
+        {monthly ? (
           <MonthlyChart
             data={monthly}
             selectedMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
             maxMonth={currentMonth}
             loading={monthlyStatus === "loading"}
+            error={monthlyError}
           />
-        </section>
-      )}
-
-      {/* =================================================
-          HABIT STREAK
-      ================================================= */}
+        ) : (
+          <AnalyticsCardSkeleton type="monthly" />
+        )}
+      </section>
 
       {habits?.length > 0 && (
         <section className="min-w-0">
           <HabitStreak habits={habits} />
         </section>
       )}
+    </div>
+  );
+};
 
-      {/* =================================================
-          CLOSING MESSAGE
-      ================================================= */}
+const AnalyticsCardSkeleton = ({ type }) => {
+  if (type === "monthly") {
+    return (
+      <section className="min-h-[430px] rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 animate-pulse rounded-2xl bg-base-200" />
 
-      <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/10" />
-
-        <div className="pointer-events-none absolute -bottom-10 right-24 h-24 w-24 rounded-full bg-secondary/10" />
-
-        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary/60">
-              Keep going
-            </p>
-
-            <h2 className="mt-1 text-xl font-bold tracking-tight text-base-content sm:text-2xl">
-              Small steps. Big changes.
-            </h2>
-
-            <p className="mt-2 max-w-xl text-sm leading-6 text-base-content/55">
-              Progress doesn't need to be perfect. Stay consistent,
-              keep showing up, and let the small actions compound.
-            </p>
+            <div>
+              <div className="h-4 w-36 animate-pulse rounded bg-base-200" />
+              <div className="mt-2 h-3 w-56 animate-pulse rounded bg-base-200" />
+            </div>
           </div>
 
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-base-100 text-primary shadow-sm">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              className="h-6 w-6"
-            >
-              <path
-                d="M12 20V9"
-                strokeLinecap="round"
-              />
+          <div className="h-10 w-36 animate-pulse rounded-xl bg-base-200" />
+        </div>
 
-              <path
-                d="M12 13c-3.5 0-5.5-2.2-5.5-5.5C10 7.5 12 9.5 12 13Z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+        <div className="mt-8 h-64 animate-pulse rounded-2xl bg-base-200/80" />
+      </section>
+    );
+  }
 
-              <path
-                d="M12 16c3.5 0 5.5-2.2 5.5-5.5C14 10.5 12 12.5 12 16Z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+  return (
+    <section className="min-h-[470px] rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 animate-pulse rounded-2xl bg-base-200" />
+
+          <div>
+            <div className="h-4 w-36 animate-pulse rounded bg-base-200" />
+            <div className="mt-2 h-3 w-48 animate-pulse rounded bg-base-200" />
           </div>
         </div>
-      </section>
-    </div>
+
+        <div className="h-10 w-32 animate-pulse rounded-xl bg-base-200" />
+      </div>
+
+      <div className="mt-7 h-2 animate-pulse rounded-full bg-base-200" />
+
+      <div className="mt-6 grid grid-cols-7 gap-2">
+        {Array.from({ length: 35 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-10 animate-pulse rounded-lg bg-base-200"
+          />
+        ))}
+      </div>
+
+      <div className="mt-7 grid grid-cols-3 gap-3 border-t border-base-300 pt-4">
+        <div className="h-12 animate-pulse rounded-xl bg-base-200" />
+        <div className="h-12 animate-pulse rounded-xl bg-base-200" />
+        <div className="h-12 animate-pulse rounded-xl bg-base-200" />
+      </div>
+    </section>
   );
 };
 

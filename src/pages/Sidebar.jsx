@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { getDailyReminder } from "../utils/dailyReminder";
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen = false, onMobileClose }) => {
   const [isCollapsed, setIsCollapsed] = useState(() => {
     return localStorage.getItem("aven-sidebar-collapsed") === "true";
   });
@@ -210,10 +210,10 @@ const Sidebar = () => {
   ];
 
   const linkClass = ({ isActive }) => `
-    group flex w-full items-center rounded-xl
-    py-3
+    group flex w-full items-center justify-center rounded-xl
+    px-0 py-3
     transition-all duration-300 ease-in-out
-    ${isCollapsed ? "justify-center px-0" : "gap-3 px-4"}
+    ${isCollapsed ? "md:justify-center md:gap-0 md:px-0" : "md:justify-start md:gap-3 md:px-4"}
     ${
       isActive
         ? "bg-primary/10 font-semibold text-primary"
@@ -226,9 +226,10 @@ const Sidebar = () => {
       <NavLink
         key={item.path}
         to={item.path}
+        onClick={() => onMobileClose?.()}
         className={linkClass}
-        title={isCollapsed ? item.name : undefined}
-        aria-label={isCollapsed ? item.name : undefined}
+        title={item.name}
+        aria-label={item.name}
       >
         {/* Icon */}
         <span className="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -240,11 +241,10 @@ const Sidebar = () => {
           className={`
             overflow-hidden whitespace-nowrap
             transition-all duration-300 ease-in-out
-            ${
-              isCollapsed
-                ? "w-0 translate-x-[-8px] opacity-0"
-                : "w-auto translate-x-0 opacity-100"
-            }
+            w-0 translate-x-[-8px] opacity-0
+            ${isCollapsed
+              ? "md:w-0 md:translate-x-[-8px] md:opacity-0"
+              : "md:w-auto md:translate-x-0 md:opacity-100"}
           `}
         >
           {item.name}
@@ -253,38 +253,57 @@ const Sidebar = () => {
     ));
 
   return (
-    <aside
-      className={`
-        sticky top-16 hidden
-        h-[calc(100vh-4rem)]
-        shrink-0
-        flex-col
-        border-r border-base-300
-        bg-base-100
-        transition-[width] duration-300 ease-in-out
-        md:flex
-        ${isCollapsed ? "w-[72px]" : "w-64"}
-      `}
-    >
+    <>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={onMobileClose}
+          className="fixed inset-x-0 bottom-0 top-16 z-30 bg-black/30 backdrop-blur-[1px] md:hidden"
+        />
+      )}
+
+      <aside
+        className={`
+          fixed left-0 top-16 z-40
+          flex h-[calc(100vh-4rem)] w-[72px] flex-col
+          border-r border-base-300
+          bg-base-100
+          shadow-xl
+          transition-transform duration-300 ease-in-out
+
+          md:sticky md:top-16
+          md:h-[calc(100vh-4rem)]
+          md:shrink-0
+          md:shadow-none
+
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          ${isCollapsed ? "md:w-[72px]" : "md:w-64"}
+        `}
+      >
       {/* ================= SIDEBAR HEADER ================= */}
 
       <div
         className={`
-          flex h-14 shrink-0 items-center border-b border-base-300
-          px-3
-          ${isCollapsed ? "justify-center" : "justify-end"}
+          flex h-14 shrink-0 items-center justify-center border-b border-base-300 px-3
+          ${isCollapsed ? "md:justify-center" : "md:justify-end"}
         `}
       >
+        {/* Mobile compact header */}
+
+        {/* Desktop collapse button */}
         <button
           type="button"
           onClick={() => setIsCollapsed((prev) => !prev)}
           className="
-            flex h-9 w-9 items-center justify-center
+            hidden h-9 w-9 items-center justify-center
             rounded-lg
             text-base-content/50
             transition-all duration-200
             hover:bg-base-200
             hover:text-base-content
+            md:flex
           "
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -329,7 +348,7 @@ const Sidebar = () => {
     shrink-0 overflow-hidden
     px-3
     transition-all duration-300 ease-in-out
-    ${isCollapsed ? "pb-4" : "pb-2"}
+    ${isCollapsed ? "pb-4 md:pb-4" : "pb-4 md:pb-2"}
   `}
       >
         <div
@@ -337,7 +356,7 @@ const Sidebar = () => {
       relative w-full overflow-hidden rounded-2xl
       border border-primary/10 bg-primary/10
       transition-[height,border-radius] duration-300 ease-in-out
-      ${isCollapsed ? "h-12 rounded-xl" : "h-40 rounded-2xl"}
+      ${isCollapsed ? "h-12 rounded-xl md:h-12 md:rounded-xl" : "h-12 rounded-xl md:h-40 md:rounded-2xl"}
     `}
         >
           {/* Decorative circles */}
@@ -347,7 +366,7 @@ const Sidebar = () => {
         h-32 w-32 rounded-full
         bg-primary/10
         transition-opacity duration-300
-        ${isCollapsed ? "opacity-0" : "opacity-100"}
+        ${isCollapsed ? "opacity-0" : "opacity-0 md:opacity-100"}
       `}
           />
 
@@ -357,7 +376,7 @@ const Sidebar = () => {
         h-24 w-24 rounded-full
         bg-secondary/10
         transition-opacity duration-300
-        ${isCollapsed ? "opacity-0" : "opacity-100"}
+        ${isCollapsed ? "opacity-0" : "opacity-0 md:opacity-100"}
       `}
           />
 
@@ -370,7 +389,7 @@ const Sidebar = () => {
         bg-primary/10
         text-primary
         transition-all duration-300 ease-in-out
-        ${isCollapsed ? "inset-0 m-auto h-10 w-10" : "right-5 top-5 h-10 w-10"}
+        ${isCollapsed ? "inset-0 m-auto h-10 w-10" : "inset-0 m-auto h-10 w-10 md:right-5 md:top-5 md:inset-auto"}
       `}
           >
             <svg
@@ -399,10 +418,11 @@ const Sidebar = () => {
             className={`
         absolute inset-0 p-5
         transition-all duration-300 ease-in-out
+        pointer-events-none translate-y-2 opacity-0
         ${
           isCollapsed
-            ? "pointer-events-none translate-y-2 opacity-0"
-            : "translate-y-0 opacity-100"
+            ? "md:pointer-events-none md:translate-y-2 md:opacity-0"
+            : "md:pointer-events-auto md:translate-y-0 md:opacity-100"
         }
       `}
           >
@@ -430,14 +450,15 @@ const Sidebar = () => {
     shrink-0 overflow-hidden
     border-t border-base-300
     transition-all duration-300 ease-in-out
-    ${isCollapsed ? "max-h-0 py-0 opacity-0" : "max-h-10 py-3 opacity-100"}
+    ${isCollapsed ? "max-h-0 py-0 opacity-0 md:max-h-0" : "max-h-0 py-0 opacity-0 md:max-h-10 md:py-3 md:opacity-100"}
   `}
       >
         <p className="text-center text-[10px] text-base-content/40">
           © {new Date().getFullYear()} Aven. All rights reserved.
         </p>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

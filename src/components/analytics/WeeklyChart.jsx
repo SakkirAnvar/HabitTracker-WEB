@@ -1,294 +1,290 @@
-const WeeklyChart = ({ data, selectedWeek, onWeekChange, maxDate }) => {
+import { useState } from "react";
+import DatePicker from "../../layout/DatePicker";
+
+const WeeklyChart = ({
+  data,
+  selectedWeek,
+  onWeekChange,
+  maxDate,
+  error,
+  loading = false,
+}) => {
+  const [openPicker, setOpenPicker] = useState(false);
+
   if (!data?.daily?.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-lg">
-          📊
+      <section className="min-h-[400px] rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base">
+            📊
+          </div>
+
+          <div>
+            <h2 className="text-base font-semibold text-base-content">
+              Weekly Progress
+            </h2>
+            <p className="mt-0.5 text-xs text-base-content/50">
+              Daily completion this week.
+            </p>
+          </div>
         </div>
 
-        <h2 className="mt-3 text-lg font-semibold text-base-content">
-          Weekly Progress
-        </h2>
-
-        <p className="mt-1 text-sm text-base-content/60">
-          No weekly data available yet.
-        </p>
-
-        <p className="mt-1 text-xs text-base-content/45">
-          Keep tracking your habits to see your weekly progress.
-        </p>
-      </div>
+        {error ? (
+          <div className="mt-6 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-xs font-medium text-error">
+            {typeof error === "string"
+              ? error
+              : error?.message || "Unable to load weekly progress."}
+          </div>
+        ) : (
+          <div className="mt-12 text-center">
+            <p className="text-sm font-medium text-base-content/60">
+              No weekly data available yet.
+            </p>
+            <p className="mt-1 text-xs text-base-content/40">
+              Keep tracking your habits to see progress here.
+            </p>
+          </div>
+        )}
+      </section>
     );
   }
 
   const getLocalDateString = () => {
     const now = new Date();
-
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-
     return `${year}-${month}-${day}`;
   };
 
   const today = getLocalDateString();
-
   const isFutureDate = (date) => date > today;
-
   const getPercentage = (value) =>
     Math.min(100, Math.max(0, Number(value) || 0));
 
-  const formatDay = (date) => {
-    if (!date) return "-";
+  const formatDay = (date) =>
+    date
+      ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+          weekday: "short",
+        })
+      : "-";
 
-    return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
-      weekday: "short",
-    });
-  };
-
-  const formatDate = (date) => {
-    if (!date) return "-";
-
-    return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatDate = (date) =>
+    date
+      ? new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "-";
 
   const daily = data.daily;
   const weeklyAverage = getPercentage(data.overall);
-
-  const chartMax = 110;
-
-  const gridValues = [100, 75, 50, 25, 0];
+  const gridValues = [100, 50, 0];
+  const chartMax = 100;
 
   return (
-    <section className="flex h-full w-full flex-col rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-      <div className="flex items-center justify-between gap-3">
-        {/* LEFT */}
+    <section
+      className={`relative flex min-h-[400px] w-full flex-col rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-opacity sm:p-6 ${
+        loading ? "opacity-60" : ""
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base">
             📊
           </div>
 
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-semibold leading-tight text-base-content">
-              Weekly Progress
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="truncate text-base font-semibold text-base-content">
+                Weekly Progress
+              </h2>
 
-            <p className="mt-1 truncate text-sm text-base-content/55">
-              Daily habit completion this week.
+              <span className="hidden rounded-full bg-primary/8 px-2 py-0.5 text-[10px] font-semibold text-primary sm:inline">
+                {weeklyAverage}%
+              </span>
+            </div>
+
+            <p className="mt-0.5 text-xs text-base-content/50">
+              Daily completion this week.
             </p>
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="flex shrink-0 items-center">
-          {/* Average */}
-          <div className="hidden px-4 text-center sm:block sm:px-5">
-            <p className="text-[10px] font-medium text-base-content/50">
-              Weekly Average
-            </p>
+        <div className="shrink-0">
+          <DatePicker
+            value={selectedWeek}
+            max={maxDate}
+            placeholder="Select week"
+            isOpen={openPicker}
+            onOpen={() => setOpenPicker(true)}
+            onClose={() => setOpenPicker(false)}
+            onChange={(value) => {
+              if (!value) return;
 
-            <p className="mt-0.5 text-xl font-bold leading-none text-primary">
-              {weeklyAverage}%
-            </p>
+              const selected = new Date(`${value}T00:00:00`);
+              if (Number.isNaN(selected.getTime())) {
+                setOpenPicker(false);
+                return;
+              }
+
+              const max = maxDate
+                ? new Date(`${maxDate}T00:00:00`)
+                : null;
+
+              if (max && !Number.isNaN(max.getTime()) && selected > max) {
+                setOpenPicker(false);
+                return;
+              }
+
+              const day = selected.getDay();
+              const difference = day === 0 ? -6 : 1 - day;
+              selected.setDate(selected.getDate() + difference);
+
+              const year = selected.getFullYear();
+              const month = String(selected.getMonth() + 1).padStart(2, "0");
+              const date = String(selected.getDate()).padStart(2, "0");
+
+              onWeekChange(`${year}-${month}-${date}`);
+              setOpenPicker(false);
+            }}
+            align="right"
+            buttonClassName="h-9 w-[138px] rounded-xl px-3 text-[11px] font-medium"
+          />
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4 rounded-xl border border-error/20 bg-error/10 px-3 py-2.5 text-xs font-medium text-error">
+          {typeof error === "string"
+            ? error
+            : error?.message || "Unable to load weekly progress."}
+        </div>
+      )}
+
+      {/* Chart */}
+      <div className="mt-5 flex min-h-0 flex-1 items-center">
+        <div className="relative h-[245px] w-full">
+          <div className="absolute bottom-8 left-0 top-2 w-7">
+            {gridValues.map((value) => (
+              <span
+                key={value}
+                className="absolute right-1 -translate-y-1/2 text-[9px] font-medium text-base-content/35"
+                style={{ top: `${100 - value}%` }}
+              >
+                {value}
+              </span>
+            ))}
           </div>
 
-          <div className="hidden h-9 w-px bg-base-300 sm:block" />
+          <div className="absolute inset-x-0 bottom-0 left-8 top-0">
+            <div className="pointer-events-none absolute inset-x-0 bottom-8 top-2">
+              {gridValues.map((value) => (
+                <div
+                  key={value}
+                  className="absolute inset-x-0 border-t border-dashed border-base-300/50"
+                  style={{ top: `${100 - value}%` }}
+                />
+              ))}
+            </div>
 
-          {/* Week selector */}
-          <label className="ml-0 flex h-10 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-3 transition hover:bg-base-200 sm:ml-3">
-            <input
-              type="date"
-              value={selectedWeek}
-              max={maxDate}
-              onChange={(e) => {
-                const value = e.target.value;
-
-                if (!value) return;
-
-                const selected = new Date(`${value}T00:00:00`);
-                const day = selected.getDay();
-
-                // Monday = first day of week
-                const difference = day === 0 ? -6 : 1 - day;
-
-                selected.setDate(selected.getDate() + difference);
-
-                const year = selected.getFullYear();
-                const month = String(selected.getMonth() + 1).padStart(2, "0");
-                const date = String(selected.getDate()).padStart(2, "0");
-
-                onWeekChange(`${year}-${month}-${date}`);
-              }}
-              className="w-[125px] bg-transparent text-[11px] font-medium text-base-content outline-none"
-            />
-          </label>
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between rounded-xl bg-primary/5 px-4 py-2.5 sm:hidden">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/45">
-            Weekly Average
-          </p>
-
-          <p className="mt-0.5 text-lg font-bold leading-none text-primary">
-            {weeklyAverage}%
-          </p>
-        </div>
-
-        <span className="text-base">📈</span>
-      </div>
-
-      <div className="mt-4 flex flex-1 items-center">
-        <div className="w-full">
-          <div className="relative h-[285px] w-full">
-            <div className="absolute bottom-10 left-0 top-2 w-8">
-              {gridValues.map((value) => {
-                const top = ((chartMax - value) / chartMax) * 100;
+            <div className="absolute inset-x-0 bottom-8 top-2 flex items-end justify-between gap-2">
+              {daily.map((day) => {
+                const future = isFutureDate(day.date);
+                const percentage = future ? 0 : getPercentage(day.overall);
 
                 return (
-                  <span
-                    key={value}
-                    className="absolute right-1 -translate-y-1/2 text-[10px] font-medium text-base-content/40"
-                    style={{ top: `${top}%` }}
+                  <div
+                    key={day.date}
+                    className="group relative flex h-full min-w-0 flex-1 flex-col items-center"
                   >
-                    {value}
-                  </span>
+                    <div className="relative flex h-full w-full items-end justify-center">
+                      {!future && percentage > 0 && (
+                        <div
+                          className={`w-[58%] max-w-10 rounded-t-lg transition-all duration-500 ${
+                            percentage === 100 ? "bg-success" : "bg-primary"
+                          }`}
+                          style={{
+                            height: `${Math.max(
+                              3,
+                              (percentage / chartMax) * 100,
+                            )}%`,
+                          }}
+                        />
+                      )}
+
+                      {future && (
+                        <span className="mb-1 h-1.5 w-1.5 rounded-full bg-base-content/20" />
+                      )}
+                    </div>
+
+                    <div className="pointer-events-none absolute bottom-[calc(100%-0.75rem)] left-1/2 z-30 hidden w-[140px] -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 px-3 py-2.5 shadow-lg group-hover:block">
+                      <p className="text-[10px] font-semibold text-base-content">
+                        {formatDate(day.date)}
+                      </p>
+
+                      <p className="mt-1.5 text-[10px] text-base-content/55">
+                        {future
+                          ? "Upcoming day"
+                          : `${percentage}% completed`}
+                      </p>
+
+                      {!future && (
+                        <p className="mt-0.5 text-[10px] text-base-content/40">
+                          {day.completed} of {day.expected} habits
+                        </p>
+                      )}
+                    </div>
+
+                    <span
+                      className={`absolute -bottom-6 text-[9px] font-medium ${
+                        future
+                          ? "text-base-content/25"
+                          : "text-base-content/45"
+                      }`}
+                    >
+                      {formatDay(day.date)}
+                    </span>
+                  </div>
                 );
               })}
             </div>
 
-            <div className="absolute bottom-0 left-10 right-0 top-0">
-              <div className="relative h-full w-full">
-                <div className="pointer-events-none absolute inset-x-0 bottom-10 top-2">
-                  {gridValues.map((value) => {
-                    const top = ((chartMax - value) / chartMax) * 100;
-
-                    return (
-                      <div
-                        key={value}
-                        className="absolute inset-x-0 border-t border-dashed border-base-300/55"
-                        style={{ top: `${top}%` }}
-                      />
-                    );
-                  })}
-                </div>
-
-                <div className="absolute inset-x-0 bottom-10 top-2 flex items-end justify-between gap-2 px-1 sm:gap-3 sm:px-2">
-                  {daily.map((day) => {
-                    const future = isFutureDate(day.date);
-
-                    const percentage = future ? 0 : getPercentage(day.overall);
-
-                    return (
-                      <div
-                        key={day.date}
-                        className="group relative flex h-full min-w-0 flex-1 flex-col items-center"
-                      >
-                        {/* Bar wrapper */}
-
-                        <div className="relative flex h-full w-full items-end justify-center">
-                          {/* Actual bar */}
-
-                          {!future && percentage > 0 && (
-                            <div
-                              className={`w-[68%] max-w-12 rounded-t-xl transition-all duration-500 ${
-                                percentage === 100 ? "bg-success" : "bg-primary"
-                              }`}
-                              style={{
-                                height: `${Math.min(
-                                  100,
-                                  (percentage / chartMax) * 100,
-                                )}%`,
-                              }}
-                            />
-                          )}
-
-                          {/* Future */}
-
-                          {future && (
-                            <div className="mb-0.5 h-1.5 w-1.5 rounded-full bg-base-content/20" />
-                          )}
-                        </div>
-
-                        <div className="pointer-events-none absolute bottom-[calc(100%-1rem)] left-1/2 z-30 hidden w-[150px] -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl group-hover:block">
-                          <p className="text-[11px] font-semibold text-base-content">
-                            {formatDate(day.date)}
-                          </p>
-
-                          {future ? (
-                            <div className="mt-2 flex items-center gap-2">
-                              <span className="h-2 w-2 rounded-full bg-base-content/25" />
-
-                              <span className="text-[11px] font-medium text-base-content/60">
-                                Assigned
-                              </span>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="mt-2 flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-primary" />
-
-                                <span className="text-[11px] font-medium text-base-content/70">
-                                  {percentage}% completed
-                                </span>
-                              </div>
-
-                              <p className="mt-1 text-[10px] text-base-content/45">
-                                {day.completed} of {day.expected} habits
-                              </p>
-                            </>
-                          )}
-                        </div>
-
-                        <span
-                          className={`absolute -bottom-7 text-[10px] font-medium ${
-                            future
-                              ? "text-base-content/30"
-                              : "text-base-content/50"
-                          }`}
-                        >
-                          {formatDay(day.date)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="absolute inset-x-0 bottom-10 border-t border-base-300" />
-              </div>
-            </div>
+            <div className="absolute inset-x-0 bottom-8 border-t border-base-300" />
           </div>
         </div>
       </div>
 
-      <div className="mt-2 border-t border-base-300 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-wide text-base-content/40">
-              Week
-            </p>
+      {/* Compact footer */}
+      <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-3">
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-base-content/35">
+            Week
+          </p>
+          <p className="mt-0.5 text-[11px] font-medium text-base-content/55">
+            {formatDate(data.startDate)}
+          </p>
+        </div>
 
-            <p className="mt-1 text-xs font-medium text-base-content/60">
-              {formatDate(data.startDate)}
-            </p>
-          </div>
-
-          <div className="text-right">
-            <p className="text-[10px] font-medium uppercase tracking-wide text-base-content/40">
-              Through
-            </p>
-
-            <p className="mt-1 text-xs font-medium text-base-content/60">
-              {formatDate(data.endDate)}
-            </p>
-          </div>
+        <div className="text-right">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-base-content/35">
+            Through
+          </p>
+          <p className="mt-0.5 text-[11px] font-medium text-base-content/55">
+            {formatDate(data.endDate)}
+          </p>
         </div>
       </div>
+
+      {loading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-base-100/45 backdrop-blur-[1px]">
+          <div className="rounded-full border border-base-300 bg-base-100 px-3 py-2 text-[10px] font-medium text-base-content/50 shadow-sm">
+            Updating…
+          </div>
+        </div>
+      )}
     </section>
   );
 };

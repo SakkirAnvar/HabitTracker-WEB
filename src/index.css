@@ -54,53 +54,91 @@
 /* ================================
    AVEN DARK THEME
 ================================ */
+
 @plugin "daisyui/theme" {
   name: "dark";
+
   default: false;
   prefersdark: true;
   color-scheme: dark;
 
-  /* Backgrounds */
-  --color-base-100: #151a18;
-  --color-base-200: #0f1312;
-  --color-base-300: #252d29;
+  /* --------------------------------
+     Backgrounds
+  -------------------------------- */
 
-  /* Text */
-  --color-base-content: #e7ece9;
+  --color-base-100: #111315;
+  --color-base-200: #0c0e10;
+  --color-base-300: #25292d;
 
-  /* Aven primary */
-  --color-primary: #5cc99a;
-  --color-primary-content: #092019;
+  /* --------------------------------
+     Text
+  -------------------------------- */
 
-  /* Secondary */
-  --color-secondary: #8fd3b3;
-  --color-secondary-content: #10251c;
+  --color-base-content: #e8eaed;
 
-  /* Soft Aven accent */
-  --color-accent: #20362d;
-  --color-accent-content: #a8dfc3;
+  /* --------------------------------
+     Primary
+     Soft cool blue — not green
+  -------------------------------- */
 
-  /* Neutral */
-  --color-neutral: #d6ded9;
-  --color-neutral-content: #151a18;
+  --color-primary: #8ab4f8;
+  --color-primary-content: #0d1117;
 
-  /* Info */
-  --color-info: #82b8d9;
-  --color-info-content: #0b1a22;
+  /* --------------------------------
+     Secondary
+  -------------------------------- */
 
-  /* Success */
-  --color-success: #62c995;
-  --color-success-content: #092019;
+  --color-secondary: #b8a7f5;
+  --color-secondary-content: #121019;
 
-  /* Warning */
-  --color-warning: #d9b96e;
-  --color-warning-content: #211b0c;
+  /* --------------------------------
+     Accent
+     Very subtle cool surface
+  -------------------------------- */
 
-  /* Error */
-  --color-error: #de8585;
-  --color-error-content: #260f0f;
+  --color-accent: #1b2027;
+  --color-accent-content: #c9d2df;
 
-  /* Shape */
+  /* --------------------------------
+     Neutral
+  -------------------------------- */
+
+  --color-neutral: #d5d9de;
+  --color-neutral-content: #111315;
+
+  /* --------------------------------
+     Info
+  -------------------------------- */
+
+  --color-info: #8ab4f8;
+  --color-info-content: #0d1117;
+
+  /* --------------------------------
+     Success
+     Kept neutral/cool instead of green
+  -------------------------------- */
+
+  --color-success: #8fc7b5;
+  --color-success-content: #0c1512;
+
+  /* --------------------------------
+     Warning
+  -------------------------------- */
+
+  --color-warning: #e5c07b;
+  --color-warning-content: #17130a;
+
+  /* --------------------------------
+     Error
+  -------------------------------- */
+
+  --color-error: #e58b8b;
+  --color-error-content: #1a0d0d;
+
+  /* --------------------------------
+     Shape
+  -------------------------------- */
+
   --radius-selector: 0.5rem;
   --radius-field: 0.75rem;
   --radius-box: 1rem;

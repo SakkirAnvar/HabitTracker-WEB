@@ -1,66 +1,162 @@
 import { Link, useLocation } from "react-router-dom";
-import { AVEN_LOGO } from "../utils/constants";
 
 const ErrorPage = () => {
   const location = useLocation();
 
   const is404 = location.pathname !== "/error";
 
+  const content = is404
+    ? {
+        code: "404",
+        eyebrow: "Page not found",
+        title: "This page has moved on.",
+        description:
+          "The page you're looking for doesn't exist or may have been moved somewhere else.",
+      }
+    : {
+        code: "500",
+        eyebrow: "Unexpected error",
+        title: "Something didn't go as planned.",
+        description:
+          "We ran into an unexpected problem. Please try again or head back to your dashboard.",
+      };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-base-200 px-4 text-base-content">
-      <div className="w-full max-w-lg text-center">
-        {/* ================= BRAND ================= */}
+    <div className="">
+      {/* Subtle brand accent */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          top-0
+          h-[420px]
+          w-[720px]
+          -translate-x-1/2
+          rounded-full
+          bg-primary/[0.035]
+          blur-[120px]
+        "
+      />
 
-        <Link
-          to="/"
-          className="inline-flex items-center transition-opacity hover:opacity-90"
-        >
-          <img
-            src={AVEN_LOGO}
-            alt="Aven - Build your better days"
-            className="w-36.25 h-auto object-contain"
-          />
-        </Link>
+      <div className="relative flex min-h-screen flex-col">
+        {/* ================= MAIN ================= */}
 
-        {/* ================= ERROR ================= */}
+        <main className="flex flex-1 items-center justify-center px-5 py-12 sm:px-8">
+          <section className="w-full max-w-2xl">
+            {/* Error code */}
 
-        <div className="mt-12">
-          <p className="text-7xl font-bold tracking-tight text-primary sm:text-8xl">
-            {is404 ? "404" : "500"}
-          </p>
+            <div className="overflow-hidden">
+              <p
+                aria-hidden="true"
+                className="
+                  select-none
+                  text-[clamp(7rem,22vw,15rem)]
+                  font-black
+                  leading-[0.75]
+                  tracking-[-0.09em]
+                  text-base-content/[0.045]
+                "
+              >
+                {content.code}
+              </p>
+            </div>
 
-          <h1 className="mt-5 text-2xl font-bold text-base-content sm:text-3xl">
-            {is404 ? "Page not found" : "Something went wrong"}
-          </h1>
+            {/* Content */}
 
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-base-content/60 sm:text-base">
-            {is404
-              ? "The page you're looking for doesn't exist or may have been moved."
-              : "Something unexpected happened. Please try again in a moment."}
-          </p>
+            <div className="relative -mt-5 max-w-xl sm:-mt-8">
+              {/* Eyebrow */}
 
-          {/* ================= ACTIONS ================= */}
+              <div className="mb-5 flex items-center gap-3">
+                <span className="h-px w-8 bg-primary/60" />
 
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => window.history.back()}
-              className="btn btn-outline"
-            >
-              Go Back
-            </button>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                  {content.eyebrow}
+                </span>
+              </div>
 
-            <Link to="/dashboard" className="btn btn-primary">
-              Go to Dashboard
-            </Link>
-          </div>
-        </div>
+              {/* Heading */}
 
-        {/* ================= FOOTER ================= */}
+              <h1
+                className="
+                  max-w-lg
+                  text-3xl
+                  font-bold
+                  leading-[1.12]
+                  tracking-[-0.035em]
+                  sm:text-4xl
+                  lg:text-5xl
+                "
+              >
+                {content.title}
+              </h1>
 
-        <p className="mt-16 text-xs text-base-content/40">
-          Aven · Build your better days.
-        </p>
+              {/* Description */}
+
+              <p className="mt-5 max-w-md text-sm leading-6 text-base-content/55 sm:text-base">
+                {content.description}
+              </p>
+
+              {/* Actions */}
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/dashboard"
+                  className="
+                    btn
+                    btn-primary
+                    h-11
+                    min-h-11
+                    rounded-xl
+                    px-6
+                    font-semibold
+                    shadow-sm
+                    transition-all
+                    duration-200
+                    hover:-translate-y-0.5
+                    hover:shadow-md
+                  "
+                >
+                  Go to dashboard
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-4 w-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 12h14m-6-6 6 6-6 6"
+                    />
+                  </svg>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => window.history.back()}
+                  className="
+                    btn
+                    btn-ghost
+                    h-11
+                    min-h-11
+                    rounded-xl
+                    px-5
+                    font-medium
+                    text-base-content/60
+                    hover:bg-base-200
+                    hover:text-base-content
+                  "
+                >
+                  Go back
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   );

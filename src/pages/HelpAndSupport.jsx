@@ -100,38 +100,17 @@ const HelpAndSupport = () => {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-7 pb-8">
       <section className="relative overflow-hidden">
-        {/* Breadcrumb */}
-
-        <div className="mb-5 flex items-center gap-2 text-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-base-content/35"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-
-          <span className="text-base-content/40">Help</span>
-
-          <span className="text-base-content/20">/</span>
-
-          <span className="font-medium text-primary">Help & Support</span>
-        </div>
-
         {/* Hero */}
 
         <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 px-6 py-7 sm:px-8 sm:py-8">
           <div className="relative z-10 max-w-2xl">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-              Help & Support
-            </p>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Help & Support
+              </span>
+            </div>
 
             <h1 className="text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
               How can we help?
@@ -449,7 +428,7 @@ const HelpAndSupport = () => {
               </p>
 
               <a
-                href="mailto:support@aven.app"
+                href="mailto:avenhabit@gmail.com"
                 className="btn btn-outline btn-sm mt-4 rounded-xl border-primary/30 px-5 text-primary hover:border-primary hover:bg-primary/5 hover:text-primary"
               >
                 <MailIcon />
@@ -481,12 +460,6 @@ const HelpAndSupport = () => {
           </div>
         </div>
       </section>
-
-      <div className="pb-2 text-center">
-        <p className="text-xs text-base-content/35">
-          Aven · Build your better days.
-        </p>
-      </div>
     </div>
   );
 };

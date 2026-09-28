@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import {
   sendPasswordResetOtp,
   verifyPasswordResetOtp,
   resetPassword,
 } from "../api/authApi";
+import { AVEN_LIGHT_LOGO } from "../utils/constants";
+import AlertMessage from "../layout/AlertMessage";
 
 const steps = [
   { id: "email", label: "Email" },
@@ -28,17 +29,31 @@ const ForgotPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("error");
+  const [alert, setAlert] = useState({
+    visible: false,
+    type: "error",
+    message: "",
+  });
 
   const otpRefs = useRef([]);
 
   const currentStepIndex = steps.findIndex((item) => item.id === step);
 
-  const showMessage = (type, text) => {
-    setMessageType(type);
-    setMessage(text);
+  const showAlert = (type, message) => {
+    setAlert({
+      visible: true,
+      type,
+      message,
+    });
+  };
+
+  const closeAlert = () => {
+    setAlert((previous) => ({
+      ...previous,
+      visible: false,
+    }));
   };
 
   // =========================
@@ -51,13 +66,13 @@ const ForgotPassword = () => {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      showMessage("error", "Please enter your email address.");
+      showAlert("error", "Please enter your email address.");
       return;
     }
 
     try {
       setLoading(true);
-      setMessage("");
+      closeAlert();
 
       await sendPasswordResetOtp({
         emailId: normalizedEmail,
@@ -66,21 +81,66 @@ const ForgotPassword = () => {
       setEmail(normalizedEmail);
       setOtp("");
 
-      showMessage(
+      showAlert(
         "success",
         "A verification code has been sent to your email.",
       );
 
       setStep("otp");
     } catch (error) {
-      showMessage(
+      showAlert(
         "error",
-        error?.response?.data?.message || "Failed to send verification code.",
+        error?.response?.data?.message ||
+          "Failed to send verification code.",
       );
     } finally {
       setLoading(false);
     }
   };
+
+  // =========================
+  // RESEND OTP
+  // =========================
+
+  const handleResendOtp = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || isResending) return;
+
+    try {
+      setIsResending(true);
+      closeAlert();
+
+      await sendPasswordResetOtp({
+        emailId: normalizedEmail,
+      });
+
+      // Clear the previous OTP
+      setOtp("");
+
+      showAlert(
+        "success",
+        "A new verification code has been sent to your email.",
+      );
+
+      // Focus first OTP field
+      setTimeout(() => {
+        otpRefs.current[0]?.focus();
+      }, 0);
+    } catch (error) {
+      showAlert(
+        "error",
+        error?.response?.data?.message ||
+          "Failed to resend verification code.",
+      );
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  // =========================
+  // OTP
+  // =========================
 
   const handleOtpChange = (index, value) => {
     const digit = value.replace(/\D/g, "").slice(-1);
@@ -121,24 +181,29 @@ const ForgotPassword = () => {
     otpRefs.current[focusIndex]?.focus();
   };
 
+  // =========================
+  // VERIFY OTP
+  // =========================
+
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
     if (otp.length !== 6) {
-      showMessage("error", "Enter the 6-digit verification code.");
+      showAlert("error", "Enter the 6-digit verification code.");
       return;
     }
 
     try {
       setLoading(true);
-      setMessage("");
+      closeAlert();
 
       const response = await verifyPasswordResetOtp({
         emailId: email.trim().toLowerCase(),
         otp,
       });
 
-      const resetToken = response?.data?.resetToken || response?.resetToken;
+      const resetToken =
+        response?.data?.resetToken || response?.resetToken;
 
       if (!resetToken) {
         throw new Error("Reset session could not be created.");
@@ -146,11 +211,11 @@ const ForgotPassword = () => {
 
       sessionStorage.setItem("aven_reset_token", resetToken);
 
-      showMessage("success", "Your email has been verified.");
+      showAlert("success", "Your email has been verified.");
 
       setStep("password");
     } catch (error) {
-      showMessage(
+      showAlert(
         "error",
         error?.response?.data?.message ||
           error?.message ||
@@ -161,13 +226,18 @@ const ForgotPassword = () => {
     }
   };
 
+  // =========================
+  // PASSWORD
+  // =========================
+
   const passwordRules = {
     length: newPassword.length >= 8,
     number: /\d/.test(newPassword),
     special: /[^A-Za-z0-9]/.test(newPassword),
   };
 
-  const passwordScore = Object.values(passwordRules).filter(Boolean).length;
+  const passwordScore =
+    Object.values(passwordRules).filter(Boolean).length;
 
   const passwordStrength =
     passwordScore === 3
@@ -182,19 +252,19 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (newPassword.length < 8) {
-      showMessage("error", "Password must be at least 8 characters.");
+      showAlert("error", "Password must be at least 8 characters.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showMessage("error", "Passwords do not match.");
+      showAlert("error", "Passwords do not match.");
       return;
     }
 
     const resetToken = sessionStorage.getItem("aven_reset_token");
 
     if (!resetToken) {
-      showMessage(
+      showAlert(
         "error",
         "Your reset session has expired. Please start again.",
       );
@@ -205,7 +275,7 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      setMessage("");
+      closeAlert();
 
       await resetPassword({
         resetToken,
@@ -214,296 +284,465 @@ const ForgotPassword = () => {
 
       sessionStorage.removeItem("aven_reset_token");
 
-      showMessage("success", "Password reset successfully.");
+      showAlert("success", "Password reset successfully.");
 
       setTimeout(() => {
         navigate("/login");
       }, 1200);
     } catch (error) {
-      showMessage(
+      showAlert(
         "error",
-        error?.response?.data?.message || "Failed to reset your password.",
+        error?.response?.data?.message ||
+          "Failed to reset your password.",
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // =========================
+  // DIFFERENT EMAIL
+  // =========================
+
   const handleDifferentEmail = () => {
     setEmail("");
     setOtp("");
-    setMessage("");
+    closeAlert();
     setStep("email");
   };
 
   return (
-    <div className="min-h-screen bg-base-100 text-base-content">
+    <div className="min-h-screen bg-base-200 text-base-content">
       <main className="flex min-h-screen flex-col">
-        {/* Top navigation */}
-        <header className="flex items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
-          <div className="flex items-center gap-2 lg:hidden">
-            <AvenLogo size={26} />
+        {/* Top bar */}
+        <header className="flex h-[72px] items-center justify-between border-b border-base-300/70 bg-base-100 px-5 sm:px-8 lg:px-10">
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="group flex items-center"
+          >
+            <img
+              src={AVEN_LIGHT_LOGO}
+              alt="Aven"
+              className="
+                h-auto
+                w-32
+                object-contain
+                transition-transform
+                duration-200
+                group-hover:scale-[1.03]
+              "
+            />
+          </button>
 
-            <span className="text-lg font-bold">Aven</span>
-          </div>
-
-          <div className="ml-auto">
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              disabled={loading}
-              className="flex items-center gap-2 text-sm font-medium text-base-content/55 transition hover:text-base-content disabled:opacity-50"
-            >
-              <BackIcon />
-              Back to login
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            disabled={loading || isResending}
+            className="
+              flex items-center gap-2
+              rounded-lg
+              px-2 py-1.5
+              text-sm font-medium
+              text-base-content/55
+              transition
+              hover:bg-base-200
+              hover:text-primary
+              disabled:opacity-50
+            "
+          >
+            <BackIcon />
+            <span>Back to login</span>
+          </button>
         </header>
 
         {/* Main */}
-        <div className="flex flex-1 items-center justify-center px-5 pb-10 pt-2 sm:px-8 lg:px-12 lg:pb-16">
-          <div className="w-full max-w-xl">
-            {/* Card */}
-            <div className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-8">
-              {/* Progress */}
-              <StepProgress currentStepIndex={currentStepIndex} />
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-10 sm:px-8 lg:py-14">
+          {/* Background decoration */}
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/5" />
+          <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-primary/5" />
 
-              {/* Heading */}
-              <div className="mt-9">
-                <h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">
-                  {step === "email" && "Forgot your password?"}
+          <div className="relative w-full max-w-[560px]">
+            {/* Main card */}
+            <section className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
+              <div className="p-6 sm:p-8 lg:p-9">
+                <StepProgress currentStepIndex={currentStepIndex} />
 
-                  {step === "otp" && "Check your email"}
+                {/* =========================
+                    EMAIL STEP
+                ========================= */}
 
-                  {step === "password" && "Set a new password"}
-                </h1>
+                {step === "email" && (
+                  <form
+                    onSubmit={handleSendOtp}
+                    className="mt-8 space-y-5"
+                  >
+                    <div>
+                      <label
+                        htmlFor="reset-email"
+                        className="mb-2 block text-sm font-semibold"
+                      >
+                        Email address
+                      </label>
 
-                <p className="mt-2 max-w-md text-sm leading-6 text-base-content/55">
-                  {step === "email" &&
-                    "No worries. Enter your email address and we'll send you a verification code."}
+                      <div className="relative">
+                        <MailIcon
+                          size={18}
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base-content/35"
+                        />
 
-                  {step === "otp" &&
-                    "We've sent a 6-digit verification code to "}
-
-                  {step === "password" &&
-                    "Choose a strong password to keep your account secure."}
-
-                  {step === "otp" && (
-                    <strong className="font-semibold text-base-content/75">
-                      {email}
-                    </strong>
-                  )}
-                </p>
-              </div>
-
-              {step === "email" && (
-                <form onSubmit={handleSendOtp} className="mt-8 space-y-5">
-                  <div>
-                    <label
-                      htmlFor="reset-email"
-                      className="mb-2 block text-sm font-semibold"
-                    >
-                      Email address
-                    </label>
-
-                    <div className="relative">
-                      <MailIcon
-                        size={18}
-                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base-content/35"
-                      />
-
-                      <input
-                        id="reset-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        autoComplete="email"
-                        autoFocus
-                        className="h-12 w-full rounded-xl border border-base-300 bg-base-100 pl-11 pr-4 text-sm outline-none transition placeholder:text-base-content/30 focus:border-primary focus:ring-2 focus:ring-primary/10"
-                      />
+                        <input
+                          id="reset-email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          autoComplete="email"
+                          autoFocus
+                          required
+                          className="
+                            h-12 w-full rounded-xl
+                            border border-base-300
+                            bg-base-100
+                            pl-11 pr-4
+                            text-sm
+                            outline-none
+                            transition
+                            placeholder:text-base-content/30
+                            hover:border-base-content/20
+                            focus:border-primary
+                            focus:ring-2
+                            focus:ring-primary/10
+                          "
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {message && <Message type={messageType} message={message} />}
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn btn-primary h-12 w-full rounded-xl font-semibold"
-                  >
-                    {loading ? (
-                      <ButtonLoading text="Sending code..." />
-                    ) : (
-                      <>
-                        Send verification code
-                        <ArrowIcon />
-                      </>
-                    )}
-                  </button>
-
-                  <div className="flex items-start gap-3 rounded-xl bg-base-200/70 px-4 py-3">
-                    <ShieldIcon
-                      size={18}
-                      className="mt-0.5 shrink-0 text-primary"
-                    />
-
-                    <p className="text-xs leading-5 text-base-content/55">
-                      We'll send a 6-digit code to your email address.
-                    </p>
-                  </div>
-                </form>
-              )}
-
-              {step === "otp" && (
-                <form onSubmit={handleVerifyOtp} className="mt-8 space-y-7">
-                  <div
-                    className="flex justify-center gap-2 sm:gap-3"
-                    onPaste={handleOtpPaste}
-                  >
-                    {Array.from({ length: 6 }).map((_, index) => (
-                      <input
-                        key={index}
-                        ref={(element) => {
-                          otpRefs.current[index] = element;
-                        }}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={otp[index] || ""}
-                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        autoFocus={index === 0}
-                        className="h-14 w-11 rounded-xl border border-base-300 bg-base-100 text-center text-xl font-semibold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 sm:h-16 sm:w-14"
-                        aria-label={`Verification digit ${index + 1}`}
+                    {alert.visible && (
+                      <AlertMessage
+                        type={alert.type}
+                        message={alert.message}
+                        duration={3000}
+                        onClose={closeAlert}
                       />
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-center text-xs text-base-content/50">
-                    Didn't receive the code?
-                    <button
-                      type="button"
-                      className="ml-1 font-semibold text-primary underline-offset-2 hover:underline"
-                    >
-                      Resend
-                    </button>
-                  </div>
-
-                  {message && <Message type={messageType} message={message} />}
-
-                  <button
-                    type="submit"
-                    disabled={loading || otp.length !== 6}
-                    className="btn btn-primary h-12 w-full rounded-xl font-semibold disabled:opacity-50"
-                  >
-                    {loading ? (
-                      <ButtonLoading text="Verifying..." />
-                    ) : (
-                      <>
-                        Verify code
-                        <ArrowIcon />
-                      </>
                     )}
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={handleDifferentEmail}
-                    className="w-full text-center text-sm font-semibold text-primary hover:underline"
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="
+                        btn btn-primary
+                        h-12 w-full
+                        rounded-xl
+                        border-0
+                        font-semibold
+                        shadow-sm
+                        transition
+                        hover:-translate-y-px
+                        hover:shadow-md
+                        disabled:translate-y-0
+                      "
+                    >
+                      {loading ? (
+                        <ButtonLoading text="Sending code..." />
+                      ) : (
+                        <>
+                          Send verification code
+                          <ArrowIcon />
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center gap-2.5 pt-1 text-xs text-base-content/45">
+                      <ShieldIcon
+                        size={15}
+                        className="shrink-0 text-primary"
+                      />
+
+                      <span>
+                        We'll send a one-time 6-digit code to your
+                        registered email.
+                      </span>
+                    </div>
+                  </form>
+                )}
+
+                {/* =========================
+                    OTP STEP
+                ========================= */}
+
+                {step === "otp" && (
+                  <form
+                    onSubmit={handleVerifyOtp}
+                    className="mt-8 space-y-6"
                   >
-                    Use a different email
-                  </button>
-                </form>
-              )}
+                    {/* Email reference */}
+                    <div className="flex items-center gap-3 rounded-xl bg-base-200/70 px-4 py-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-base-100 text-primary">
+                        <MailIcon size={17} />
+                      </div>
 
-              {step === "password" && (
-                <form onSubmit={handleResetPassword} className="mt-8 space-y-5">
-                  <PasswordInput
-                    id="new-password"
-                    label="New password"
-                    value={newPassword}
-                    onChange={setNewPassword}
-                    showPassword={showPassword}
-                    setShowPassword={setShowPassword}
-                    placeholder="Enter new password"
-                    autoFocus
-                  />
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium text-base-content/45">
+                          Verification code sent to
+                        </p>
 
-                  {/* Password strength */}
-                  <div>
-                    <div className="flex h-1 gap-1">
-                      {[1, 2, 3].map((level) => (
-                        <div
-                          key={level}
-                          className={`flex-1 rounded-full ${
-                            passwordScore >= level
-                              ? "bg-success"
-                              : "bg-base-300"
-                          }`}
+                        <p className="truncate text-sm font-semibold text-base-content">
+                          {email}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* OTP */}
+                    <div
+                      className="flex justify-center gap-2 sm:gap-3"
+                      onPaste={handleOtpPaste}
+                    >
+                      {Array.from({ length: 6 }).map((_, index) => (
+                        <input
+                          key={index}
+                          ref={(element) => {
+                            otpRefs.current[index] = element;
+                          }}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={otp[index] || ""}
+                          onChange={(e) =>
+                            handleOtpChange(index, e.target.value)
+                          }
+                          onKeyDown={(e) =>
+                            handleOtpKeyDown(index, e)
+                          }
+                          autoFocus={index === 0}
+                          aria-label={`Verification digit ${index + 1}`}
+                          className="
+                            h-14 w-11
+                            rounded-xl
+                            border border-base-300
+                            bg-base-100
+                            text-center
+                            text-xl font-semibold
+                            outline-none
+                            transition
+                            hover:border-base-content/20
+                            focus:border-primary
+                            focus:ring-2
+                            focus:ring-primary/10
+                            sm:h-15 sm:w-13
+                          "
                         />
                       ))}
                     </div>
 
-                    <div className="mt-3 space-y-2">
-                      <PasswordRule valid={passwordRules.length}>
-                        At least 8 characters
-                      </PasswordRule>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-base-content/45">
+                        Enter the 6-digit code
+                      </span>
 
-                      <PasswordRule valid={passwordRules.number}>
-                        Includes a number
-                      </PasswordRule>
-
-                      <PasswordRule valid={passwordRules.special}>
-                        Includes a special character
-                      </PasswordRule>
+                      <span className="font-semibold text-primary">
+                        {otp.length}/6
+                      </span>
                     </div>
 
-                    {passwordStrength && (
-                      <p
-                        className={`mt-2 text-right text-xs font-semibold ${
-                          passwordScore === 3
-                            ? "text-success"
-                            : "text-base-content/50"
-                        }`}
+                    {alert.visible && (
+                      <AlertMessage
+                        type={alert.type}
+                        message={alert.message}
+                        duration={3000}
+                        onClose={closeAlert}
+                      />
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading || otp.length !== 6}
+                      className="
+                        btn btn-primary
+                        h-12 w-full
+                        rounded-xl
+                        border-0
+                        font-semibold
+                        disabled:opacity-50
+                      "
+                    >
+                      {loading ? (
+                        <ButtonLoading text="Verifying..." />
+                      ) : (
+                        <>
+                          Verify code
+                          <ArrowIcon />
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center justify-center gap-1 text-sm">
+                      <span className="text-base-content/45">
+                        Didn't receive the code?
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={isResending || loading}
+                        className="
+                          font-semibold
+                          text-primary
+                          transition
+                          hover:underline
+                          disabled:cursor-not-allowed
+                          disabled:opacity-50
+                        "
                       >
-                        {passwordStrength}
-                      </p>
-                    )}
-                  </div>
+                        {isResending ? "Sending..." : "Resend"}
+                      </button>
+                    </div>
 
-                  <PasswordInput
-                    id="confirm-password"
-                    label="Confirm new password"
-                    value={confirmPassword}
-                    onChange={setConfirmPassword}
-                    showPassword={showConfirmPassword}
-                    setShowPassword={setShowConfirmPassword}
-                    placeholder="Confirm new password"
-                  />
+                    <button
+                      type="button"
+                      onClick={handleDifferentEmail}
+                      disabled={isResending}
+                      className="
+                        w-full
+                        text-center
+                        text-xs
+                        font-semibold
+                        text-base-content/45
+                        transition
+                        hover:text-primary
+                        disabled:opacity-50
+                      "
+                    >
+                      Use a different email
+                    </button>
+                  </form>
+                )}
 
-                  {message && <Message type={messageType} message={message} />}
+                {/* =========================
+                    PASSWORD STEP
+                ========================= */}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn btn-primary h-12 w-full rounded-xl font-semibold"
+                {step === "password" && (
+                  <form
+                    onSubmit={handleResetPassword}
+                    className="mt-8 space-y-5"
                   >
-                    {loading ? (
-                      <ButtonLoading text="Saving password..." />
-                    ) : (
-                      <>
-                        Reset password
-                        <ArrowIcon />
-                      </>
+                    {/* Verified status */}
+                    <div className="flex items-center gap-3 rounded-xl bg-success/5 px-4 py-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
+                        <CheckIcon />
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-semibold text-success">
+                          Email verified
+                        </p>
+
+                        <p className="mt-0.5 text-xs text-base-content/45">
+                          You can now create a new password.
+                        </p>
+                      </div>
+                    </div>
+
+                    <PasswordInput
+                      id="new-password"
+                      label="New password"
+                      value={newPassword}
+                      onChange={setNewPassword}
+                      showPassword={showPassword}
+                      setShowPassword={setShowPassword}
+                      placeholder="Enter new password"
+                      autoFocus
+                    />
+
+                    {/* Password strength */}
+                    <div>
+                      <div className="flex h-1 gap-1">
+                        {[1, 2, 3].map((level) => (
+                          <div
+                            key={level}
+                            className={`flex-1 rounded-full transition-colors ${
+                              passwordScore >= level
+                                ? "bg-success"
+                                : "bg-base-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+                        <PasswordRule valid={passwordRules.length}>
+                          8+ characters
+                        </PasswordRule>
+
+                        <PasswordRule valid={passwordRules.number}>
+                          One number
+                        </PasswordRule>
+
+                        <PasswordRule valid={passwordRules.special}>
+                          Special character
+                        </PasswordRule>
+                      </div>
+
+                      {passwordStrength && (
+                        <p
+                          className={`mt-2 text-right text-xs font-semibold ${
+                            passwordScore === 3
+                              ? "text-success"
+                              : "text-base-content/50"
+                          }`}
+                        >
+                          {passwordStrength}
+                        </p>
+                      )}
+                    </div>
+
+                    <PasswordInput
+                      id="confirm-password"
+                      label="Confirm new password"
+                      value={confirmPassword}
+                      onChange={setConfirmPassword}
+                      showPassword={showConfirmPassword}
+                      setShowPassword={setShowConfirmPassword}
+                      placeholder="Confirm new password"
+                    />
+
+                    {alert.visible && (
+                      <AlertMessage
+                        type={alert.type}
+                        message={alert.message}
+                        duration={3000}
+                        onClose={closeAlert}
+                      />
                     )}
-                  </button>
-                </form>
-              )}
-            </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="
+                        btn btn-primary
+                        h-12 w-full
+                        rounded-xl
+                        border-0
+                        font-semibold
+                      "
+                    >
+                      {loading ? (
+                        <ButtonLoading text="Saving password..." />
+                      ) : (
+                        <>
+                          Reset password
+                          <ArrowIcon />
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </section>
 
             {/* Footer */}
-            <div className="mt-6 flex items-center justify-between px-1 text-xs text-base-content/40">
+            <footer className="mt-5 flex items-center justify-between px-1 text-xs text-base-content/40">
               <div className="flex gap-4">
                 <span>Terms</span>
                 <span>Privacy</span>
@@ -511,13 +750,17 @@ const ForgotPassword = () => {
               </div>
 
               <span>Aven © {new Date().getFullYear()}</span>
-            </div>
+            </footer>
           </div>
         </div>
       </main>
     </div>
   );
 };
+
+/* =========================
+   STEP PROGRESS
+========================= */
 
 const StepProgress = ({ currentStepIndex }) => {
   return (
@@ -527,10 +770,13 @@ const StepProgress = ({ currentStepIndex }) => {
         const active = index === currentStepIndex;
 
         return (
-          <div key={item.id} className="flex flex-1 items-center">
+          <div
+            key={item.id}
+            className="flex flex-1 items-center"
+          >
             <div className="flex items-center gap-2">
               <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                   completed || active
                     ? "bg-primary text-primary-content"
                     : "bg-base-200 text-base-content/40"
@@ -555,7 +801,9 @@ const StepProgress = ({ currentStepIndex }) => {
             {index < steps.length - 1 && (
               <div
                 className={`mx-3 h-px flex-1 ${
-                  index < currentStepIndex ? "bg-primary" : "bg-base-300"
+                  index < currentStepIndex
+                    ? "bg-primary"
+                    : "bg-base-300"
                 }`}
               />
             )}
@@ -565,6 +813,10 @@ const StepProgress = ({ currentStepIndex }) => {
     </div>
   );
 };
+
+/* =========================
+   PASSWORD INPUT
+========================= */
 
 const PasswordInput = ({
   id,
@@ -578,7 +830,10 @@ const PasswordInput = ({
 }) => {
   return (
     <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-semibold">
+      <label
+        htmlFor={id}
+        className="mb-2 block text-sm font-semibold"
+      >
         {label}
       </label>
 
@@ -596,21 +851,54 @@ const PasswordInput = ({
           placeholder={placeholder}
           autoComplete="new-password"
           autoFocus={autoFocus}
-          className="h-12 w-full rounded-xl border border-base-300 bg-base-100 pl-11 pr-12 text-sm outline-none transition placeholder:text-base-content/30 focus:border-primary focus:ring-2 focus:ring-primary/10"
+          className="
+            h-12 w-full
+            rounded-xl
+            border border-base-300
+            bg-base-100
+            pl-11 pr-12
+            text-sm
+            outline-none
+            transition
+            placeholder:text-base-content/30
+            focus:border-primary
+            focus:ring-2
+            focus:ring-primary/10
+          "
         />
 
         <button
           type="button"
-          onClick={() => setShowPassword((previous) => !previous)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-base-content/35 transition hover:bg-base-200 hover:text-base-content"
-          aria-label={showPassword ? "Hide password" : "Show password"}
+          onClick={() =>
+            setShowPassword((previous) => !previous)
+          }
+          className="
+            absolute right-3 top-1/2
+            -translate-y-1/2
+            rounded-lg
+            p-1.5
+            text-base-content/35
+            transition
+            hover:bg-base-200
+            hover:text-base-content
+          "
+          aria-label={
+            showPassword ? "Hide password" : "Show password"
+          }
         >
-          <EyeIcon visible={showPassword} size={18} />
+          <EyeIcon
+            visible={showPassword}
+            size={18}
+          />
         </button>
       </div>
     </div>
   );
 };
+
+/* =========================
+   PASSWORD RULE
+========================= */
 
 const PasswordRule = ({ valid, children }) => {
   return (
@@ -625,43 +913,34 @@ const PasswordRule = ({ valid, children }) => {
         <CheckIcon size={11} />
       </div>
 
-      <span className={valid ? "text-success" : "text-base-content/50"}>
+      <span
+        className={
+          valid
+            ? "text-success"
+            : "text-base-content/50"
+        }
+      >
         {children}
       </span>
     </div>
   );
 };
 
-const Message = ({ type, message }) => {
-  const success = type === "success";
-
-  return (
-    <div
-      role="alert"
-      className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${
-        success
-          ? "border-success/20 bg-success/10 text-success"
-          : "border-error/20 bg-error/10 text-error"
-      }`}
-    >
-      <div className="mt-0.5 shrink-0">
-        {success ? <CheckIcon /> : <AlertIcon />}
-      </div>
-
-      <p className="leading-5">{message}</p>
-    </div>
-  );
-};
+/* =========================
+   BUTTON LOADING
+========================= */
 
 const ButtonLoading = ({ text }) => {
   return (
     <>
       <span className="flex items-center gap-1">
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+
         <span
           className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
           style={{ animationDelay: "150ms" }}
         />
+
         <span
           className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
           style={{ animationDelay: "300ms" }}
@@ -673,29 +952,9 @@ const ButtonLoading = ({ text }) => {
   );
 };
 
-const AvenLogo = ({ size = 28 }) => {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M27.5 4C17.2 5.1 8.8 10.4 5.2 19.2c-1 2.4-.9 5.1-.2 7.4 4.5-1.5 8.4-4.3 11.2-8.2C19.6 13.5 22.5 8.5 27.5 4Z"
-        fill="currentColor"
-      />
-
-      <path
-        d="M4.5 28c4.8-6.2 9.4-10.7 17.4-15.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
+/* =========================
+   ICONS
+========================= */
 
 const MailIcon = ({ size = 20, className = "" }) => (
   <svg
@@ -787,23 +1046,6 @@ const CheckIcon = ({ size = 16 }) => (
     strokeLinejoin="round"
   >
     <path d="m5 12 4 4L19 6" />
-  </svg>
-);
-
-const AlertIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 8v4" />
-    <path d="M12 16h.01" />
   </svg>
 );
 

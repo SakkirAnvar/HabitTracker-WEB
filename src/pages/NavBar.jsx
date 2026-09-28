@@ -1,13 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/userSlice";
-import { AVEN_LOGO, BACKEND_URL } from "../utils/constants";
+import { AVEN_LIGHT_LOGO, AVEN_DARK_LOGO, BACKEND_URL } from "../utils/constants";
 import { applyTheme } from "../utils/theme";
 
 const DEFAULT_PROFILE_PHOTO =
   "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
 
-const NavBar = () => {
+const NavBar = ({ onMenuClick }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -16,6 +16,12 @@ const NavBar = () => {
   const profilePhoto = user?.profilePhoto
     ? `${BACKEND_URL}${user.profilePhoto}`
     : DEFAULT_PROFILE_PHOTO;
+
+     const isDarkTheme = user?.theme === "dark";
+
+  const logo = isDarkTheme
+    ? AVEN_DARK_LOGO
+    : AVEN_LIGHT_LOGO
 
   const handleLogout = async () => {
     try {
@@ -38,31 +44,55 @@ const NavBar = () => {
           border-b
           border-base-300
           bg-base-100
-          px-4
+          px-3
           shadow-sm
+          sm:px-4
           lg:px-6
         "
       >
-        {/* ================= LOGO ================= */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {/* Mobile Menu */}
 
-        <div className="flex-1">
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="
+              flex h-10 w-10 shrink-0 items-center justify-center
+              rounded-xl
+              text-base-content/60
+              transition-colors
+              hover:bg-base-200
+              hover:text-base-content
+              md:hidden
+            "
+            aria-label="Open navigation"
+            title="Open navigation"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+            </svg>
+          </button>
+
           <Link
             to="/dashboard"
-            className="flex items-center rounded-lg transition-opacity hover:opacity-90"
+            className="flex min-w-0 items-center rounded-lg transition-opacity hover:opacity-90"
           >
             <img
-              src={AVEN_LOGO}
+              src={logo}
               alt="Aven"
-              className="h-auto w-36.25 object-contain"
+              className="h-auto w-28 object-contain sm:w-32 lg:w-36.25"
             />
           </Link>
         </div>
 
-        {/* ================= RIGHT SECTION ================= */}
-
-        <div className="ml-2 flex flex-none items-center gap-2">
-          {/* ================= USER DROPDOWN ================= */}
-
+        <div className="ml-2 flex flex-none items-center gap-1 sm:gap-2">
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
@@ -70,12 +100,14 @@ const NavBar = () => {
               className="
                 btn
                 btn-ghost
-                h-12
+                h-11
                 gap-2
                 rounded-xl
-                px-2
+                px-1.5
                 text-base-content
                 hover:bg-base-200
+                sm:h-12
+                sm:px-2
               "
             >
               <div className="avatar">
@@ -98,7 +130,7 @@ const NavBar = () => {
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="h-4 w-4 text-base-content/60"
+                className="hidden h-4 w-4 text-base-content/60 sm:block"
               >
                 <path
                   strokeLinecap="round"
@@ -108,8 +140,6 @@ const NavBar = () => {
               </svg>
             </div>
 
-            {/* ================= DROPDOWN ================= */}
-
             <ul
               tabIndex={0}
               className="
@@ -118,7 +148,8 @@ const NavBar = () => {
                 dropdown-content
                 z-50
                 mt-3
-                w-64
+                w-[calc(100vw-1.5rem)]
+                max-w-64
                 rounded-2xl
                 border
                 border-base-300
@@ -128,7 +159,6 @@ const NavBar = () => {
                 shadow-lg
               "
             >
-              {/* USER INFORMATION */}
 
               <li className="mb-2">
                 <div className="flex items-center gap-3 px-2 py-3 hover:bg-transparent">
@@ -152,8 +182,6 @@ const NavBar = () => {
 
               <div className="divider my-1" />
 
-              {/* PROFILE */}
-
               <li>
                 <Link
                   to="/profile"
@@ -176,8 +204,6 @@ const NavBar = () => {
                   Profile
                 </Link>
               </li>
-
-              {/* SETTINGS */}
 
               <li>
                 <Link
@@ -203,8 +229,7 @@ const NavBar = () => {
               </li>
 
               <div className="divider my-1" />
-
-              {/* LOGOUT */}
+              
 
               <li>
                 <button

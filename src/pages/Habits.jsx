@@ -1,52 +1,112 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-
-import {
-  fetchHabits,
-  removeHabit,
-  toggleHabitStatus,
-} from "../redux/habitSlice";
-import { fetchHabitLogsByDate } from "../redux/habitLogSlice";
-
 import Pagination from "../layout/Pagination";
 import DeleteModal from "../layout/DeleteModal";
 import AlertMessage from "../layout/AlertMessage";
 import { HabitShimmer } from "../layout/Shimmer";
-
-import HabitList from "../components/habits/HabitList";
 import HabitForm from "../components/habits/HabitForm";
-import { ArchiveIcon } from "../components/goals/GoalCard";
-
-import { getLocalDateString } from "../utils/date";
+import HabitCard from "../components/habits/HabitCard";
+import {
+  fetchHabits,
+  fetchTodayHabits,
+  toggleHabitStatus,
+  removeHabit,
+} from "../redux/habitSlice";
 
 const ITEMS_PER_PAGE = 6;
+
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
 
 const Habits = () => {
   const dispatch = useDispatch();
 
   const {
     habits,
+    todayHabits,
     status,
+    todayStatus,
+    error,
+    todayError,
     currentPage,
     totalPages,
     totalHabits,
     hasNextPage,
     hasPreviousPage,
-  } = useSelector((state) => state.habit);
+    todayCurrentPage,
+    todayTotalPages,
+    todayHasNextPage,
+    todayHasPreviousPage,
+    todaySummary,
+  } = useSelector((store) => store.habit);
 
-  const { logs } = useSelector((state) => state.habitLog);
-
-  const [editingHabit, setEditingHabit] = useState(null);
+  const [activeView, setActiveView] = useState("today");
   const [showForm, setShowForm] = useState(false);
-
+  const [editingHabit, setEditingHabit] = useState(null);
   const [habitToDelete, setHabitToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("success");
+  const [alert, setAlert] = useState({
+    type: "",
+    message: "",
+  });
 
   const today = getLocalDateString();
+
+  const todayExpected = Number(todaySummary?.expected) || 0;
+  const todayCompleted = Number(todaySummary?.completed) || 0;
+  const todayRemaining = Number(todaySummary?.remaining) || 0;
+  const todayPercentage = Number(todaySummary?.percentage) || 0;
+
+  const progressMessage =
+    todayExpected === 0
+      ? "Nothing scheduled for today."
+      : todayPercentage === 100
+        ? "You're all done for today. Nice work."
+        : todayPercentage === 0
+          ? "Start with one small win."
+          : `${todayRemaining} ${
+              todayRemaining === 1 ? "habit" : "habits"
+            } left for today.`;
+
+  const refreshToday = () => {
+    dispatch(
+      fetchTodayHabits({
+        date: today,
+        page: todayCurrentPage,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
+  };
+
+  const refreshCurrentHabits = () => {
+    dispatch(
+      fetchHabits({
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
+  };
+
+  const refreshAllHabitData = () => {
+    refreshToday();
+    refreshCurrentHabits();
+  };
+
+  useEffect(() => {
+    dispatch(
+      fetchTodayHabits({
+        date: today,
+        page: todayCurrentPage,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
+  }, [dispatch, today, todayCurrentPage]);
 
   useEffect(() => {
     dispatch(
@@ -57,57 +117,17 @@ const Habits = () => {
     );
   }, [dispatch, currentPage]);
 
-  useEffect(() => {
-    dispatch(fetchHabitLogsByDate(today));
-  }, [dispatch, today]);
-
-  const completedToday = useMemo(() => {
-    return logs?.filter((log) => log.completed)?.length || 0;
-  }, [logs]);
-
-  const trackedToday = useMemo(() => {
-    return logs?.length || 0;
-  }, [logs]);
-
-  const topStreak = useMemo(() => {
-    if (!habits?.length) return 0;
-
-    return Math.max(...habits.map((habit) => habit.streak || 0));
-  }, [habits]);
-
-  const handleDelete = (habit) => {
-    setHabitToDelete(habit);
+  const showAlert = (type, message) => {
+    setAlert({ type, message });
   };
 
-  const confirmDelete = async () => {
-    if (!habitToDelete?._id || deleteLoading) return;
+  const clearAlert = () => {
+    setAlert({ type: "", message: "" });
+  };
 
-    try {
-      setDeleteLoading(true);
-
-      await dispatch(removeHabit(habitToDelete._id)).unwrap();
-
-      setHabitToDelete(null);
-
-      dispatch(
-        fetchHabits({
-          page: currentPage,
-          limit: ITEMS_PER_PAGE,
-        }),
-      );
-
-      setMessageType("success");
-      setMessage("Habit deleted successfully.");
-    } catch (error) {
-      setMessageType("error");
-      setMessage(
-        typeof error === "string"
-          ? error
-          : error?.message || "Failed to delete habit.",
-      );
-    } finally {
-      setDeleteLoading(false);
-    }
+  const handleCreate = () => {
+    setEditingHabit(null);
+    setShowForm(true);
   };
 
   const handleEdit = (habit) => {
@@ -115,302 +135,407 @@ const Habits = () => {
     setShowForm(true);
   };
 
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingHabit(null);
+    refreshAllHabitData();
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingHabit(null);
+  };
+
+  const handleDelete = (habit) => {
+    setHabitToDelete(habit);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!habitToDelete) return;
+
+    setDeleteLoading(true);
+
+    try {
+      await dispatch(removeHabit(habitToDelete._id)).unwrap();
+
+      const shouldGoBack = habits.length === 1 && currentPage > 1;
+
+      setHabitToDelete(null);
+      showAlert("success", "Habit deleted successfully.");
+
+      // Refresh Today
+      refreshToday();
+
+      // Refresh All Habits
+      dispatch(
+        fetchHabits({
+          page: shouldGoBack ? currentPage - 1 : currentPage,
+          limit: ITEMS_PER_PAGE,
+        }),
+      );
+    } catch (err) {
+      showAlert(
+        "error",
+        typeof err === "string"
+          ? err
+          : err?.message || "Failed to delete habit.",
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const handleArchive = async (habit) => {
     try {
       await dispatch(toggleHabitStatus(habit._id)).unwrap();
 
-      setMessageType("success");
-      setMessage(`"${habit.habitName}" archived successfully.`);
-    } catch (error) {
-      setMessageType("error");
-      setMessage(
-        typeof error === "string"
-          ? error
-          : error?.message || "Failed to archive habit.",
+      showAlert("success", `"${habit.habitName}" archived.`);
+
+      const shouldGoBack = habits.length === 1 && currentPage > 1;
+
+      refreshToday();
+
+      dispatch(
+        fetchHabits({
+          page: shouldGoBack ? currentPage - 1 : currentPage,
+          limit: ITEMS_PER_PAGE,
+        }),
+      );
+    } catch (err) {
+      showAlert(
+        "error",
+        typeof err === "string"
+          ? err
+          : err?.message || "Failed to archive habit.",
       );
     }
   };
 
-  const handleAddHabit = () => {
-    setEditingHabit(null);
-    setShowForm(true);
-  };
+  const handleTodayPageChange = (page) => {
+    setActiveView("today");
 
-  const handleFormSuccess = () => {
-    setEditingHabit(null);
-    setShowForm(false);
+    if (page === todayCurrentPage) return;
 
     dispatch(
-      fetchHabits({
-        page: 1,
-        limit: ITEMS_PER_PAGE,
-      }),
-    );
-
-    dispatch(fetchHabitLogsByDate(today));
-  };
-
-  const handleCancel = () => {
-    setEditingHabit(null);
-    setShowForm(false);
-  };
-
-  const handleProgressSuccess = () => {
-    dispatch(fetchHabitLogsByDate(today));
-
-    dispatch(
-      fetchHabits({
-        page: currentPage,
+      fetchTodayHabits({
+        date: today,
+        page,
         limit: ITEMS_PER_PAGE,
       }),
     );
   };
 
-  const isInitialLoading = status === "loading" && habits.length === 0;
+  const handlePageChange = (page) => {
+    setActiveView("all");
+
+    if (page === currentPage) return;
+    dispatch(
+      fetchHabits({
+        page,
+        limit: ITEMS_PER_PAGE,
+      }),
+    );
+  };
+
+  const isTodayLoading = todayStatus === "loading";
+  const isAllLoading = status === "loading";
 
   if (showForm) {
     return (
-      <div className="space-y-6">
+      <div className="w-full space-y-5 pb-8">
+        {alert.message && (
+          <AlertMessage
+            type={alert.type}
+            message={alert.message}
+            duration={3000}
+            onClose={clearAlert}
+          />
+        )}
+
         <HabitForm
-          key={editingHabit?._id || "new"}
           habit={editingHabit}
           onSuccess={handleFormSuccess}
-          onCancel={handleCancel}
+          onCancel={handleFormCancel}
         />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[18px] border-primary/10" />
-
-        <div className="pointer-events-none absolute -bottom-12 right-24 h-32 w-32 rounded-full bg-secondary/10" />
-
-        <div className="pointer-events-none absolute right-8 top-8 text-5xl text-primary/10">
+    <div className="w-full space-y-6 pb-8">
+      <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-5 sm:p-7 lg:p-8">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[16px] border-primary/10" />
+        <div className="pointer-events-none absolute -bottom-10 right-24 h-24 w-24 rounded-full bg-secondary/10" />
+        <div className="pointer-events-none absolute right-7 top-7 text-4xl text-primary/10">
           ✦
         </div>
 
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="mb-2 text-sm font-semibold text-primary">
-              Your daily practice
-            </p>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-            <h1 className="text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
-              Build better days,
-              <br className="hidden sm:block" />
-              one habit at a time.
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Your Routine
+              </span>
+            </div>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
+              Build better days, one habit at a time.
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
-              Small steps. Stay consistent. Keep moving forward.
+              Stay consistent with what matters today.
             </p>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
-            <Link to="/habits/archived-habits" className="btn btn-outline">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/habits/archived"
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-4 text-sm font-semibold text-base-content/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+            >
               <ArchiveIcon />
-              Archived Habits
+              Archived
             </Link>
 
             <button
               type="button"
-              onClick={handleAddHabit}
-              className="btn btn-primary"
+              onClick={handleCreate}
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-content shadow-sm transition hover:bg-primary/90"
             >
-              <span className="text-lg leading-none">+</span>
+              <PlusIcon />
               Add Habit
             </button>
           </div>
         </div>
       </section>
-
-      {message && (
+      {alert.message && (
         <AlertMessage
-          type={messageType}
-          message={message}
+          type={alert.type}
+          message={alert.message}
           duration={3000}
-          onClose={() => setMessage("")}
+          onClose={clearAlert}
         />
       )}
-
-      {isInitialLoading && (
-        <section className="space-y-5">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="h-5 w-32 animate-pulse rounded-lg bg-base-300/70" />
-              <div className="h-3 w-64 animate-pulse rounded-lg bg-base-300/70" />
-            </div>
-
-            <div className="h-7 w-20 animate-pulse rounded-full bg-base-300/70" />
-          </div>
-
-          <HabitShimmer />
-        </section>
-      )}
-
-      {!isInitialLoading && (
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Total Habits */}
-          <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <path d="M8 6h12M8 12h12M8 18h12" strokeLinecap="round" />
-                <path
-                  d="M4 6h.01M4 12h.01M4 18h.01"
-                  strokeLinecap="round"
-                  strokeWidth="3"
-                />
-              </svg>
-            </div>
-
-            <p className="mt-4 text-sm text-base-content/60">Total habits</p>
-
-            <p className="mt-1 text-2xl font-bold text-base-content">
-              {totalHabits}
+      <section className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary/75">
+              Today
             </p>
-          </div>
 
-          {/* Completed Today */}
-          <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <path
-                  d="M5 12.5l4 4L19 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <p className="mt-4 text-sm text-base-content/60">Completed today</p>
-
-            <p className="mt-1 text-2xl font-bold text-base-content">
-              {completedToday}
-            </p>
-          </div>
-
-          {/* Tracked Today */}
-          <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <circle cx="12" cy="12" r="8.5" />
-                <path
-                  d="M12 8v4l2.5 2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <p className="mt-4 text-sm text-base-content/60">Tracked today</p>
-
-            <p className="mt-1 text-2xl font-bold text-base-content">
-              {trackedToday}
-            </p>
-          </div>
-
-          {/* Top Streak */}
-          <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <path
-                  d="M12 3c1.5 3 4.5 4 4.5 7.2A4.5 4.5 0 1 1 7 8.8c0 2 1 3.4 2.4 4.6C9 10 11 7.8 12 3Z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <p className="mt-4 text-sm text-base-content/60">Top streak</p>
-
-            <p className="mt-1 text-2xl font-bold text-base-content">
-              {topStreak}
-              <span className="ml-1 text-sm font-medium text-base-content/50">
-                days
-              </span>
-            </p>
-          </div>
-        </section>
-      )}
-
-      {!isInitialLoading && (
-        <section className="space-y-4">
-          {/* Section Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-base-content">
-                {totalHabits > 0 ? "Your Habits" : "Start Your Routine"}
+            <div className="mt-1 flex items-baseline gap-2">
+              <h2 className="text-2xl font-bold tracking-tight text-base-content">
+                {todayCompleted} / {todayExpected}
               </h2>
 
-              {totalHabits > 0 && (
-                <p className="mt-1 text-sm text-base-content/55">
-                  Keep showing up. Small steps add up.
-                </p>
-              )}
+              <span className="text-sm font-medium text-base-content/40">
+                completed
+              </span>
             </div>
 
-            {totalHabits > 0 && (
-              <span className="text-sm font-medium text-base-content/45">
-                {totalHabits} {totalHabits === 1 ? "habit" : "habits"}
-              </span>
-            )}
+            <p className="mt-1 text-sm text-base-content/55">
+              {progressMessage}
+            </p>
           </div>
 
-          {/* Habit Cards */}
-          <HabitList
-            habits={habits}
-            logs={logs}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-            onArchive={handleArchive}
-            onProgressSuccess={handleProgressSuccess}
-          />
+          <div className="w-full sm:max-w-xs">
+            <div className="mb-2 flex items-center justify-between text-xs font-semibold">
+              <span className="text-base-content/40">Daily progress</span>
+              <span className="text-primary">{todayPercentage}%</span>
+            </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="pt-2">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                hasNextPage={hasNextPage}
-                hasPreviousPage={hasPreviousPage}
-                onPageChange={(page) => {
-                  dispatch(
-                    fetchHabits({
-                      page,
-                      limit: ITEMS_PER_PAGE,
-                    }),
-                  );
-                }}
+            <div className="h-2 overflow-hidden rounded-full bg-base-200">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${todayPercentage}%` }}
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-base-content">
+            {activeView === "today" ? "Your day" : "Your habits"}
+          </h2>
+
+          <p className="mt-1 text-sm text-base-content/50">
+            {activeView === "today"
+              ? "Focus on what is scheduled for today."
+              : "Manage your routine and keep everything in one place."}
+          </p>
+        </div>
+
+        <div className="inline-flex w-full rounded-xl border border-base-300 bg-base-200/60 p-1 sm:w-auto">
+          <button
+            type="button"
+            aria-pressed={activeView === "today"}
+            onClick={() => setActiveView("today")}
+            className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition sm:flex-none ${
+              activeView === "today"
+                ? "bg-base-100 text-primary shadow-sm"
+                : "text-base-content/50 hover:text-base-content"
+            }`}
+          >
+            Today
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] ${
+                activeView === "today"
+                  ? "bg-primary/10 text-primary"
+                  : "bg-base-300/70 text-base-content/45"
+              }`}
+            >
+              {todayExpected}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={activeView === "all"}
+            onClick={() => setActiveView("all")}
+            className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition sm:flex-none ${
+              activeView === "all"
+                ? "bg-base-100 text-primary shadow-sm"
+                : "text-base-content/50 hover:text-base-content"
+            }`}
+          >
+            All Habits
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] ${
+                activeView === "all"
+                  ? "bg-primary/10 text-primary"
+                  : "bg-base-300/70 text-base-content/45"
+              }`}
+            >
+              {totalHabits}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {activeView === "today" && (
+        <section>
+          {todayError ? (
+            <div className="rounded-2xl border border-error/20 bg-error/5 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-error">
+                    Couldn't load today's habits
+                  </p>
+                  <p className="mt-1 text-sm text-base-content/55">
+                    {todayError}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={refreshToday}
+                  className="btn btn-sm btn-outline rounded-xl border-error/30 text-error hover:bg-error/10"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          ) : isTodayLoading && todayHabits.length === 0 ? (
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              <HabitTodaySkeleton />
+              <HabitTodaySkeleton />
+              <HabitTodaySkeleton />
+              <HabitTodaySkeleton />
+            </div>
+          ) : todayHabits.length === 0 ? (
+            <TodayEmptyState onCreate={handleCreate} />
+          ) : (
+            <div
+              className={isTodayLoading ? "opacity-70 transition-opacity" : ""}
+            >
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {todayHabits.map((habit) => (
+                  <HabitCard
+                    key={`${habit._id}-${habit.todayLog?._id || "today"}`}
+                    habit={habit}
+                    existingLog={habit.todayLog}
+                    onProgressSuccess={refreshToday}
+                  />
+                ))}
+              </div>
+
+              {(todayHasNextPage ||
+                todayHasPreviousPage ||
+                todayTotalPages > 1) && (
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={todayCurrentPage}
+                    totalPages={todayTotalPages}
+                    hasNextPage={todayHasNextPage}
+                    hasPreviousPage={todayHasPreviousPage}
+                    onPageChange={handleTodayPageChange}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeView === "all" && (
+        <section>
+          {error ? (
+            <div className="rounded-2xl border border-error/20 bg-error/5 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-error">
+                    Couldn't load your habits
+                  </p>
+                  <p className="mt-1 text-sm text-base-content/55">{error}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={refreshCurrentHabits}
+                  className="btn btn-sm btn-outline rounded-xl border-error/30 text-error hover:bg-error/10"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          ) : isAllLoading && habits.length === 0 ? (
+            <HabitShimmer />
+          ) : habits.length === 0 ? (
+            <AllHabitsEmptyState onCreate={handleCreate} />
+          ) : (
+            <>
+              <div
+                className={`grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3 ${
+                  isAllLoading ? "opacity-60" : ""
+                }`}
+              >
+                {habits.map((habit) => (
+                  <HabitCard
+                    key={habit._id}
+                    habit={habit}
+                    existingLog={habit.todayLog}
+                    onEdit={handleEdit}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                    onProgressSuccess={refreshAllHabitData}
+                  />
+                ))}
+              </div>
+
+              {(hasNextPage || hasPreviousPage || totalPages > 1) && (
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    hasNextPage={hasNextPage}
+                    hasPreviousPage={hasPreviousPage}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </>
           )}
         </section>
       )}
@@ -418,17 +543,137 @@ const Habits = () => {
       <DeleteModal
         isOpen={Boolean(habitToDelete)}
         itemName={habitToDelete?.habitName}
-        itemType="Habit"
+        itemType="habit"
         loading={deleteLoading}
-        onCancel={() => {
-          if (!deleteLoading) {
-            setHabitToDelete(null);
-          }
-        }}
-        onConfirm={confirmDelete}
+        onCancel={() => setHabitToDelete(null)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );
 };
+
+const TodayEmptyState = ({ onCreate }) => {
+  return (
+    <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-12 text-center shadow-sm">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <CalendarIcon />
+      </div>
+
+      <h3 className="mt-4 text-lg font-semibold text-base-content">
+        Nothing scheduled today
+      </h3>
+
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-base-content/55">
+        Enjoy the day or build a new habit for your routine.
+      </p>
+
+      <button
+        type="button"
+        onClick={onCreate}
+        className="btn btn-primary btn-sm mt-5 rounded-xl px-5"
+      >
+        <PlusIcon />
+        Add Habit
+      </button>
+    </div>
+  );
+};
+
+const AllHabitsEmptyState = ({ onCreate }) => {
+  return (
+    <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 px-6 py-12 text-center shadow-sm">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <SparkleIcon />
+      </div>
+
+      <h3 className="mt-4 text-lg font-semibold text-base-content">
+        Start your routine
+      </h3>
+
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-base-content/55">
+        Create a few habits that make your days better, one small action at a
+        time.
+      </p>
+
+      <button
+        type="button"
+        onClick={onCreate}
+        className="btn btn-primary btn-sm mt-5 rounded-xl px-5"
+      >
+        <PlusIcon />
+        Create your first habit
+      </button>
+    </div>
+  );
+};
+
+const HabitTodaySkeleton = () => {
+  return (
+    <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="h-11 w-11 shrink-0 animate-pulse rounded-xl bg-base-300" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-40 animate-pulse rounded bg-base-300" />
+          <div className="h-3 w-24 animate-pulse rounded bg-base-300/80" />
+        </div>
+      </div>
+      <div className="mt-6 h-14 animate-pulse rounded-xl bg-base-200" />
+      <div className="mt-3 h-3 w-48 animate-pulse rounded bg-base-300/70" />
+    </div>
+  );
+};
+
+const PlusIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    className="h-4 w-4"
+  >
+    <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+  </svg>
+);
+
+const ArchiveIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    className="h-4 w-4"
+  >
+    <path d="M4 7h16" strokeLinecap="round" />
+    <path d="M5 7l1 13h12l1-13" strokeLinecap="round" />
+    <path d="M8 7V4h8v3M9 11h6" strokeLinecap="round" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    className="h-6 w-6"
+  >
+    <rect x="3" y="4" width="18" height="17" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />
+    <path d="M8 14h8" strokeLinecap="round" />
+  </svg>
+);
+
+const SparkleIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className="h-6 w-6"
+    aria-hidden="true"
+  >
+    <path d="M12 2.5l1.65 6.35L20 10.5l-6.35 1.65L12 18.5l-1.65-6.35L4 10.5l6.35-1.65L12 2.5z" />
+
+    <path d="M19 14.5l.8 2.7 2.7.8-2.7.8-.8 2.7-.8-2.7-2.7-.8 2.7-.8.8-2.7z" />
+  </svg>
+);
 
 export default Habits;

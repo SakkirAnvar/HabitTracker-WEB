@@ -118,18 +118,16 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
       setLoading(false);
     }
   };
+
   return (
     <form
       onSubmit={handleSubmit}
       className="w-full rounded-2xl border border-base-300 bg-base-100 shadow-sm"
     >
       <div className="p-5 sm:p-6">
+        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
-              📝
-            </div>
-
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-base-content">
                 {isEditing ? "Edit Daily Review" : "Daily Review"}
@@ -154,6 +152,7 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           )}
         </div>
 
+        {/* Alert */}
         {message && (
           <div className="mt-5">
             <AlertMessage
@@ -165,25 +164,31 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           </div>
         )}
 
-        <div className="mt-7 grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <section>
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-content">
-                1
-              </div>
-
-              <div>
-                <h3 className="text-base font-semibold text-base-content">
-                  How are you feeling?
-                </h3>
-
-                <p className="mt-0.5 text-xs text-base-content/50">
-                  Choose the mood that best describes your day.
-                </p>
-              </div>
+        {/* 1. Daily Check-in */}
+        <section className="py-7">
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-content">
+              1
             </div>
 
-            <div className="mt-4 ml-0 lg:ml-11">
+            <div>
+              <h3 className="text-base font-semibold text-base-content">
+                Daily Check-in
+              </h3>
+
+              <p className="mt-0.5 text-xs text-base-content/50">
+                How did you feel and how was your energy today?
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:ml-11">
+            {/* Mood */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-base-content">
+                Mood
+              </label>
+
               <select
                 name="mood"
                 value={form.mood}
@@ -198,80 +203,68 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
                 <option value="Bad">😞 Bad</option>
               </select>
             </div>
-          </section>
 
-          <section>
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-content">
-                2
+            {/* Energy */}
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-base-content">
+                  Energy Level
+                </label>
+
+                <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                  {form.energy || "—"}/10
+                </span>
               </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-base-content">
-                      Energy Level
-                    </h3>
-
-                    <p className="mt-0.5 text-xs text-base-content/50">
-                      How much energy did you have today?
-                    </p>
-                  </div>
-
-                  <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-                    {form.energy || "—"}/10
-                  </span>
-                </div>
-
-                <div className="mt-5">
-                  <div className="relative py-2">
-                    {/* Track */}
-                    <div className="h-2.5 w-full rounded-full bg-base-300">
-                      {/* Progress */}
-                      <div
-                        className="h-full rounded-full bg-primary transition-all duration-200"
-                        style={{
-                          width: `${((Number(form.energy || 5) - 1) / 9) * 100}%`,
-                        }}
-                      />
-                    </div>
-
-                    <input
-                      type="range"
-                      name="energy"
-                      min="1"
-                      max="10"
-                      value={form.energy || 5}
-                      onChange={handleChange}
-                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                      aria-label="Energy level"
-                    />
-
-                    {/* Thumb */}
-                    <span
-                      className="pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-2 border-primary bg-base-100 shadow-sm"
+              <div className="mt-4">
+                <div className="relative py-2">
+                  <div className="h-2.5 w-full rounded-full bg-base-300">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-200"
                       style={{
-                        left: `calc(${
-                          ((Number(form.energy || 5) - 1) / 9) * 100
-                        }% - 10px)`,
+                        width: `${((Number(form.energy || 5) - 1) / 9) * 100}%`,
                       }}
                     />
                   </div>
 
-                  <div className="mt-1 flex justify-between text-[10px] text-base-content/35">
-                    <span>Low</span>
-                    <span>High</span>
-                  </div>
+                  <input
+                    type="range"
+                    name="energy"
+                    min="1"
+                    max="10"
+                    value={form.energy || 5}
+                    onChange={handleChange}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    aria-label="Energy level"
+                  />
+
+                  <span
+                    className="pointer-events-none absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-2 border-primary bg-base-100 shadow-sm"
+                    style={{
+                      left: `calc(${
+                        ((Number(form.energy || 5) - 1) / 9) * 100
+                      }% - 10px)`,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-1 flex justify-between text-[10px] text-base-content/35">
+                  <span>Low</span>
+                  <span>High</span>
                 </div>
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
 
-        <section className="mt-8">
+        {/* Separator */}
+        <div className="border-t border-base-300" />
+
+        {/* 2. Daily Reflection */}
+        <section className="py-7">
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-content">
-              3
+              2
             </div>
 
             <div>
@@ -286,8 +279,6 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:ml-11">
-            {/* What went well */}
-
             <TextAreaField
               id="review-went-well"
               name="wentWell"
@@ -299,8 +290,6 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
               placeholder="What are you proud of today?"
               count={`${form.wentWell.length}/150`}
             />
-
-            {/* Improvement */}
 
             <TextAreaField
               id="review-improvement"
@@ -316,10 +305,14 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           </div>
         </section>
 
-        <section className="mt-8">
+        {/* Separator */}
+        <div className="border-t border-base-300" />
+
+        {/* 3. Looking Ahead */}
+        <section className="py-7">
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-content">
-              4
+              3
             </div>
 
             <div>
@@ -334,8 +327,6 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:ml-11">
-            {/* Tomorrow's Priority */}
-
             <TextAreaField
               id="review-tomorrow-priority"
               name="tomorrowPriority"
@@ -347,8 +338,6 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
               placeholder="What's the one thing you want to focus on tomorrow?"
               count={`${form.tomorrowPriority.length}/200`}
             />
-
-            {/* Additional Notes */}
 
             <TextAreaField
               id="review-notes"
@@ -364,34 +353,37 @@ const ReviewForm = ({ review = null, date, onSuccess, onCancel }) => {
           </div>
         </section>
 
-        <div className="mt-8 flex flex-col-reverse gap-3 border-t border-base-300 pt-5 sm:flex-row sm:items-center sm:justify-end">
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={loading}
-              className="btn btn-ghost rounded-xl px-5 text-base-content/65 hover:bg-base-200 hover:text-base-content"
-            >
-              Cancel
-            </button>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary rounded-xl px-6"
-          >
-            {loading ? (
-              <>
-                <span className="loading loading-spinner loading-sm" />
-                Saving...
-              </>
-            ) : isEditing ? (
-              "Update Review"
-            ) : (
-              "Save Review"
+        {/* Separator + Actions */}
+        <div className="border-t border-base-300 pt-5">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={loading}
+                className="btn btn-ghost rounded-xl px-5 text-base-content/65 hover:bg-base-200 hover:text-base-content"
+              >
+                Cancel
+              </button>
             )}
-          </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary rounded-xl px-6"
+            >
+              {loading ? (
+                <>
+                  <span className="loading loading-spinner loading-sm" />
+                  Saving...
+                </>
+              ) : isEditing ? (
+                "Update Review"
+              ) : (
+                "Save Review"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </form>

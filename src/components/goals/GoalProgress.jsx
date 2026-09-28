@@ -16,10 +16,6 @@ const GoalProgress = ({ goalId }) => {
     }
   }, [dispatch, goalId]);
 
-  // =========================
-  // LOADING
-  // =========================
-
   if (progressStatus === "loading") {
     return (
       <div className="mt-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
@@ -49,10 +45,6 @@ const GoalProgress = ({ goalId }) => {
     );
   }
 
-  // =========================
-  // ERROR
-  // =========================
-
   if (progressError) {
     return (
       <div className="mt-4 rounded-2xl border border-error/20 bg-error/10 p-4">
@@ -79,10 +71,6 @@ const GoalProgress = ({ goalId }) => {
     return null;
   }
 
-  // =========================
-  // VALUES
-  // =========================
-
   const target = Number(progress.target ?? progress.goal?.target ?? 0);
 
   const currentProgress = Number(
@@ -100,8 +88,6 @@ const GoalProgress = ({ goalId }) => {
 
   return (
     <div className="mt-4 rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
-      {/* ================= HEADER ================= */}
-
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           <div
@@ -140,8 +126,6 @@ const GoalProgress = ({ goalId }) => {
         </div>
       </div>
 
-      {/* ================= PROGRESS BAR ================= */}
-
       <div className="mt-5">
         <div className="h-2 overflow-hidden rounded-full bg-base-300">
           <div
@@ -154,8 +138,6 @@ const GoalProgress = ({ goalId }) => {
           />
         </div>
       </div>
-
-      {/* ================= STATS ================= */}
 
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* Current */}
@@ -224,8 +206,6 @@ const GoalProgress = ({ goalId }) => {
           </div>
         </div>
       </div>
-
-      {/* ================= COMPLETED ================= */}
 
       {isComplete && (
         <div className="mt-4 flex items-center gap-3 rounded-xl bg-success/10 px-4 py-3">

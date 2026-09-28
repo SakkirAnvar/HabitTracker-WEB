@@ -5,6 +5,7 @@ import Pagination from "../layout/Pagination";
 import { fetchReviewByDate, fetchReviews } from "../redux/reviewSlice";
 import ReviewForm from "../components/reviews/ReviewForm";
 import { EditIcon } from "../components/goals/GoalCard";
+import DatePicker from "../layout/DatePicker";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -72,6 +73,7 @@ const Journal = () => {
   const [sortOrder, setSortOrder] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const isSelectedDateFuture = isFutureDate(selectedDate);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   useEffect(() => {
     if (selectedDate) {
@@ -99,35 +101,12 @@ const Journal = () => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const changeDate = (days) => {
-    const current = parseLocalDate(selectedDate);
-
-    current.setDate(current.getDate() + days);
-
-    const newDate = getLocalDateString(current);
-
-    if (isFutureDate(newDate)) {
-      return;
-    }
-
-    setSelectedDate(newDate);
-    setShowForm(false);
-    setEditingReview(null);
-  };
-  const handleDateChange = (e) => {
-    const date = e.target.value;
-
+  const handleDateChange = (date) => {
     if (!date || isFutureDate(date)) {
       return;
     }
 
     setSelectedDate(date);
-    setShowForm(false);
-    setEditingReview(null);
-  };
-
-  const goToToday = () => {
-    setSelectedDate(getLocalDateString());
     setShowForm(false);
     setEditingReview(null);
   };
@@ -249,7 +228,7 @@ const Journal = () => {
                 setSortOrder(e.target.value);
                 setCurrentPage(1);
               }}
-              className="select select-sm h-10 min-h-10 rounded-xl border-base-300 bg-base-100 text-xs"
+              className="select select-sm h-10 min-h-10 w-[130px] rounded-xl border-base-300 bg-base-100 text-xs"
             >
               <option value="newest">Latest first</option>
               <option value="oldest">Oldest first</option>
@@ -448,123 +427,73 @@ const Journal = () => {
 
   return (
     <div className="w-full space-y-6 pb-8">
-      <section className="rounded-2xl border border-base-300 bg-base-100 px-5 py-5 shadow-sm sm:px-6">
-  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-    {/* Heading */}
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary/60">
-        Daily reflection
-      </p>
+      <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-6 sm:p-8">
+        {/* Decorative elements */}
+        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[18px] border-primary/10" />
 
-      <h1 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-        Journal
-      </h1>
+        <div className="pointer-events-none absolute bottom-[-45px] right-24 h-32 w-32 rounded-full bg-secondary/10" />
 
-      <p className="mt-1.5 max-w-xl text-sm leading-6 text-base-content/55">
-        Reflect on your day, capture what matters, and carry your
-        thoughts into tomorrow.
-      </p>
-    </div>
+        <div className="pointer-events-none absolute right-8 top-8 text-5xl text-primary/10">
+          ✦
+        </div>
 
-    {/* Date Navigation */}
-    <div className="flex w-full items-center gap-1 rounded-xl border border-base-300 bg-base-200/40 p-1 sm:w-fit">
-      {/* Previous */}
-      <button
-        type="button"
-        onClick={() => changeDate(-1)}
-        aria-label="Previous day"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base-content/45 transition hover:bg-base-100 hover:text-base-content"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-4 w-4"
-        >
-          <path
-            d="m15 19-7-7 7-7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+        {/* Content */}
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-      {/* Date */}
-      <label className="flex h-9 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-base-100 px-3 shadow-sm sm:flex-none">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-4 w-4 shrink-0 text-primary"
-        >
-          <path
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Daily Reflection
+              </span>
+            </div>
 
-        <input
-          type="date"
-          value={selectedDate}
-          max={getLocalDateString()}
-          onChange={handleDateChange}
-          className="w-[130px] bg-transparent text-center text-sm font-semibold text-base-content outline-none"
-        />
-      </label>
+            <h1 className="text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
+              Journal
+            </h1>
 
-      {/* Next */}
-      <button
-        type="button"
-        onClick={() => changeDate(1)}
-        disabled={selectedDate >= getLocalDateString()}
-        aria-label="Next day"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base-content/45 transition hover:bg-base-100 hover:text-base-content disabled:cursor-not-allowed disabled:opacity-25"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-4 w-4"
-        >
-          <path
-            d="m9 18 6-6-6-6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
+              Reflect on your day, capture what mattered, and carry it into
+              tomorrow.
+            </p>
+          </div>
 
-      {/* Today */}
-      <button
-        type="button"
-        onClick={goToToday}
-        disabled={selectedDate === getLocalDateString()}
-        className="hidden h-9 rounded-lg px-3 text-xs font-semibold text-primary transition hover:bg-base-100 disabled:cursor-default disabled:opacity-40 sm:block"
-      >
-        Today
-      </button>
-    </div>
-  </div>
+          {/* Date picker */}
+          <div className="shrink-0 self-start lg:self-center">
+            <DatePicker
+              value={selectedDate}
+              onChange={handleDateChange}
+              max={getLocalDateString()}
+              isOpen={isDatePickerOpen}
+              onOpen={() => setIsDatePickerOpen(true)}
+              onClose={() => setIsDatePickerOpen(false)}
+              align="left"
+              buttonClassName="h-10 w-[150px] border-0 bg-base-100 px-3 shadow-sm hover:bg-base-100 focus:ring-0"
+            />
+          </div>
+        </div>
 
-  {/* Selected date indicator */}
-  <div className="mt-5 flex items-center gap-2 border-t border-base-300 pt-4">
-    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        {/* Selected date */}
+        <div className="relative z-10 mt-6 flex flex-wrap items-center gap-2 border-t border-primary/10 pt-4">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-    <span className="text-sm font-medium text-base-content/60">
-      {formatSelectedDate(selectedDate)}
-    </span>
+          <span className="text-sm font-medium text-base-content/60">
+            {formatSelectedDate(selectedDate)}
+          </span>
 
-    {selectedDate === getLocalDateString() && (
-      <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
-        Today
-      </span>
-    )}
-  </div>
-</section>
+          {selectedDate === getLocalDateString() && (
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
+              Today
+            </span>
+          )}
+
+          {isSelectedDateFuture && (
+            <span className="rounded-full bg-base-200 px-2 py-1 text-[10px] font-semibold text-base-content/45">
+              Future date
+            </span>
+          )}
+        </div>
+      </section>
 
       {isLoading && <JournalShimmer />}
 
@@ -595,51 +524,6 @@ const Journal = () => {
       {isViewMode && (
         <>
           <section className="space-y-5">
-            {/* Breadcrumb */}
-
-            <div className="flex items-center gap-2 text-sm">
-              <span className="flex items-center gap-2 text-base-content/45">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"
-                  />
-
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14 3v5h5"
-                  />
-                </svg>
-                Journal
-              </span>
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-3.5 w-3.5 text-base-content/20"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m9 18 6-6-6-6"
-                />
-              </svg>
-
-              <span className="font-medium text-base-content/65">Entry</span>
-            </div>
-
             <section className="relative overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
               {/* Entry menu */}
               <div className="dropdown dropdown-end absolute right-5 top-4 z-40 sm:right-7 sm:top-5 lg:right-8 lg:top-5">
@@ -1059,26 +943,6 @@ const Journal = () => {
                 )}
               </div>
             </div>
-
-            <section className="relative overflow-hidden rounded-2xl border border-primary/10 bg-primary/5 p-6 sm:p-7">
-              <div className="relative z-10 max-w-2xl">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary/60">
-                  Aven reminder
-                </p>
-
-                <p className="mt-3 text-xl font-semibold leading-8 text-base-content sm:text-2xl">
-                  “Small reflections create meaningful change.”
-                </p>
-
-                <p className="mt-2 text-sm text-base-content/50">
-                  Keep showing up, one better day at a time.
-                </p>
-              </div>
-
-              <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-primary/10" />
-
-              <div className="absolute -bottom-10 right-20 h-24 w-24 rounded-full bg-secondary/10" />
-            </section>
           </section>
 
           {renderPreviousReviews()}
@@ -1091,34 +955,59 @@ const Journal = () => {
 
           <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">
             {/* Empty State */}
+            <div className="relative flex min-h-[350px] items-center overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-8 shadow-sm">
+              {/* Subtle background decoration */}
+              <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-primary/5" />
 
-            <div className="flex min-h-[350px] items-center justify-center rounded-2xl border border-base-300 bg-base-100 p-8 shadow-sm">
-              <div className="max-w-lg text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/5 text-4xl">
-                  📖
+              <div className="relative z-10 mx-auto max-w-lg text-center">
+                {/* Icon */}
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-7 w-7"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6.75 3.75h7.5L18.75 8.25v12a.75.75 0 0 1-.75.75h-11.25a.75.75 0 0 1-.75-.75v-16.5a.75.75 0 0 1 .75-.75Z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14.25 3.75v4.5h4.5M8.75 12h6.5M8.75 15.5h4.5"
+                    />
+                  </svg>
                 </div>
 
-                <p className="mt-5 text-sm font-medium text-primary">
+                {/* Date */}
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-primary/70">
                   {formatSelectedDate(selectedDate)}
                 </p>
 
+                {/* Title */}
                 <h2 className="mt-2 text-2xl font-bold tracking-tight text-base-content">
                   {isSelectedDateFuture
-                    ? "No review available yet"
-                    : "No review for this day"}
+                    ? "Nothing to reflect on yet"
+                    : "Your day is waiting to be reflected on"}
                 </h2>
 
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-base-content/55">
+                {/* Description */}
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-base-content/55">
                   {isSelectedDateFuture
-                    ? "Reviews can only be written for today or previous days."
-                    : "Take a few minutes to reflect on your day, capture what mattered, and set yourself up for tomorrow."}
+                    ? "You can write a reflection once this day has passed."
+                    : "Take a moment to capture what went well, what you learned, and what you want to carry into tomorrow."}
                 </p>
 
+                {/* Action */}
                 {!isSelectedDateFuture ? (
                   <button
                     type="button"
                     onClick={handleWriteReview}
-                    className="btn btn-primary mt-6 rounded-xl px-6"
+                    className="btn btn-primary mt-6 rounded-xl px-6 shadow-sm"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1137,45 +1026,76 @@ const Journal = () => {
                     Write Review
                   </button>
                 ) : (
-                  <p className="mt-6 text-sm font-medium text-base-content/45">
-                    You can write a review once this day has passed.
-                  </p>
-                )}
-
-                {!isSelectedDateFuture && (
-                  <p className="mt-5 text-xs italic text-base-content/35">
-                    “A better you, one reflection at a time.”
+                  <p className="mt-6 text-xs font-medium text-base-content/40">
+                    This date isn't available for reflection yet.
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Motivation */}
+            {/* Reflection Guide */}
+            <div className="relative hidden min-h-[350px] overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-6 xl:flex xl:flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-base-content/40">
+                  Daily reflection
+                </span>
 
-            <div className="relative hidden overflow-hidden rounded-2xl border border-primary/10 bg-primary/5 p-6 xl:block">
-              <div className="relative z-10 flex h-full flex-col justify-between">
-                <div>
-                  <p className="text-2xl font-bold leading-tight text-base-content">
-                    Reflect today
-                    <br />
-                    for a brighter
-                    <br />
-                    tomorrow.
-                  </p>
-
-                  <div className="mt-5 h-px w-10 bg-primary/20" />
-
-                  <p className="mt-4 text-sm leading-6 text-base-content/55">
-                    Small reflections create meaningful change.
-                  </p>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 3v2.25M12 18.75V21M3 12h2.25M18.75 12H21M5.636 5.636l1.591 1.591M16.773 16.773l1.591 1.591M5.636 18.364l1.591-1.591M16.773 7.227l1.591-1.591"
+                    />
+                  </svg>
                 </div>
-
-                <div className="flex justify-end text-6xl opacity-60">🌿</div>
               </div>
 
-              <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-primary/5" />
+              {/* Main message */}
+              <div className="mt-auto">
+                <h3 className="text-xl font-bold leading-snug tracking-tight text-base-content">
+                  A few minutes today
+                  <br />
+                  can change tomorrow.
+                </h3>
 
-              <div className="absolute -right-10 top-16 h-32 w-32 rounded-full bg-secondary/5" />
+                <p className="mt-3 text-sm leading-6 text-base-content/50">
+                  Reflect honestly. Notice the small wins. Carry one clear
+                  intention forward.
+                </p>
+
+                {/* Reflection prompts */}
+                <div className="mt-6 space-y-2">
+                  <div className="flex items-center gap-3 rounded-xl bg-base-200/50 px-3 py-2.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                    <span className="text-xs text-base-content/55">
+                      What went well?
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 rounded-xl bg-base-200/50 px-3 py-2.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                    <span className="text-xs text-base-content/55">
+                      What can improve?
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 rounded-xl bg-base-200/50 px-3 py-2.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                    <span className="text-xs text-base-content/55">
+                      What's tomorrow's focus?
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -1184,12 +1104,6 @@ const Journal = () => {
           {renderPreviousReviews()}
         </>
       )}
-
-      <div className="pb-2 text-center">
-        <p className="text-xs text-base-content/35">
-          Aven · Build your better days.
-        </p>
-      </div>
     </div>
   );
 };

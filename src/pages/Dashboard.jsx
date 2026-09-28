@@ -199,8 +199,6 @@ const Dashboard = () => {
   return (
     <div className="w-full">
       <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        {/* ================= HEADER ================= */}
-
         <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
@@ -223,8 +221,6 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* ================= TODAY'S PROGRESS ================= */}
-
         <section
           className="
             relative
@@ -236,35 +232,44 @@ const Dashboard = () => {
             shadow-sm
           "
         >
-          {/* Decorative background */}
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/5" />
 
           <div className="pointer-events-none absolute -bottom-24 -right-8 h-48 w-48 rounded-full bg-secondary/5" />
 
           <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[240px_1fr_180px] lg:items-center lg:p-10">
-            {/* Progress Ring */}
-
             <div className="flex justify-center lg:justify-start">
-              <div
-                className="
-                  flex h-48 w-48
-                  items-center justify-center
-                  rounded-full
-                  border-[14px]
-                  border-base-200
-                  bg-base-100
-                "
-                style={{
-                  background: `
-                    radial-gradient(circle, var(--fallback-b1,oklch(var(--b1))) 62%, transparent 63%),
-                    conic-gradient(
-                      var(--fallback-p,oklch(var(--p))) ${overall}%,
-                      var(--fallback-b2,oklch(var(--b2))) ${overall}% 100%
-                    )
-                  `,
-                }}
-              >
-                <div className="flex h-36 w-36 items-center justify-center rounded-full bg-base-100">
+              <div className="relative h-48 w-48">
+                <svg
+                  viewBox="0 0 120 120"
+                  className="h-full w-full -rotate-90"
+                  aria-label={`${overall}% of today's habits completed`}
+                  role="img"
+                >
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="48"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="10"
+                    className="text-base-200"
+                  />
+
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="48"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    className="text-primary transition-all duration-700 ease-out"
+                    strokeDasharray={2 * Math.PI * 48}
+                    strokeDashoffset={2 * Math.PI * 48 * (1 - overall / 100)}
+                  />
+                </svg>
+
+                <div className="absolute inset-[14px] flex items-center justify-center rounded-full bg-base-100">
                   <div className="text-center">
                     <p className="text-4xl font-bold tracking-tight text-base-content">
                       {overall}%
@@ -277,9 +282,6 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-
-            {/* Message */}
-
             <div className="text-center lg:text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
                 {progressMessage.eyebrow}
@@ -322,8 +324,6 @@ const Dashboard = () => {
               </Link>
             </div>
 
-            {/* Small Quote */}
-
             <div className="hidden border-l border-base-300 pl-6 lg:block">
               <p className="text-sm italic leading-6 text-base-content/50">
                 “A better you is built one consistent day at a time.”
@@ -333,8 +333,6 @@ const Dashboard = () => {
             </div>
           </div>
         </section>
-
-        {/* ================= SUMMARY ================= */}
 
         <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Completed */}
@@ -383,8 +381,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Remaining */}
-
           <div
             className="
               rounded-2xl
@@ -429,8 +425,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Expected */}
-
           <div
             className="
               rounded-2xl
@@ -472,8 +466,6 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* ================= CATEGORY PROGRESS ================= */}
-
         {analytics?.categories && (
           <section
             className="
@@ -498,7 +490,7 @@ const Dashboard = () => {
                   </p>
                 </div>
 
-                <Link
+                {/* <Link
                   to="/habits"
                   className="
                     hidden
@@ -526,7 +518,7 @@ const Dashboard = () => {
                       d="M5 12h14M13 6l6 6-6 6"
                     />
                   </svg>
-                </Link>
+                </Link> */}
               </div>
 
               {/* Categories */}
@@ -627,8 +619,6 @@ const Dashboard = () => {
             </div>
           </section>
         )}
-
-        {/* ================= MOBILE VIEW ALL ================= */}
 
         <div className="mt-4 sm:hidden">
           <Link

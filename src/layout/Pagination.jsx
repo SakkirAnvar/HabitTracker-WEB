@@ -6,7 +6,6 @@ const Pagination = ({
   onPageChange,
   className = "",
 }) => {
-  // Don't render pagination when there is only one page
   if (!totalPages || totalPages <= 1) {
     return null;
   }

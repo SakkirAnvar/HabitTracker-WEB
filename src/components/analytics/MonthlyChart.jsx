@@ -1,13 +1,18 @@
+import { useState } from "react";
+import MonthPicker from "../../layout/MonthPicker";
+
 const MonthlyChart = ({
   data,
   selectedMonth,
   onMonthChange,
   maxMonth,
   loading = false,
+  error,
 }) => {
+  const [openPicker, setOpenPicker] = useState(false);
   if (!data?.daily?.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center shadow-sm">
+      <section className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center shadow-sm">
         <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-lg">
           📈
         </div>
@@ -16,14 +21,27 @@ const MonthlyChart = ({
           Monthly Progress
         </h2>
 
-        <p className="mt-1 text-sm text-base-content/60">
-          No monthly analytics available yet.
-        </p>
+        {error ? (
+          <div
+            role="alert"
+            className="mx-auto mt-4 max-w-md rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"
+          >
+            {typeof error === "string"
+              ? error
+              : error?.message || "Unable to load monthly progress."}
+          </div>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-base-content/60">
+              No monthly analytics available yet.
+            </p>
 
-        <p className="mt-1 text-xs text-base-content/45">
-          Keep tracking your habits to see your progress here.
-        </p>
-      </div>
+            <p className="mt-1 text-xs text-base-content/45">
+              Keep tracking your habits to see your progress here.
+            </p>
+          </>
+        )}
+      </section>
     );
   }
 
@@ -67,24 +85,40 @@ const MonthlyChart = ({
 
   const monthlyAverage = getPercentage(data.overall);
 
-  const completedDays = daily.filter((day) => !isFutureDate(day.date));
+  const elapsedDays = daily.filter((day) => !isFutureDate(day.date));
 
-  const bestDay = completedDays.reduce((best, current) => {
+  const hasTrackedData = (day) => {
+    if (!Array.isArray(day?.habits)) {
+      return Number(day?.completed) > 0;
+    }
+
+    return day.habits.some(
+      (habit) =>
+        habit?.completed === true ||
+        Number(habit?.value) > 0 ||
+        Number(habit?.completion) > 0,
+    );
+  };
+
+  const trackedDays = elapsedDays.filter(hasTrackedData);
+
+  const bestDay = trackedDays.reduce((best, current) => {
     return getPercentage(current.overall) > getPercentage(best?.overall)
       ? current
       : best;
-  }, completedDays[0]);
+  }, trackedDays[0]);
 
   const bestDayValue = bestDay ? getPercentage(bestDay.overall) : 0;
+  const trackedDayCount = trackedDays.length;
 
   const width = 1000;
-  const height = 275;
+  const height = 330;
 
   const padding = {
-    top: 14,
-    right: 10,
-    bottom: 38,
-    left: 42,
+    top: 24,
+    right: 28,
+    bottom: 48,
+    left: 54,
   };
 
   const chartWidth = width - padding.left - padding.right;
@@ -175,261 +209,330 @@ const MonthlyChart = ({
   return (
     <div className="relative w-full">
       <section
-        className={`rounded-2xl border border-base-300 bg-base-100 px-5 pb-4 pt-5 shadow-sm transition-opacity duration-200 sm:px-6 ${
+        className={`rounded-3xl border border-base-300 bg-base-100 p-5 shadow-sm transition-opacity duration-200 sm:p-6 lg:p-7 ${
           loading ? "opacity-60" : "opacity-100"
         }`}
       >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          {/* LEFT */}
-
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base">
+        {/* Header */}
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-lg">
               📈
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold leading-tight text-base-content">
+              <h2 className="text-lg font-semibold tracking-tight text-base-content sm:text-xl">
                 Monthly Progress
               </h2>
-
-              <p className="mt-1 text-xs text-base-content/55 sm:text-sm">
-                Daily consistency throughout the month.
+              <p className="mt-1 max-w-xl text-sm leading-5 text-base-content/55">
+                See how consistently your habits are progressing throughout the
+                month.
               </p>
             </div>
           </div>
 
-          {/* RIGHT */}
-
-          <div className="flex items-center justify-between lg:justify-end">
-            {/* Monthly Average */}
-
-            <div className="px-3 text-center sm:px-5">
-              <p className="text-[9px] font-medium text-base-content/50">
-                Monthly Average
-              </p>
-
-              <p className="mt-1 text-lg font-bold leading-none text-primary sm:text-xl">
-                {monthlyAverage}%
-              </p>
-            </div>
-
-            <div className="h-8 w-px bg-base-300" />
-
-            {/* Best Day */}
-
-            <div className="px-3 text-center sm:px-5">
-              <p className="text-[9px] font-medium text-base-content/50">
-                Best Day
-              </p>
-
-              <p className="mt-1 text-sm font-bold leading-none text-primary">
-                {bestDayValue}%
-              </p>
-
-              <p className="mt-1 text-[9px] text-base-content/45">
-                {bestDay ? formatDate(bestDay.date) : "-"}
-              </p>
-            </div>
-
-            <div className="hidden h-8 w-px bg-base-300 sm:block" />
-            {/* Month selector */}
-            <label className="flex h-9 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-3 transition hover:bg-base-200">
-              <input
-                type="month"
-                value={selectedMonth}
-                max={maxMonth}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    onMonthChange(e.target.value);
-                  }
-                }}
-                className="w-[120px] bg-transparent text-[11px] font-medium text-base-content outline-none"
-              />
-            </label>
+          <div className="self-start">
+            <MonthPicker
+              value={selectedMonth}
+              maxMonth={maxMonth}
+              placeholder="Select month"
+              isOpen={openPicker}
+              onOpen={() => setOpenPicker(true)}
+              onClose={() => setOpenPicker(false)}
+              onChange={(month) => {
+                onMonthChange(month);
+                setOpenPicker(false);
+              }}
+              align="right"
+              buttonClassName="h-10 w-[150px] rounded-xl px-3 text-[11px] font-medium"
+            />
           </div>
         </div>
 
-        <div className="mt-4 w-full overflow-x-auto">
-          <div className="min-w-[680px]">
-            <div className="relative h-[260px] w-full">
-              <svg
-                viewBox={`0 0 ${width} ${height}`}
-                className="h-full w-full overflow-visible"
-                preserveAspectRatio="none"
-              >
-                {/* GRID */}
+        {error && (
+          <div
+            role="alert"
+            className="mt-5 rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"
+          >
+            {typeof error === "string"
+              ? error
+              : error?.message || "Unable to load monthly progress."}
+          </div>
+        )}
 
-                {[100, 75, 50, 25, 0].map((value) => {
-                  const y = padding.top + ((100 - value) / 100) * chartHeight;
+        {/* Summary */}
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-base-300 bg-base-200/35 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-base-content/45">
+                Monthly Average
+              </p>
+              <span className="h-2 w-2 rounded-full bg-primary" />
+            </div>
 
-                  return (
-                    <g key={value}>
-                      <line
-                        x1={padding.left}
-                        x2={width - padding.right}
-                        y1={y}
-                        y2={y}
-                        className="stroke-base-300/55"
-                        strokeDasharray="3 5"
+            <div className="mt-2 flex items-end gap-2">
+              <span className="text-2xl font-bold tracking-tight text-primary">
+                {monthlyAverage}%
+              </span>
+              <span className="pb-1 text-xs text-base-content/45">
+                consistency
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-base-300 bg-base-200/35 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-base-content/45">
+                Best Day
+              </p>
+              <span className="h-2 w-2 rounded-full bg-secondary" />
+            </div>
+
+            <div className="mt-2 flex items-end gap-2">
+              <span className="text-2xl font-bold tracking-tight text-base-content">
+                {bestDayValue}%
+              </span>
+              <span className="pb-1 text-xs text-base-content/45">
+                {bestDay ? formatDate(bestDay.date) : "-"}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-base-300 bg-base-200/35 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-base-content/45">
+                Days Tracked
+              </p>
+              <span className="h-2 w-2 rounded-full bg-secondary/70" />
+            </div>
+
+            <div className="mt-2 flex items-end gap-2">
+              <span className="text-2xl font-bold tracking-tight text-base-content">
+                {trackedDayCount}
+              </span>
+              <span className="pb-1 text-xs text-base-content/45">
+                recorded days
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart panel */}
+        <div className="mt-6 rounded-2xl border border-base-300 bg-base-200/20 p-3 sm:p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1 pb-3">
+            <div>
+              <p className="text-xs font-semibold text-base-content/70">
+                Daily consistency
+              </p>
+              <p className="mt-0.5 text-[11px] text-base-content/40">
+                Completed habits as a percentage of your daily target.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 text-[10px] font-medium text-base-content/45">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                Tracked
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-base-content/20" />
+                Upcoming
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[720px] px-1 pb-1">
+              <div className="relative h-[300px] w-full sm:h-[320px]">
+                <svg
+                  viewBox={`0 0 ${width} ${height}`}
+                  className="h-full w-full overflow-visible"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <linearGradient
+                      id="monthlyAreaGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="currentColor"
+                        className="text-primary"
+                        stopOpacity="0.2"
                       />
+                      <stop
+                        offset="100%"
+                        stopColor="currentColor"
+                        className="text-primary"
+                        stopOpacity="0"
+                      />
+                    </linearGradient>
+                  </defs>
 
-                      <text
-                        x={padding.left - 10}
-                        y={y + 4}
-                        textAnchor="end"
-                        className="fill-base-content/40 text-[10px]"
-                      >
-                        {value}
-                      </text>
-                    </g>
-                  );
-                })}
+                  {/* Horizontal grid */}
+                  {[100, 75, 50, 25, 0].map((value) => {
+                    const y = padding.top + ((100 - value) / 100) * chartHeight;
 
-                {/* AREA */}
+                    return (
+                      <g key={value}>
+                        <line
+                          x1={padding.left}
+                          x2={width - padding.right}
+                          y1={y}
+                          y2={y}
+                          className="stroke-base-300/60"
+                          strokeDasharray="2 6"
+                        />
 
-                {areaPath && <path d={areaPath} className="fill-primary/10" />}
+                        <text
+                          x={padding.left - 12}
+                          y={y + 4}
+                          textAnchor="end"
+                          className="fill-base-content/35 text-[10px]"
+                        >
+                          {value}%
+                        </text>
+                      </g>
+                    );
+                  })}
 
-                {/* LINE */}
+                  {/* Area */}
+                  {areaPath && (
+                    <path d={areaPath} fill="url(#monthlyAreaGradient)" />
+                  )}
 
-                {linePath && (
-                  <path
-                    d={linePath}
-                    fill="none"
-                    className="stroke-primary"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                )}
+                  {/* Line */}
+                  {linePath && (
+                    <path
+                      d={linePath}
+                      fill="none"
+                      className="stroke-primary"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
 
-                {/* PAST + TODAY */}
-
-                {progressPoints.map((point) => (
-                  <circle
-                    key={point.date}
-                    cx={point.x}
-                    cy={point.y}
-                    r="3.5"
-                    className="fill-primary stroke-base-100"
-                    strokeWidth="2"
-                  />
-                ))}
-
-                {/* FUTURE MARKERS */}
-
-                {points
-                  .filter((point) => point.future)
-                  .map((point) => (
+                  {/* Data points */}
+                  {progressPoints.map((point) => (
                     <circle
-                      key={`future-${point.date}`}
+                      key={point.date}
                       cx={point.x}
-                      cy={bottomY}
-                      r="2"
-                      className="fill-base-content/20"
+                      cy={point.y}
+                      r="4"
+                      className="fill-primary stroke-base-100"
+                      strokeWidth="2.5"
                     />
                   ))}
 
-                {/* X LABELS */}
-
-                {labelIndexes.map((index) => {
-                  const point = points[index];
-
-                  return (
-                    <text
-                      key={`${point.date}-${index}`}
-                      x={point.x}
-                      y={height - 10}
-                      textAnchor="middle"
-                      className={`text-[10px] ${
-                        point.future
-                          ? "fill-base-content/30"
-                          : "fill-base-content/45"
-                      }`}
-                    >
-                      {formatDate(point.date)}
-                    </text>
-                  );
-                })}
-              </svg>
-
-              <div className="absolute inset-0">
-                {points.map((point) => {
-                  const x = (point.x / width) * 100;
-
-                  const y = ((point.future ? bottomY : point.y) / height) * 100;
-
-                  return (
-                    <div
-                      key={`hover-${point.date}`}
-                      className="group absolute h-8 w-8 -translate-x-1/2 -translate-y-1/2"
-                      style={{
-                        left: `${x}%`,
-                        top: `${y}%`,
-                      }}
-                    >
-                      {/* Vertical guide */}
-
-                      {!point.future && (
-                        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[135px] -translate-x-1/2 -translate-y-full border-l border-dashed border-primary/20 opacity-0 transition-opacity group-hover:opacity-100" />
-                      )}
-
-                      {/* Point */}
-
-                      <div
-                        className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 shadow-sm ${
-                          point.future ? "bg-base-300" : "bg-primary"
-                        } opacity-0 transition-opacity group-hover:opacity-100`}
+                  {/* Future markers */}
+                  {points
+                    .filter((point) => point.future)
+                    .map((point) => (
+                      <circle
+                        key={`future-${point.date}`}
+                        cx={point.x}
+                        cy={bottomY}
+                        r="2.5"
+                        className="fill-base-content/20"
                       />
+                    ))}
 
-                      {/* Tooltip */}
+                  {/* X labels */}
+                  {labelIndexes.map((index) => {
+                    const point = points[index];
 
-                      <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 hidden w-[125px] -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 px-3 py-2.5 shadow-lg group-hover:block">
-                        <p className="text-[11px] font-semibold text-base-content">
-                          {formatFullDate(point.date)}
-                        </p>
+                    return (
+                      <text
+                        key={`${point.date}-${index}`}
+                        x={point.x}
+                        y={height - 12}
+                        textAnchor="middle"
+                        className={`text-[10px] ${
+                          point.future
+                            ? "fill-base-content/25"
+                            : "fill-base-content/45"
+                        }`}
+                      >
+                        {formatDate(point.date)}
+                      </text>
+                    );
+                  })}
+                </svg>
 
-                        {point.future ? (
-                          <div className="mt-1.5 flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-base-content/25" />
+                {/* Hover layer */}
+                <div className="absolute inset-0">
+                  {points.map((point) => {
+                    const x = (point.x / width) * 100;
+                    const y =
+                      ((point.future ? bottomY : point.y) / height) * 100;
 
-                            <span className="text-[11px] font-medium text-base-content/60">
-                              Assigned
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="mt-1.5 flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-primary" />
-
-                            <span className="text-[11px] font-medium text-base-content/70">
-                              {point.value}% completed
-                            </span>
-                          </div>
+                    return (
+                      <div
+                        key={`hover-${point.date}`}
+                        className="group absolute h-10 w-10 -translate-x-1/2 -translate-y-1/2"
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                        }}
+                      >
+                        {!point.future && (
+                          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[165px] -translate-x-1/2 -translate-y-full border-l border-dashed border-primary/20 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
                         )}
+
+                        <div
+                          className={`absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-base-100 shadow-sm transition-all duration-150 group-hover:scale-110 ${
+                            point.future ? "bg-base-300" : "bg-primary"
+                          }`}
+                        />
+
+                        <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-3 hidden w-[150px] -translate-x-1/2 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl group-hover:block">
+                          <p className="text-xs font-semibold text-base-content">
+                            {formatFullDate(point.date)}
+                          </p>
+
+                          {point.future ? (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-base-200 px-2 py-1 text-[10px] font-semibold text-base-content/55">
+                                <span className="h-1.5 w-1.5 rounded-full bg-base-content/25" />
+                                Upcoming
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="mt-2 flex items-end justify-between gap-3">
+                                <span className="text-[11px] text-base-content/45">
+                                  Completion
+                                </span>
+                                <span className="text-sm font-bold text-primary">
+                                  {point.value}%
+                                </span>
+                              </div>
+
+                              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-base-200">
+                                <div
+                                  className="h-full rounded-full bg-primary transition-all"
+                                  style={{ width: `${point.value}%` }}
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
       {loading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-base-100/45 backdrop-blur-[1px]">
-          <div className="flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse" />
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse"
-                style={{ animationDelay: "150ms" }}
-              />
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse"
-                style={{ animationDelay: "300ms" }}
-              />
-            </div>
-          </div>
-        </div>
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-base-100/45 backdrop-blur-[1px]"></div>
       )}
     </div>
   );

@@ -1,3 +1,6 @@
+import { useState } from "react";
+import MonthPicker from "../../layout/MonthPicker";
+
 const CalendarHeatmap = ({
   data,
   selectedMonth,
@@ -5,78 +8,73 @@ const CalendarHeatmap = ({
   maxMonth,
   loading = false,
 }) => {
+  const [openPicker, setOpenPicker] = useState(false);
+
   if (!data?.calendar?.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-lg">
-          📅
+      <section className="min-h-[400px] rounded-2xl border border-base-300 bg-base-100 p-5 text-center shadow-sm sm:p-6">
+        <div className="flex items-center gap-3 text-left">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-base">
+            📅
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-base-content">
+              Consistency Calendar
+            </h2>
+            <p className="mt-0.5 text-xs text-base-content/50">
+              Your habit activity across the month.
+            </p>
+          </div>
         </div>
 
-        <h2 className="mt-3 text-lg font-semibold text-base-content">
-          Consistency Calendar
-        </h2>
-
-        <p className="mt-1 text-sm text-base-content/60">
-          No calendar data available yet.
-        </p>
-
-        <p className="mt-1 text-xs text-base-content/45">
-          Start tracking your habits to see your consistency here.
-        </p>
-      </div>
+        <div className="mt-12">
+          <p className="text-sm font-medium text-base-content/60">
+            No calendar data available yet.
+          </p>
+          <p className="mt-1 text-xs text-base-content/40">
+            Start tracking habits to see your consistency.
+          </p>
+        </div>
+      </section>
     );
   }
 
   const getLocalDateString = () => {
     const now = new Date();
-
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-
     return `${year}-${month}-${day}`;
   };
 
   const today = getLocalDateString();
-
   const isFutureDate = (date) => date > today;
 
-  const getDateNumber = (date) => {
-    return new Date(`${date}T00:00:00`).getDate();
-  };
+  const getDateNumber = (date) =>
+    new Date(`${date}T00:00:00`).getDate();
 
-  const formatDate = (date) => {
-    if (!date) return "-";
+  const formatDate = (date) =>
+    date
+      ? new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "-";
 
-    return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const getDayStatus = (day) => {
-    if (isFutureDate(day.date)) {
-      return "assigned";
-    }
-
-    return day.status || "nodata";
-  };
+  const getDayStatus = (day) =>
+    isFutureDate(day.date) ? "assigned" : day.status || "nodata";
 
   const getStatusClass = (status) => {
     switch (status) {
       case "completed":
         return "bg-primary text-primary-content";
-
       case "partial":
         return "bg-secondary/55 text-base-content";
-
       case "missed":
-        return "bg-error/15 text-error";
-
+        return "bg-error/10 text-error";
       case "assigned":
         return "border border-base-300 bg-base-200 text-base-content/35";
-
       default:
         return "bg-base-200 text-base-content/30";
     }
@@ -95,7 +93,7 @@ const CalendarHeatmap = ({
   ).length;
 
   const trackedDays = data.calendar.filter(
-    (day) => !isFutureDate(day.date),
+    (day) => !isFutureDate(day.date) && Number(day.expected) > 0,
   ).length;
 
   const assignedDays = data.calendar.filter((day) =>
@@ -103,10 +101,11 @@ const CalendarHeatmap = ({
   ).length;
 
   const consistencyPercentage =
-    trackedDays > 0 ? Math.round((completedDays / trackedDays) * 100) : 0;
+    trackedDays > 0
+      ? Math.round((completedDays / trackedDays) * 100)
+      : 0;
 
   const firstDate = data.calendar[0]?.date;
-
   const firstDayIndex = firstDate
     ? new Date(`${firstDate}T00:00:00`).getDay()
     : 0;
@@ -117,110 +116,105 @@ const CalendarHeatmap = ({
   );
 
   return (
-    <div className="relative w-full">
-      <section
-        className={`w-full rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-opacity duration-200 sm:p-5 ${
-          loading ? "opacity-60" : "opacity-100"
-        }`}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-lg">
-              📅
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold leading-tight text-base-content">
-                Consistency Calendar
-              </h2>
-
-              <p className="mt-1 text-sm text-base-content/55">
-                Your daily consistency at a glance.
-              </p>
-            </div>
+    <section
+      className={`relative min-h-[400px] rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm transition-opacity sm:p-6 ${
+        loading ? "opacity-60" : ""
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base">
+            📅
           </div>
 
-          {/* Month */}
-          <label className="flex h-9 shrink-0 items-center gap-2 rounded-xl border border-base-300 bg-base-100 px-3 transition hover:bg-base-200">
-            <input
-              type="month"
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-semibold text-base-content">
+              Consistency Calendar
+            </h2>
+            <p className="mt-0.5 text-xs text-base-content/50">
+              Your habit activity across the month.
+            </p>
+          </div>
+        </div>
+
+         <MonthPicker
               value={selectedMonth}
-              max={maxMonth}
-              onChange={(e) => {
-                if (e.target.value) {
-                  onMonthChange(e.target.value);
-                }
+              maxMonth={maxMonth}
+              placeholder="Select month"
+              isOpen={openPicker}
+              onOpen={() => setOpenPicker(true)}
+              onClose={() => setOpenPicker(false)}
+              onChange={(month) => {
+                onMonthChange(month);
+                setOpenPicker(false);
               }}
-              className="w-[120px] bg-transparent text-xs font-medium text-base-content outline-none"
+              align="right"
+              buttonClassName="h-10 w-[150px] rounded-xl px-3 text-[11px] font-medium"
             />
-          </label>
-        </div>
+      </div>
 
-        <div className="mt-5 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-base-content/45">
-              Monthly Consistency
-            </p>
+      {/* Compact summary */}
+      <div className="mt-4 flex items-center justify-between rounded-xl bg-base-200/35 px-3.5 py-3">
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-base-content/35">
+            Monthly consistency
+          </p>
 
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-primary">
-                {consistencyPercentage}%
-              </span>
-
-              <span className="text-xs text-base-content/45">
-                {completedDays} of {trackedDays} days
-              </span>
-            </div>
-          </div>
-
-          <div className="text-right">
-            <p className="text-xs text-base-content/45">
-              {assignedDays} upcoming
-            </p>
+          <div className="mt-0.5 flex items-baseline gap-2">
+            <span className="text-xl font-bold text-primary">
+              {consistencyPercentage}%
+            </span>
+            <span className="text-[10px] text-base-content/45">
+              {completedDays} of {trackedDays} active days
+            </span>
           </div>
         </div>
 
-        {/* Progress */}
-
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-base-200">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
-            style={{
-              width: `${consistencyPercentage}%`,
-            }}
-          />
+        <div className="text-right">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-base-content/35">
+            Upcoming
+          </p>
+          <p className="mt-0.5 text-sm font-semibold text-base-content/60">
+            {assignedDays}
+          </p>
         </div>
+      </div>
 
-        <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
-          <LegendItem className="bg-primary" label="Completed" />
+      <div className="mt-2 h-1 overflow-hidden rounded-full bg-base-300">
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-500"
+          style={{ width: `${consistencyPercentage}%` }}
+        />
+      </div>
 
-          <LegendItem className="bg-secondary/55" label="Partial" />
+      {/* Legend */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <LegendItem dot="bg-primary" label="Completed" />
+        <LegendItem dot="bg-secondary" label="Partial" />
+        <LegendItem dot="border border-error/20 bg-error/10" label="Missed" />
+        <LegendItem
+          dot="border border-base-300 bg-base-200"
+          label="Upcoming"
+        />
+      </div>
 
-          <LegendItem
-            className="bg-error/15 border border-error/20"
-            label="Missed"
-          />
-
-          <LegendItem
-            className="bg-base-200 border border-base-300"
-            label="Assigned"
-          />
-        </div>
-
-        <div className="mt-6 grid grid-cols-7 gap-1">
+      {/* Calendar */}
+      <div className="mt-4 rounded-2xl border border-base-300/80 p-3 sm:p-4">
+        <div className="grid grid-cols-7 gap-1.5">
           {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
             <div
               key={`${day}-${index}`}
-              className="pb-1 text-center text-[10px] font-semibold text-base-content/35"
+              className="pb-0.5 text-center text-[9px] font-semibold text-base-content/30"
             >
               {day}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="mt-1.5 grid grid-cols-7 gap-1.5">
           {emptyDays.map((day) => (
-            <div key={day} className="aspect-square" />
+            <div key={day} className="h-9 sm:h-10" />
           ))}
 
           {data.calendar.map((day) => {
@@ -228,67 +222,43 @@ const CalendarHeatmap = ({
             const status = getDayStatus(day);
             const percentage = Number(day.completion) || 0;
 
-            const tooltipStatus = future
-              ? "Assigned"
-              : status === "nodata"
-                ? "No data"
-                : status.charAt(0).toUpperCase() + status.slice(1);
-
             return (
-              <div key={day.date} className="group relative aspect-square">
-                {/* Calendar Cell */}
-
+              <div key={day.date} className="group relative h-9 sm:h-10">
                 <div
-                  className={`flex h-full w-full items-center justify-center rounded-lg text-[11px] font-semibold transition-all duration-150 hover:z-20 hover:scale-105 sm:text-xs ${getStatusClass(
+                  className={`flex h-full w-full items-center justify-center rounded-lg text-[10px] font-semibold transition-all duration-150 hover:z-20 hover:scale-[1.03] sm:text-[11px] ${getStatusClass(
                     status,
                   )}`}
                 >
                   {getDateNumber(day.date)}
                 </div>
 
-                <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 hidden w-40 -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-xl group-hover:block">
-                  <p className="text-xs font-semibold text-base-content">
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 hidden w-36 -translate-x-1/2 rounded-xl border border-base-300 bg-base-100 p-2.5 shadow-xl group-hover:block">
+                  <p className="text-[10px] font-semibold text-base-content">
                     {formatDate(day.date)}
                   </p>
 
                   {future ? (
-                    <>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-base-content/30" />
-
-                        <span className="text-xs font-medium text-base-content/60">
-                          Assigned
-                        </span>
-                      </div>
-
-                      <p className="mt-1 text-[10px] text-base-content/40">
-                        Upcoming day
-                      </p>
-                    </>
+                    <p className="mt-1.5 text-[10px] text-base-content/50">
+                      Upcoming day
+                    </p>
                   ) : (
                     <>
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="text-xs text-base-content/50">
+                      <div className="mt-1.5 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-base-content/45">
                           Completion
                         </span>
-
-                        <span className="text-xs font-bold text-primary">
+                        <span className="text-[10px] font-semibold text-primary">
                           {percentage}%
                         </span>
                       </div>
 
-                      <div className="mt-1 flex items-center justify-between">
-                        <span className="text-xs text-base-content/50">
+                      <div className="mt-0.5 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-base-content/45">
                           Habits
                         </span>
-
-                        <span className="text-xs font-medium text-base-content">
+                        <span className="text-[10px] font-medium text-base-content">
                           {day.completed} / {day.expected}
                         </span>
-                      </div>
-
-                      <div className="mt-2 border-t border-base-300 pt-2 text-[10px] text-base-content/45">
-                        {tooltipStatus}
                       </div>
                     </>
                   )}
@@ -298,67 +268,43 @@ const CalendarHeatmap = ({
           })}
         </div>
 
-        <div className="mt-5 grid grid-cols-3 divide-x divide-base-300 border-t border-base-300 pt-4">
-          <div className="pr-3">
-            <p className="text-[10px] font-medium uppercase tracking-wide text-base-content/40">
-              Completed
-            </p>
-
-            <p className="mt-1 text-lg font-bold text-primary">
-              {completedDays}
-            </p>
-          </div>
-
-          <div className="px-3">
-            <p className="text-[10px] font-medium uppercase tracking-wide text-base-content/40">
-              Partial
-            </p>
-
-            <p className="mt-1 text-lg font-bold text-secondary">
-              {partialDays}
-            </p>
-          </div>
-
-          <div className="pl-3">
-            <p className="text-[10px] font-medium uppercase tracking-wide text-base-content/40">
-              Missed
-            </p>
-
-            <p className="mt-1 text-lg font-bold text-error">{missedDays}</p>
-          </div>
+        <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-2.5 text-[9px] text-base-content/35">
+          <span>Tap or hover a day for details</span>
+          <span className="font-semibold text-primary">Today</span>
         </div>
-      </section>
+      </div>
+
+      {/* Footer stats */}
+      <div className="mt-3 grid grid-cols-3 divide-x divide-base-300 border-t border-base-300 pt-3">
+        <Stat label="Completed" value={completedDays} valueClass="text-primary" />
+        <Stat label="Partial" value={partialDays} valueClass="text-secondary" />
+        <Stat label="Missed" value={missedDays} valueClass="text-error" />
+      </div>
+
       {loading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-base-100/45 backdrop-blur-[1px]">
-          <div className="flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse" />
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse"
-                style={{ animationDelay: "150ms" }}
-              />
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse"
-                style={{ animationDelay: "300ms" }}
-              />
-            </div>
-          </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
-const LegendItem = ({ className, label }) => {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className={`h-2.5 w-2.5 rounded-sm ${className}`} />
+const LegendItem = ({ dot, label }) => (
+  <div className="flex items-center gap-1.5 rounded-full border border-base-300 px-2 py-1">
+    <span className={`h-2 w-2 rounded-full ${dot}`} />
+    <span className="text-[9px] font-medium text-base-content/50">
+      {label}
+    </span>
+  </div>
+);
 
-      <span className="text-[10px] font-medium text-base-content/55">
-        {label}
-      </span>
-    </div>
-  );
-};
+const Stat = ({ label, value, valueClass }) => (
+  <div className="px-2 first:pl-0 last:pr-0">
+    <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-base-content/35">
+      {label}
+    </p>
+    <p className={`mt-0.5 text-base font-bold ${valueClass}`}>{value}</p>
+  </div>
+);
 
 export default CalendarHeatmap;

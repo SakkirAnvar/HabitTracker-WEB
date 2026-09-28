@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-
 import { addHabit, editHabit } from "../../redux/habitSlice";
 import AlertMessage from "../../layout/AlertMessage";
 
@@ -13,6 +12,7 @@ const getInitialForm = (habit) => ({
   target: habit?.target ?? "",
   unit: habit?.unit || "",
   scheduledDays: habit?.scheduledDays || [],
+  scheduledDates: habit?.scheduledDates?.map(Number) || [],
 });
 
 const weekDays = [
@@ -24,6 +24,21 @@ const weekDays = [
   { value: "saturday", label: "Sat" },
   { value: "sunday", label: "Sun" },
 ];
+
+const scheduleOptions = [
+  {
+    value: "days",
+    title: "Days of the week",
+    description: "Repeat on specific weekdays",
+  },
+  {
+    value: "dates",
+    title: "Dates of the month",
+    description: "Repeat on specific dates",
+  },
+];
+
+const monthDates = Array.from({ length: 31 }, (_, index) => index + 1);
 
 const habitTypes = [
   {
@@ -55,15 +70,13 @@ const habitTypes = [
   },
 ];
 
-const HabitForm = ({
-  habit = null,
-  onSuccess,
-  onCancel,
-}) => {
+const HabitForm = ({ habit = null, onSuccess, onCancel }) => {
   const dispatch = useDispatch();
 
-  const [form, setForm] = useState(() =>
-    getInitialForm(habit),
+  const [form, setForm] = useState(() => getInitialForm(habit));
+
+  const [scheduleMode, setScheduleMode] = useState(() =>
+    habit?.scheduledDates?.length > 0 ? "dates" : "days",
   );
 
   const [loading, setLoading] = useState(false);
@@ -71,10 +84,6 @@ const HabitForm = ({
   const [messageType, setMessageType] = useState("success");
 
   const isEditing = Boolean(habit);
-
-  // =========================
-  // CHANGE
-  // =========================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -104,15 +113,12 @@ const HabitForm = ({
 
   const handleDayChange = (day) => {
     setForm((prev) => {
-      const alreadySelected =
-        prev.scheduledDays.includes(day);
+      const alreadySelected = prev.scheduledDays.includes(day);
 
       return {
         ...prev,
         scheduledDays: alreadySelected
-          ? prev.scheduledDays.filter(
-              (selectedDay) => selectedDay !== day,
-            )
+          ? prev.scheduledDays.filter((selectedDay) => selectedDay !== day)
           : [...prev.scheduledDays, day],
       };
     });
@@ -120,9 +126,35 @@ const HabitForm = ({
     setMessage("");
   };
 
-  // =========================
-  // SUBMIT
-  // =========================
+  const handleScheduleModeChange = (mode) => {
+    setScheduleMode(mode);
+
+    setForm((prev) => ({
+      ...prev,
+      scheduledDays: mode === "days" ? prev.scheduledDays : [],
+      scheduledDates: mode === "dates" ? prev.scheduledDates : [],
+    }));
+
+    setMessage("");
+  };
+
+  const handleDateChange = (date) => {
+    setForm((prev) => {
+      const numericDate = Number(date);
+      const alreadySelected = prev.scheduledDates.includes(numericDate);
+
+      return {
+        ...prev,
+        scheduledDates: alreadySelected
+          ? prev.scheduledDates.filter(
+              (selectedDate) => selectedDate !== numericDate,
+            )
+          : [...prev.scheduledDates, numericDate].sort((a, b) => a - b),
+      };
+    });
+
+    setMessage("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -137,21 +169,28 @@ const HabitForm = ({
 
     if (
       form.type !== "boolean" &&
-      (form.target === "" ||
-        Number(form.target) <= 0)
+      (form.target === "" || Number(form.target) <= 0)
     ) {
       setMessageType("error");
       setMessage("Please enter a valid target.");
       return;
     }
 
-    if (
-      form.frequency === "custom" &&
-      form.scheduledDays.length === 0
-    ) {
-      setMessageType("error");
-      setMessage("Select at least one scheduled day.");
-      return;
+    if (form.frequency === "custom") {
+      const hasSchedule =
+        scheduleMode === "days"
+          ? form.scheduledDays.length > 0
+          : form.scheduledDates.length > 0;
+
+      if (!hasSchedule) {
+        setMessageType("error");
+        setMessage(
+          scheduleMode === "days"
+            ? "Select at least one day."
+            : "Select at least one date.",
+        );
+        return;
+      }
     }
 
     const payload = {
@@ -167,8 +206,13 @@ const HabitForm = ({
       }),
 
       scheduledDays:
-        form.frequency === "custom"
+        form.frequency === "custom" && scheduleMode === "days"
           ? form.scheduledDays
+          : [],
+
+      scheduledDates:
+        form.frequency === "custom" && scheduleMode === "dates"
+          ? form.scheduledDates
           : [],
     };
 
@@ -201,10 +245,7 @@ const HabitForm = ({
       setMessageType("error");
 
       setMessage(
-        typeof err === "string"
-          ? err
-          : err?.message ||
-              "Failed to save habit.",
+        typeof err === "string" ? err : err?.message || "Failed to save habit.",
       );
     } finally {
       setLoading(false);
@@ -213,10 +254,6 @@ const HabitForm = ({
 
   return (
     <div className="w-full">
-      {/* =================================================
-          HEADER
-      ================================================= */}
-
       <section className="relative mb-6 overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 p-5 sm:p-7">
         {/* Decorative elements */}
         <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full border-[14px] border-primary/10" />
@@ -230,34 +267,17 @@ const HabitForm = ({
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           {/* Title */}
           <div className="flex min-w-0 items-start gap-4">
-            {/* Habit icon */}
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                className="h-6 w-6"
-              >
-                <path
-                  d="M5 12.5l4 4L19 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <div className="min-w-0">
+               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                {isEditing ? "Refine your routine" : "Build your routine"}
+              </span>
             </div>
 
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-primary">
-                {isEditing
-                  ? "Refine your routine"
-                  : "Build your routine"}
-              </p>
-
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-                {isEditing
-                  ? "Edit Habit"
-                  : "Create a New Habit"}
+                {isEditing ? "Edit Habit" : "Create a New Habit"}
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/60">
@@ -289,16 +309,11 @@ const HabitForm = ({
                   strokeLinejoin="round"
                 />
               </svg>
-
               Back to Habits
             </button>
           )}
         </div>
       </section>
-
-      {/* =================================================
-          FORM
-      ================================================= */}
 
       <div className="rounded-3xl border border-base-300 bg-base-100 shadow-sm">
         <form onSubmit={handleSubmit}>
@@ -315,10 +330,6 @@ const HabitForm = ({
           )}
 
           <div className="p-5 sm:p-8 lg:p-10">
-            {/* =================================================
-                1. BASIC INFORMATION
-            ================================================= */}
-
             <FormSection
               number="1"
               title="Basic Information"
@@ -332,9 +343,7 @@ const HabitForm = ({
                     className="mb-2 block text-sm font-semibold text-base-content"
                   >
                     Habit Name
-                    <span className="ml-1 text-error">
-                      *
-                    </span>
+                    <span className="ml-1 text-error">*</span>
                   </label>
 
                   <div className="relative">
@@ -363,9 +372,7 @@ const HabitForm = ({
                     className="mb-2 block text-sm font-semibold text-base-content"
                   >
                     Category
-                    <span className="ml-1 text-error">
-                      *
-                    </span>
+                    <span className="ml-1 text-error">*</span>
                   </label>
 
                   <select
@@ -375,21 +382,13 @@ const HabitForm = ({
                     onChange={handleChange}
                     className="select select-bordered h-12 w-full border-base-300 bg-base-100 text-base-content focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
                   >
-                    <option value="Spiritual">
-                      Spiritual
-                    </option>
+                    <option value="Spiritual">Spiritual</option>
 
-                    <option value="Skills">
-                      Skills
-                    </option>
+                    <option value="Skills">Skills</option>
 
-                    <option value="Physical">
-                      Physical
-                    </option>
+                    <option value="Physical">Physical</option>
 
-                    <option value="Personal">
-                      Personal
-                    </option>
+                    <option value="Personal">Personal</option>
                   </select>
                 </div>
               </div>
@@ -426,10 +425,6 @@ const HabitForm = ({
               </div>
             </FormSection>
 
-            {/* =================================================
-                2. HABIT TYPE
-            ================================================= */}
-
             <div className="mt-8">
               <FormSection
                 number="2"
@@ -438,16 +433,13 @@ const HabitForm = ({
               >
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   {habitTypes.map((type) => {
-                    const selected =
-                      form.type === type.value;
+                    const selected = form.type === type.value;
 
                     return (
                       <button
                         key={type.value}
                         type="button"
-                        onClick={() =>
-                          handleTypeChange(type.value)
-                        }
+                        onClick={() => handleTypeChange(type.value)}
                         className={`relative min-h-28 rounded-2xl border p-4 text-left transition-all duration-200 ${
                           selected
                             ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
@@ -519,9 +511,7 @@ const HabitForm = ({
                           min="0"
                           step="any"
                           placeholder={
-                            form.type === "rating"
-                              ? "e.g. 5"
-                              : "e.g. 30"
+                            form.type === "rating" ? "e.g. 5" : "e.g. 30"
                           }
                           className="input input-bordered h-12 w-full border-base-300 bg-base-100 text-base-content placeholder:text-base-content/35 focus:border-primary focus:outline-none"
                         />
@@ -557,10 +547,6 @@ const HabitForm = ({
               </FormSection>
             </div>
 
-            {/* =================================================
-                3. SCHEDULE
-            ================================================= */}
-
             <div className="mt-8">
               <FormSection
                 number="3"
@@ -584,21 +570,13 @@ const HabitForm = ({
                       onChange={handleChange}
                       className="select select-bordered h-12 w-full border-base-300 bg-base-100 text-base-content focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
                     >
-                      <option value="daily">
-                        Daily
-                      </option>
+                      <option value="daily">Daily</option>
 
-                      <option value="weekly">
-                        Weekly
-                      </option>
+                      <option value="weekly">Weekly</option>
 
-                      <option value="monthly">
-                        Monthly
-                      </option>
+                      <option value="monthly">Monthly</option>
 
-                      <option value="custom">
-                        Custom Days
-                      </option>
+                      <option value="custom">Custom</option>
                     </select>
                   </div>
 
@@ -620,59 +598,227 @@ const HabitForm = ({
                   </div>
                 </div>
 
-                {/* Custom Days */}
+                {/* Custom Schedule */}
                 {form.frequency === "custom" && (
-                  <div className="mt-5 rounded-2xl border border-base-300 bg-base-200/60 p-5">
-                    <div className="mb-4">
+                  <div className="mt-5 rounded-2xl border border-base-300 bg-base-200/50 p-5 sm:p-6">
+                    <div className="mb-5">
                       <p className="text-sm font-bold text-base-content">
-                        Choose your days
+                        Choose your schedule
                       </p>
 
                       <p className="mt-1 text-xs text-base-content/50">
-                        Select the days you want to practice this habit.
+                        Select how you want this habit to repeat.
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-                      {weekDays.map((day) => {
-                        const selected =
-                          form.scheduledDays.includes(
-                            day.value,
-                          );
+                    {/* Schedule Type */}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {scheduleOptions.map((option) => {
+                        const selected = scheduleMode === option.value;
 
                         return (
                           <button
-                            key={day.value}
+                            key={option.value}
                             type="button"
                             onClick={() =>
-                              handleDayChange(day.value)
+                              handleScheduleModeChange(option.value)
                             }
-                            className={`h-11 rounded-xl border text-sm font-semibold transition-all ${
+                            className={`group relative rounded-2xl border p-4 text-left transition-all duration-200 ${
                               selected
-                                ? "border-primary bg-primary text-primary-content shadow-sm"
-                                : "border-base-300 bg-base-100 text-base-content/60 hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
+                                : "border-base-300 bg-base-100 hover:border-primary/40 hover:bg-primary/5"
                             }`}
                           >
-                            {selected && (
-                              <span className="mr-1">
-                                ✓
-                              </span>
-                            )}
+                            <div
+                              className={`absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold transition ${
+                                selected
+                                  ? "border-primary bg-primary text-primary-content"
+                                  : "border-base-300 bg-base-100 text-transparent"
+                              }`}
+                            >
+                              ✓
+                            </div>
 
-                            {day.label}
+                            <div
+                              className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
+                                selected
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-base-200 text-base-content/60 group-hover:bg-primary/10 group-hover:text-primary"
+                              }`}
+                            >
+                              {option.value === "days" ? (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                  className="h-5 w-5"
+                                >
+                                  <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="17"
+                                    rx="2"
+                                  />
+                                  <path
+                                    d="M16 2v4M8 2v4M3 10h18"
+                                    strokeLinecap="round"
+                                  />
+                                  <path
+                                    d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"
+                                    strokeLinecap="round"
+                                    strokeWidth="2.5"
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                  className="h-5 w-5"
+                                >
+                                  <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="17"
+                                    rx="2"
+                                  />
+                                  <path
+                                    d="M16 2v4M8 2v4M3 10h18"
+                                    strokeLinecap="round"
+                                  />
+                                  <path
+                                    d="M8 14h8M8 18h5"
+                                    strokeLinecap="round"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+
+                            <p className="mt-3 pr-8 text-sm font-bold text-base-content">
+                              {option.title}
+                            </p>
+
+                            <p className="mt-1 pr-6 text-xs leading-5 text-base-content/50">
+                              {option.description}
+                            </p>
                           </button>
                         );
                       })}
                     </div>
+
+                    {/* Weekdays */}
+                    {scheduleMode === "days" && (
+                      <div className="mt-5 rounded-2xl border border-base-300 bg-base-100 p-5">
+                        <div className="mb-4">
+                          <p className="text-sm font-bold text-base-content">
+                            Select days
+                          </p>
+
+                          <p className="mt-1 text-xs text-base-content/50">
+                            Choose the weekdays for this habit.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                          {weekDays.map((day) => {
+                            const selected = form.scheduledDays.includes(
+                              day.value,
+                            );
+
+                            return (
+                              <button
+                                key={day.value}
+                                type="button"
+                                onClick={() => handleDayChange(day.value)}
+                                className={`h-11 rounded-xl border text-sm font-semibold transition-all ${
+                                  selected
+                                    ? "border-primary bg-primary text-primary-content shadow-sm"
+                                    : "border-base-300 bg-base-100 text-base-content/60 hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                }`}
+                              >
+                                {selected && <span className="mr-1">✓</span>}
+                                {day.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {form.scheduledDays.length > 0 && (
+                          <p className="mt-4 text-xs font-medium text-primary">
+                            {form.scheduledDays.length}{" "}
+                            {form.scheduledDays.length === 1 ? "day" : "days"}{" "}
+                            selected
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Dates of month */}
+                    {scheduleMode === "dates" && (
+                      <div className="mt-5 rounded-2xl border border-base-300 bg-base-100 p-5">
+                        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                          <div>
+                            <p className="text-sm font-bold text-base-content">
+                              Select dates
+                            </p>
+
+                            <p className="mt-1 text-xs text-base-content/50">
+                              Choose recurring dates from 1 to 31.
+                            </p>
+                          </div>
+
+                          <span className="text-[11px] font-medium text-base-content/40">
+                            {form.scheduledDates.length}{" "}
+                            {form.scheduledDates.length === 1
+                              ? "date"
+                              : "dates"}{" "}
+                            selected
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-2 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12">
+                          {monthDates.map((date) => {
+                            const selected = form.scheduledDates.includes(date);
+
+                            return (
+                              <button
+                                key={date}
+                                type="button"
+                                onClick={() => handleDateChange(date)}
+                                className={`flex h-10 items-center justify-center rounded-xl border text-sm font-semibold transition-all ${
+                                  selected
+                                    ? "border-primary bg-primary text-primary-content shadow-sm"
+                                    : "border-base-300 bg-base-100 text-base-content/60 hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+                                }`}
+                              >
+                                {date}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <div className="mt-4 rounded-xl bg-primary/5 px-4 py-3">
+                          <p className="text-xs leading-5 text-base-content/55">
+                            <span className="font-semibold text-primary">
+                              Note:
+                            </span>{" "}
+                            When a selected date does not exist in a month, it
+                            moves to the 1st of the following month. For
+                            example, the 31st moves to the 1st after a month
+                            without a 31st.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </FormSection>
             </div>
           </div>
-
-          {/* =================================================
-              ACTIONS
-          ================================================= */}
 
           <div className="flex flex-col-reverse gap-3 border-t border-base-300 bg-base-200/30 px-5 py-5 sm:flex-row sm:justify-end sm:px-8 lg:px-10">
             {onCancel && (
@@ -698,9 +844,7 @@ const HabitForm = ({
                 </>
               ) : (
                 <>
-                  {isEditing
-                    ? "Update Habit"
-                    : "Create Habit"}
+                  {isEditing ? "Update Habit" : "Create Habit"}
 
                   <span className="text-lg">→</span>
                 </>
@@ -713,12 +857,7 @@ const HabitForm = ({
   );
 };
 
-const FormSection = ({
-  number,
-  title,
-  description,
-  children,
-}) => {
+const FormSection = ({ number, title, description, children }) => {
   return (
     <section className="border-b border-base-300 pb-8 last:border-b-0 last:pb-0">
       <div className="mb-6 flex items-start gap-3">
@@ -727,13 +866,9 @@ const FormSection = ({
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-base-content">
-            {title}
-          </h2>
+          <h2 className="text-lg font-bold text-base-content">{title}</h2>
 
-          <p className="mt-0.5 text-sm text-base-content/55">
-            {description}
-          </p>
+          <p className="mt-0.5 text-sm text-base-content/55">{description}</p>
         </div>
       </div>
 

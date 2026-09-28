@@ -231,10 +231,13 @@ const Goals = () => {
 
           <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <p className="mb-2 text-sm font-semibold text-primary">
-                Your direction
-              </p>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  Your Direction
+                </span>
+              </div>
               <h1 className="text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
                 Turn intentions into
                 <br className="hidden sm:block" /> meaningful progress.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addGoal, editGoal } from "../../redux/goalSlice";
 import AlertMessage from "../../layout/AlertMessage";
+import DatePicker from "../../layout/DatePicker";
 
 const getInitialForm = (goal) => ({
   title: goal?.title || "",
@@ -12,6 +13,20 @@ const getInitialForm = (goal) => ({
   deadLine: goal?.deadLine ? goal.deadLine.slice(0, 10) : "",
 });
 
+const getErrorMessage = (error, fallback = "Failed to save goal.") => {
+  if (!error) return fallback;
+
+  if (typeof error === "string") return error;
+  if (typeof error?.payload === "string") return error.payload;
+
+  return (
+    error?.payload?.message ||
+    error?.response?.data?.message ||
+    error?.message ||
+    fallback
+  );
+};
+
 const GoalForm = ({ goal, onSuccess, onCancel }) => {
   const dispatch = useDispatch();
 
@@ -20,6 +35,7 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
   const [loading, setLoading] = useState(false);
+  const [openPicker, setOpenPicker] = useState(null);
 
   const isEditing = Boolean(goal);
 
@@ -46,18 +62,48 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
     setError("");
     setMessage("");
 
-    if (!form.title.trim()) {
+    const title = form.title.trim();
+    const description = form.description.trim();
+    const unit = form.unit.trim();
+
+    if (!title) {
       setError("Goal title is required.");
       return;
     }
 
-    if (!form.target || Number(form.target) <= 0) {
-      setError("Target must be greater than 0.");
+    if (title.length < 2) {
+      setError("Goal title must be at least 2 characters.");
       return;
     }
 
-    if (!form.unit.trim()) {
+    if (title.length > 100) {
+      setError("Goal title cannot exceed 100 characters.");
+      return;
+    }
+
+    if (
+      form.target === "" ||
+      form.target === null ||
+      form.target === undefined
+    ) {
+      setError("Target is required.");
+      return;
+    }
+
+    const numericTarget = Number(form.target);
+
+    if (!Number.isFinite(numericTarget) || numericTarget <= 0) {
+      setError("Target must be a valid number greater than 0.");
+      return;
+    }
+
+    if (!unit) {
       setError("Measurement is required.");
+      return;
+    }
+
+    if (unit.length > 30) {
+      setError("Measurement cannot exceed 30 characters.");
       return;
     }
 
@@ -72,10 +118,10 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
     }
 
     const payload = {
-      title: form.title.trim(),
-      description: form.description.trim(),
-      target: Number(form.target),
-      unit: form.unit.trim(),
+      title,
+      description,
+      target: numericTarget,
+      unit,
       startDate: form.startDate,
       deadLine: form.deadLine,
     };
@@ -107,10 +153,7 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
       console.error("Goal save error:", err);
 
       setMessageType("error");
-
-      setMessage(
-        typeof err === "string" ? err : err?.message || "Failed to save goal.",
-      );
+      setMessage(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -131,12 +174,16 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-primary">
-                {isEditing ? "Refine your goal" : "Set your direction"}
-              </p>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  {isEditing ? "Refine your goal" : "Set your direction"}
+                </span>
+              </div>
 
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
-                {isEditing ? "Edit Goal" : "Create a New Goal"}
+                {isEditing ? "Edit Goal" : "Create Goal"}
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-base-content/60">
@@ -190,8 +237,13 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
         {/* Validation error */}
 
         {error && (
-          <div className="mb-5 rounded-xl border border-error/20 bg-error/10 px-4 py-3">
-            <p className="text-sm font-medium text-error">{error}</p>
+          <div className="mb-5">
+            <AlertMessage
+              type="error"
+              message={error}
+              duration={3000}
+              onClose={() => setError("")}
+            />
           </div>
         )}
 
@@ -345,43 +397,37 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {/* Start Date */}
 
-              <div>
-                <label
-                  htmlFor="goal-start-date"
-                  className="mb-2 block text-sm font-semibold text-base-content"
-                >
-                  Start Date <span className="text-error">*</span>
-                </label>
-
-                <input
-                  id="goal-start-date"
-                  type="date"
-                  name="startDate"
-                  value={form.startDate}
-                  onChange={handleChange}
-                  className="input input-md w-full border-base-300 bg-base-100 text-sm text-base-content focus:border-primary focus:outline-none"
-                />
-              </div>
+              <DatePicker
+                value={form.startDate}
+                max={form.deadLine || undefined}
+                placeholder="Select start date"
+                isOpen={openPicker === "start"}
+                onOpen={() => setOpenPicker("start")}
+                onClose={() => setOpenPicker(null)}
+                onChange={(date) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    startDate: date,
+                  }));
+                }}
+              />
 
               {/* Deadline */}
 
-              <div>
-                <label
-                  htmlFor="goal-deadline"
-                  className="mb-2 block text-sm font-semibold text-base-content"
-                >
-                  Deadline <span className="text-error">*</span>
-                </label>
-
-                <input
-                  id="goal-deadline"
-                  type="date"
-                  name="deadLine"
-                  value={form.deadLine}
-                  onChange={handleChange}
-                  className="input input-md w-full border-base-300 bg-base-100 text-sm text-base-content focus:border-primary focus:outline-none"
-                />
-              </div>
+              <DatePicker
+                value={form.deadLine}
+                min={form.startDate || undefined}
+                placeholder="Select deadline"
+                isOpen={openPicker === "deadline"}
+                onOpen={() => setOpenPicker("deadline")}
+                onClose={() => setOpenPicker(null)}
+                onChange={(date) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    deadLine: date,
+                  }));
+                }}
+              />
             </div>
           </div>
         </section>
@@ -392,7 +438,7 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="btn btn-ghost btn-sm rounded-xl px-5 text-base-content/65 hover:bg-base-200 hover:text-base-content"
+              className="btn h-12 border-base-300 bg-base-100 px-6 text-base-content/70 hover:bg-base-200 hover:text-base-content"
             >
               Cancel
             </button>
@@ -401,17 +447,19 @@ const GoalForm = ({ goal, onSuccess, onCancel }) => {
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary btn-sm min-w-32 rounded-xl px-5"
+            className="btn btn-primary h-12 min-w-40 rounded-xl px-6"
           >
             {loading ? (
               <>
                 <span className="loading loading-spinner loading-sm" />
-                {isEditing ? "Updating..." : "Creating..."}
+                Saving...
               </>
-            ) : isEditing ? (
-              "Update Goal"
             ) : (
-              "Create Goal"
+              <>
+                {isEditing ? "Update Goal" : "Create Goal"}
+
+                <span className="text-lg">→</span>
+              </>
             )}
           </button>
         </div>
