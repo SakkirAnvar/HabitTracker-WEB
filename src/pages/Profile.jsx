@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ProfileShimmer } from "../layout/Shimmer";
 import { updateProfile } from "../redux/userSlice";
 import AlertMessage from "../layout/AlertMessage";
+import { VITE_API_URL } from "../utils/constants";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ const Profile = () => {
       return photo;
     }
 
-    return `${import.meta.env.VITE_API_URL}${photo}`;
+    return `${VITE_API_URL}${photo}`;
   };
 
   const currentFirstName = firstName ?? user?.firstName ?? "";
@@ -129,31 +130,31 @@ const Profile = () => {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-8">
-    <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 px-6 py-7 sm:px-8 sm:py-8">
-  {/* Decorative shapes */}
-  <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[18px] border-primary/10" />
+      <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-primary/5 px-6 py-7 sm:px-8 sm:py-8">
+        {/* Decorative shapes */}
+        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full border-[18px] border-primary/10" />
 
-  <div className="pointer-events-none absolute bottom-[-45px] right-24 h-32 w-32 rounded-full bg-secondary/10" />
+        <div className="pointer-events-none absolute bottom-[-45px] right-24 h-32 w-32 rounded-full bg-secondary/10" />
 
-  <div className="pointer-events-none absolute right-8 top-8 text-5xl text-primary/10">
-    ✦
-  </div>
+        <div className="pointer-events-none absolute right-8 top-8 text-5xl text-primary/10">
+          ✦
+        </div>
 
-  <div className="relative z-10">
-    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-      Your Profile
-    </div>
+        <div className="relative z-10">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            Your Profile
+          </div>
 
-    <h1 className="text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
-      Profile
-    </h1>
+          <h1 className="text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
+            Profile
+          </h1>
 
-    <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
-      Manage your personal information and account details.
-    </p>
-  </div>
-</section>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-base-content/60 sm:text-base">
+            Manage your personal information and account details.
+          </p>
+        </div>
+      </section>
       {successMessage && (
         <AlertMessage
           type="success"

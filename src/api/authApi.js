@@ -1,6 +1,7 @@
 import api from "../utils/axios";
+import { VITE_API_URL } from "../utils/constants";
 
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = VITE_API_URL;
 
 export const signupApi = async (userData) => {
   const response = await api.post(baseURL + "/auth/signup", userData);
