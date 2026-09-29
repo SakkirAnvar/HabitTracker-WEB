@@ -20,6 +20,7 @@ import ArchivedHabits from "./components/habits/ArchivedHabits";
 import ForgotPassword from "./pages/ForgotPassword";
 import AuthTheme from "./utils/authTheme";
 import PublicRoute from "./components/PublicRoute";
+import PageTitle from "./utils/PageTitle";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -43,6 +44,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      <PageTitle />
       <Routes>
         <Route
           path="/login"
