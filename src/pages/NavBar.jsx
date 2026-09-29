@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/userSlice";
-import { AVEN_LIGHT_LOGO, AVEN_DARK_LOGO, BACKEND_URL } from "../utils/constants";
+import { AVEN_LIGHT_LOGO, AVEN_DARK_LOGO, VITE_API_URL} from "../utils/constants";
 import { applyTheme } from "../utils/theme";
 
 const DEFAULT_PROFILE_PHOTO =
@@ -14,7 +14,7 @@ const NavBar = ({ onMenuClick }) => {
   const user = useSelector((state) => state.user.user);
 
   const profilePhoto = user?.profilePhoto
-    ? `${BACKEND_URL}${user.profilePhoto}`
+    ? `${VITE_API_URL}${user.profilePhoto}`
     : DEFAULT_PROFILE_PHOTO;
 
      const isDarkTheme = user?.theme === "dark";

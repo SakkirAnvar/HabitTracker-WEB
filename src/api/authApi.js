@@ -1,16 +1,13 @@
 import api from "../utils/axios";
-import { VITE_API_URL } from "../utils/constants";
-
-const baseURL = VITE_API_URL;
 
 export const signupApi = async (userData) => {
-  const response = await api.post(baseURL + "/auth/signup", userData);
+  const response = await api.post("/auth/signup", userData);
 
   return response.data;
 };
 
 export const loginApi = async (userData) => {
-  const response = await api.post(baseURL + "/auth/login", userData);
+  const response = await api.post("/auth/login", userData);
 
   return response.data;
 };
