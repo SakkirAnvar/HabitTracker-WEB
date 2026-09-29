@@ -1,16 +1,11 @@
 @import "tailwindcss";
 
 @plugin "daisyui" {
-  themes:
-    light --default,
-    dark --prefersdark;
+  themes: aven-light, aven-dark;
 }
 
-/* ================================
-   AVEN LIGHT THEME
-================================ */
 @plugin "daisyui/theme" {
-  name: "light";
+  name: "aven-light";
   default: true;
   prefersdark: false;
   color-scheme: light;
@@ -47,101 +42,46 @@
   --radius-selector: 0.5rem;
   --radius-field: 0.75rem;
   --radius-box: 1rem;
-
   --border: 1px;
 }
 
-/* ================================
-   AVEN DARK THEME
-================================ */
-
 @plugin "daisyui/theme" {
-  name: "dark";
-
+  name: "aven-dark";
   default: false;
-  prefersdark: true;
+  prefersdark: false;
   color-scheme: dark;
-
-  /* --------------------------------
-     Backgrounds
-  -------------------------------- */
 
   --color-base-100: #111315;
   --color-base-200: #0c0e10;
   --color-base-300: #25292d;
-
-  /* --------------------------------
-     Text
-  -------------------------------- */
-
   --color-base-content: #e8eaed;
-
-  /* --------------------------------
-     Primary
-     Soft cool blue — not green
-  -------------------------------- */
 
   --color-primary: #8ab4f8;
   --color-primary-content: #0d1117;
 
-  /* --------------------------------
-     Secondary
-  -------------------------------- */
-
   --color-secondary: #b8a7f5;
   --color-secondary-content: #121019;
-
-  /* --------------------------------
-     Accent
-     Very subtle cool surface
-  -------------------------------- */
 
   --color-accent: #1b2027;
   --color-accent-content: #c9d2df;
 
-  /* --------------------------------
-     Neutral
-  -------------------------------- */
-
   --color-neutral: #d5d9de;
   --color-neutral-content: #111315;
-
-  /* --------------------------------
-     Info
-  -------------------------------- */
 
   --color-info: #8ab4f8;
   --color-info-content: #0d1117;
 
-  /* --------------------------------
-     Success
-     Kept neutral/cool instead of green
-  -------------------------------- */
-
   --color-success: #8fc7b5;
   --color-success-content: #0c1512;
-
-  /* --------------------------------
-     Warning
-  -------------------------------- */
 
   --color-warning: #e5c07b;
   --color-warning-content: #17130a;
 
-  /* --------------------------------
-     Error
-  -------------------------------- */
-
   --color-error: #e58b8b;
   --color-error-content: #1a0d0d;
-
-  /* --------------------------------
-     Shape
-  -------------------------------- */
 
   --radius-selector: 0.5rem;
   --radius-field: 0.75rem;
   --radius-box: 1rem;
-
   --border: 1px;
 }
