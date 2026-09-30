@@ -569,211 +569,405 @@ const Journal = () => {
                 <div className="absolute right-24 top-8 h-24 w-24 rounded-full bg-secondary/5 blur-2xl" />
               </div>
 
-              {/* Mountain landscape */}
+              {/* Journal Background Artwork */}
               <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] overflow-hidden lg:block">
-                <svg
-                  viewBox="0 0 760 300"
-                  className="absolute inset-0 h-full w-full"
-                  preserveAspectRatio="xMidYMid slice"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <linearGradient id="journalSky" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#eef8f6" />
-                      <stop offset="100%" stopColor="#dcebe7" />
-                    </linearGradient>
+                {/* LIGHT THEME */}
 
-                    <linearGradient
-                      id="journalBackMountain"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#dcebe8" />
-                      <stop offset="100%" stopColor="#b9d3cc" />
-                    </linearGradient>
+                <div className="absolute inset-0 [[data-theme='dark']_&]:hidden">
+                  <svg
+                    viewBox="0 0 760 300"
+                    className="h-full w-full"
+                    preserveAspectRatio="xMidYMid slice"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      {/* Light background */}
+                      <linearGradient
+                        id="avenLightBg"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                        />
+                        <stop
+                          offset="100%"
+                          className="text-base-200"
+                          stopColor="currentColor"
+                        />
+                      </linearGradient>
 
-                    <linearGradient
-                      id="journalMiddleMountain"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#b6d0c9" />
-                      <stop offset="100%" stopColor="#789f94" />
-                    </linearGradient>
+                      {/* Main mint wave */}
+                      <linearGradient
+                        id="avenLightWave"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          className="text-primary/[0.04]"
+                          stopColor="currentColor"
+                        />
+                        <stop
+                          offset="50%"
+                          className="text-primary/[0.08]"
+                          stopColor="currentColor"
+                        />
+                        <stop
+                          offset="100%"
+                          className="text-secondary/[0.16]"
+                          stopColor="currentColor"
+                        />
+                      </linearGradient>
 
-                    <linearGradient
-                      id="journalFrontMountain"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#72998f" />
-                      <stop offset="100%" stopColor="#426f63" />
-                    </linearGradient>
+                      {/* Fade into content */}
+                      <linearGradient
+                        id="avenLightFade"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="0"
+                      >
+                        <stop
+                          offset="0%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="1"
+                        />
 
-                    <linearGradient
-                      id="journalMist"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor="#ffffff"
-                        stopOpacity="0.95"
-                      />
-                      <stop
-                        offset="45%"
-                        stopColor="#ffffff"
-                        stopOpacity="0.35"
-                      />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                    </linearGradient>
+                        <stop
+                          offset="35%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="0.8"
+                        />
 
-                    <linearGradient
-                      id="journalFade"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                      <stop
-                        offset="32%"
-                        stopColor="#ffffff"
-                        stopOpacity="0.65"
-                      />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
+                        <stop
+                          offset="65%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="0.25"
+                        />
 
-                  {/* Sky */}
-                  <rect width="760" height="300" fill="url(#journalSky)" />
+                        <stop
+                          offset="100%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="0"
+                        />
+                      </linearGradient>
 
-                  {/* Distant mountains */}
-                  <path
-                    d="
+                      {/* Soft light glow */}
+                      <radialGradient id="avenLightGlow">
+                        <stop
+                          offset="0%"
+                          className="text-secondary/[0.12]"
+                          stopColor="currentColor"
+                        />
+
+                        <stop
+                          offset="100%"
+                          className="text-secondary/0"
+                          stopColor="currentColor"
+                        />
+                      </radialGradient>
+                    </defs>
+
+                    {/* Background */}
+                    <rect width="760" height="300" fill="url(#avenLightBg)" />
+
+                    {/* Soft glow */}
+                    <circle
+                      cx="675"
+                      cy="70"
+                      r="70"
+                      fill="url(#avenLightGlow)"
+                    />
+
+                    {/* Main flowing wave */}
+                    <path
+                      d="
           M0 205
-          C80 184 115 160 174 137
-          C227 116 263 82 317 93
-          C359 101 382 135 422 142
-          C463 150 501 119 543 100
-          C595 77 634 92 680 114
-          C716 132 738 143 760 149
+          C90 170 150 175 225 135
+          C305 92 365 145 445 130
+          C525 115 575 75 650 95
+          C700 108 735 130 760 145
           V300
           H0
           Z
         "
-                    fill="url(#journalBackMountain)"
-                    opacity="0.72"
-                  />
+                      fill="url(#avenLightWave)"
+                    />
 
-                  {/* Main mountain */}
-                  <path
-                    d="
-          M0 245
-          C62 220 111 188 161 164
-          C212 139 250 112 300 91
-          C337 75 354 84 381 104
-          C414 128 427 151 458 158
-          C495 166 524 143 558 124
-          C598 101 633 95 668 116
-          C705 138 724 157 760 169
+                    {/* Second wave */}
+                    <path
+                      d="
+          M0 235
+          C100 195 165 210 245 175
+          C325 140 390 205 470 180
+          C550 155 610 125 680 150
+          C720 165 745 180 760 190
           V300
           H0
           Z
         "
-                    fill="url(#journalMiddleMountain)"
-                    opacity="0.78"
-                  />
+                      className="fill-primary/[0.07]"
+                    />
 
-                  {/* Mountain highlight */}
-                  <path
-                    d="
-          M250 118
-          C276 105 301 90 321 93
-          C342 97 361 119 379 135
-          C357 126 340 124 325 134
-          C310 143 293 158 277 168
-          C284 148 270 132 250 118
-          Z
-        "
-                    fill="#e9f4f1"
-                    opacity="0.8"
-                  />
-
-                  {/* Mist */}
-                  <path
-                    d="
-          M0 177
-          C89 157 154 165 222 148
-          C284 132 340 137 400 145
-          C471 154 513 132 573 121
-          C647 108 694 119 760 138
-          V188
-          C688 171 629 177 564 169
-          C494 160 441 177 382 169
-          C313 159 257 176 190 169
-          C118 162 63 176 0 190
-          Z
-        "
-                    fill="url(#journalMist)"
-                  />
-
-                  {/* Foreground hills */}
-                  <path
-                    d="
-          M0 260
-          C69 231 115 220 164 225
-          C210 230 238 250 285 242
-          C337 232 365 208 414 211
-          C462 214 486 236 528 232
-          C577 228 599 195 649 191
-          C694 187 728 203 760 222
+                    {/* Foreground wave */}
+                    <path
+                      d="
+          M0 265
+          C110 235 175 240 270 215
+          C355 193 410 225 485 215
+          C565 205 620 175 690 195
+          C730 207 750 220 760 230
           V300
           H0
           Z
         "
-                    fill="url(#journalFrontMountain)"
-                  />
+                      className="fill-secondary/[0.10]"
+                    />
 
-                  {/* Forest texture */}
-                  <g fill="#315f54" opacity="0.3">
-                    <path d="M98 247l10-28 10 28h-6l7 13H97l7-13z" />
-                    <path d="M125 239l8-23 8 23h-5l6 12h-18l6-12z" />
-                    <path d="M157 248l11-31 11 31h-7l8 14h-24l8-14z" />
+                    {/* Main fine line */}
+                    <path
+                      d="
+          M0 200
+          C90 165 150 170 225 130
+          C305 87 365 140 445 125
+          C525 110 575 70 650 90
+          C700 103 735 125 760 140
+        "
+                      className="stroke-primary/[0.14]"
+                      strokeWidth="2"
+                      fill="none"
+                    />
 
-                    <path d="M575 225l9-27 9 27h-6l7 13h-20l7-13z" />
-                    <path d="M605 215l8-23 8 23h-5l6 12h-18l6-12z" />
-                    <path d="M637 211l10-29 10 29h-6l7 13h-22l7-13z" />
-                    <path d="M673 216l8-24 8 24h-5l6 12h-18l6-12z" />
-                  </g>
+                    {/* Secondary fine line */}
+                    <path
+                      d="
+          M0 232
+          C100 192 165 207 245 172
+          C325 137 390 202 470 177
+          C550 152 610 122 680 147
+          C720 162 745 177 760 187
+        "
+                      className="stroke-secondary/[0.10]"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
 
-                  {/* Left fade */}
-                  <rect
-                    x="0"
-                    y="0"
-                    width="390"
-                    height="300"
-                    fill="url(#journalFade)"
-                  />
+                    {/* Content fade */}
+                    <rect width="420" height="300" fill="url(#avenLightFade)" />
+                  </svg>
+                </div>
 
-                  {/* Bottom haze */}
-                  <rect
-                    x="0"
-                    y="248"
-                    width="760"
-                    height="52"
-                    fill="#e1efeb"
-                    opacity="0.28"
-                  />
-                </svg>
+                {/* DARK THEME */}
+
+                <div className="absolute inset-0 hidden [[data-theme='dark']_&]:block">
+                  <svg
+                    viewBox="0 0 760 300"
+                    className="h-full w-full"
+                    preserveAspectRatio="xMidYMid slice"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      {/* Dark background */}
+                      <linearGradient
+                        id="avenDarkBg"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                        />
+
+                        <stop
+                          offset="100%"
+                          className="text-base-200"
+                          stopColor="currentColor"
+                        />
+                      </linearGradient>
+
+                      {/* Dark blue flowing wave */}
+                      <linearGradient
+                        id="avenDarkWave"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          className="text-primary/[0.025]"
+                          stopColor="currentColor"
+                        />
+
+                        <stop
+                          offset="45%"
+                          className="text-primary/[0.07]"
+                          stopColor="currentColor"
+                        />
+
+                        <stop
+                          offset="100%"
+                          className="text-info/[0.15]"
+                          stopColor="currentColor"
+                        />
+                      </linearGradient>
+
+                      {/* Dark glow */}
+                      <radialGradient id="avenDarkGlow">
+                        <stop
+                          offset="0%"
+                          className="text-info/[0.10]"
+                          stopColor="currentColor"
+                        />
+
+                        <stop
+                          offset="100%"
+                          className="text-info/0"
+                          stopColor="currentColor"
+                        />
+                      </radialGradient>
+
+                      {/* Dark content fade */}
+                      <linearGradient
+                        id="avenDarkFade"
+                        x1="0"
+                        y1="0"
+                        x2="1"
+                        y2="0"
+                      >
+                        <stop
+                          offset="0%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="1"
+                        />
+
+                        <stop
+                          offset="35%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="0.85"
+                        />
+
+                        <stop
+                          offset="65%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="0.25"
+                        />
+
+                        <stop
+                          offset="100%"
+                          className="text-base-100"
+                          stopColor="currentColor"
+                          stopOpacity="0"
+                        />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Background */}
+                    <rect width="760" height="300" fill="url(#avenDarkBg)" />
+
+                    {/* Soft blue glow */}
+                    <ellipse
+                      cx="650"
+                      cy="75"
+                      rx="150"
+                      ry="115"
+                      fill="url(#avenDarkGlow)"
+                    />
+
+                    {/* Main flowing wave */}
+                    <path
+                      d="
+          M0 205
+          C90 170 150 175 225 135
+          C305 92 365 145 445 130
+          C525 115 575 75 650 95
+          C700 108 735 130 760 145
+          V300
+          H0
+          Z
+        "
+                      fill="url(#avenDarkWave)"
+                    />
+
+                    {/* Second wave */}
+                    <path
+                      d="
+          M0 235
+          C100 195 165 210 245 175
+          C325 140 390 205 470 180
+          C550 155 610 125 680 150
+          C720 165 745 180 760 190
+          V300
+          H0
+          Z
+        "
+                      className="fill-primary/[0.035]"
+                    />
+
+                    {/* Foreground blue wave */}
+                    <path
+                      d="
+          M0 265
+          C110 235 175 240 270 215
+          C355 193 410 225 485 215
+          C565 205 620 175 690 195
+          C730 207 750 220 760 230
+          V300
+          H0
+          Z
+        "
+                      className="fill-info/[0.08]"
+                    />
+
+                    {/* Main thin line */}
+                    <path
+                      d="
+          M0 200
+          C90 165 150 170 225 130
+          C305 87 365 140 445 125
+          C525 110 575 70 650 90
+          C700 103 735 125 760 140
+        "
+                      className="stroke-primary/[0.16]"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
+
+                    {/* Secondary line */}
+                    <path
+                      d="
+          M0 232
+          C100 192 165 207 245 172
+          C325 137 390 202 470 177
+          C550 152 610 122 680 147
+          C720 162 745 177 760 187
+        "
+                      className="stroke-info/[0.12]"
+                      strokeWidth="1"
+                      fill="none"
+                    />
+
+                    {/* Content fade */}
+                    <rect width="420" height="300" fill="url(#avenDarkFade)" />
+                  </svg>
+                </div>
               </div>
 
               {/* Content */}

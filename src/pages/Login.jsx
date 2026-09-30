@@ -238,7 +238,7 @@ const Login = () => {
                           value={emailId}
                           placeholder="you@example.com"
                           required
-                          autoComplete="email"
+                          autoComplete="off"
                           onChange={(e) => setEmailId(e.target.value)}
                           className="input h-12 w-full rounded-xl border-base-300 bg-base-100 pl-11 pr-4 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
                         />
